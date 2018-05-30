@@ -1,0 +1,8 @@
+{
+    "PluginName": "Extract Material Textures",
+    "PluginDescription": "Get the texture from the selected Material.",
+    "Scripts": [
+        "PLUGINLOCATION/ExtractMaterialTextures_Client.js"
+    ]
+    ,"Panel": "PLUGINLOCATION/index.html"
+}

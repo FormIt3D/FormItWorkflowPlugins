@@ -1,0 +1,8 @@
+{
+    "PluginName": "Rebuild Curve",
+    "PluginDescription": "Select a curve to rebuild it with specific faceting parameters.",
+    "Scripts": [
+        "PLUGINLOCATION/RebuildCurve.js"
+    ]
+    ,"Panel": "PLUGINLOCATION/index.html"
+}

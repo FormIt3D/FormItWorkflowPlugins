@@ -1,0 +1,11 @@
+{
+  "RepoName": "FormIt Workflow Plugins",
+  "Plugins": 
+  [
+  "RebuildCurve",
+  "FilletCorner",
+  "MoveAllSceneCameras",
+  "StringLightGenerator",
+  "ExtractMaterialTextures"
+  ]
+}

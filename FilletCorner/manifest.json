@@ -1,0 +1,8 @@
+{
+    "PluginName": "Fillet Corner (WIP)",
+    "PluginDescription": "Fillets between two edges given the point where they connect.",
+    "Scripts": [
+        "PLUGINLOCATION/FilletCorner.js"
+    ]
+    ,"Panel": "PLUGINLOCATION/index.html"
+}

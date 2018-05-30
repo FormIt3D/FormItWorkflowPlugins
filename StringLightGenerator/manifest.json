@@ -1,0 +1,9 @@
+{
+    "PluginName": "String Light Generator",
+    "PluginDescription": "Generates a set of string lines on a catenary arc based on a single line or selection of lines.",
+    "Scripts": [
+        "PLUGINLOCATION/StringLightGenerator.js",
+        "PLUGINLOCATION/../Utils.js"
+    ]
+    ,"Panel": "PLUGINLOCATION/index.html"
+}

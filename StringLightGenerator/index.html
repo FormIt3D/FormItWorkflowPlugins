@@ -1,0 +1,37 @@
+<html>
+<head><link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+<title>String Light Generator</title>
+<META NAME="Title" CONTENT="String Light Generator">
+<META NAME="Author" CONTENT="Josh Goldstein">
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+<script type="text/javascript" src="StringLightGenerator.js"></script>
+<script type="text/javascript">
+    FormItInterface.AddEventListener("DOMContentLoaded");
+</script>
+</head>
+<body>
+<h1>String Light Generator</h1>
+<p>
+    Select a line to generate a catenary arc, or select an existing arc, and create a cable-based string light system between two points.
+</p>
+<p></p>
+
+<form name=a> 
+    <p>Typical fixture properties:</p>
+    <input type=number name=lightCount value=6> Number of Fixtures<br>
+    <input type=number name=verticalCableOrHousingLength value=0.1667> Vertical Cable or Housing Height<br>
+    <input type=number name=verticalCableOrHousingRadius value=0.083> Vertical Cable or Housing Radius<br>
+    <input type=number name=bulbRadius value=0.2> Bulb Radius<br>
+    <input type=number name=bulbCount value=1> Bulbs Per Fixture<br>
+    <p></p>
+    <p>Catenary curve properties:</p>
+    <input type=number name=facetCount value=16> Number of Facets in Curve<br>
+    <input type=number name=catenaryCableRadius value=0.01> Catenary Cable Radius<br>
+    <p></p>
+    <p>If creating a new arc:</p>
+    <input type=number name=arcBulge value=2> Cable Dip<br>
+    
+    <input type=button value="Generate String Lights" onClick="deanstein.Submit();">
+</form>
+</body>
+</html>
