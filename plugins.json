@@ -4,6 +4,7 @@
   [
   "RebuildCurve",
   "FilletCorner",
+  "FlipAlong",
   "MoveAllSceneCameras",
   "StringLightGenerator",
   "ExtractMaterialTextures"
