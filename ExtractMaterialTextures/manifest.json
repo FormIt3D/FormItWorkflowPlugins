@@ -1,6 +1,6 @@
 {
     "PluginName": "Extract Material Textures",
-    "PluginDescription": "Get the texture from the selected Material.",
+    "PluginDescription": "Get the texture, bump map, and cutout map from the selected Material.",
     "Scripts": [
         "PLUGINLOCATION/ExtractMaterialTextures_Client.js"
     ]

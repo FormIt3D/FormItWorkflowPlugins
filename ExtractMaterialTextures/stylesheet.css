@@ -70,3 +70,8 @@ p {
     font-family: Arial;
     font-size: 14px;
 }
+
+.textureLabel {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
