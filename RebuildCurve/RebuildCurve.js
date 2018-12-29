@@ -575,8 +575,8 @@ deanstein.Submit = function()
     "facetCount": parseFloat(document.a.facetCount.value)
     }
 
-    console.log("deanstein.RebuildCurve");
-    console.log("args");
+    //console.log("deanstein.RebuildCurve");
+    //console.log("args");
     // NOTE: window.FormItInterface.CallMethod will call the function
     // defined above with the given args.  This is needed to communicate
     // between the web JS enging process and the FormIt process.
@@ -590,8 +590,8 @@ deanstein.SubmitExplode = function(argsExplode)
     {
 
     }
-    console.log("deanstein.RebuildCurve");
-    console.log("args");
+    //console.log("deanstein.RebuildCurve");
+    //console.log("args");
     // NOTE: window.FormItInterface.CallMethod will call the function
     // defined above with the given args.  This is needed to communicate
     // between the web JS enging process and the FormIt process.

@@ -1,8 +1,8 @@
 <html>
 <head><link rel="stylesheet" type="text/css" href="stylesheet.css"/>
 <title>String Light Generator</title>
-<META NAME="Title" CONTENT="String Light Generator">
-<META NAME="Author" CONTENT="Josh Goldstein">
+<META NAME="Title" CONTENT="Generate String Lights">
+<META NAME="Author" CONTENT="Autodesk FormIt">
 <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
 <script type="text/javascript" src="StringLightGenerator.js"></script>
 <script type="text/javascript">
@@ -10,21 +10,23 @@
 </script>
 </head>
 <body>
-<h1>String Light Generator</h1>
-<p>
-    Select a line to generate a catenary arc, or select an existing arc, and create a cable-based string light system between two points.
-</p>
-<p></p>
+<h1>Generate String Lights</h1>
+
+<ul>
+    <li>Select a line or an arc to generate string lights along</li>
+    <li>Specify fixture and catenary arc options, then click "Generate String Lights"</li>
+    <li>Fixtures will be generated in identical Groups, so manual changes can be applied consistently to all fixtures</li>
+</ul>
 
 <form name=a> 
-    <p>Typical fixture properties:</p>
+    <p><b>Fixture properties:</b></p>
     <input type=number name=lightCount value=6> Number of Fixtures<br>
     <input type=number name=verticalCableOrHousingLength value=0.1667> Vertical Cable or Housing Height<br>
     <input type=number name=verticalCableOrHousingRadius value=0.083> Vertical Cable or Housing Radius<br>
     <input type=number name=bulbRadius value=0.2> Bulb Radius<br>
     <input type=number name=bulbCount value=1> Bulbs Per Fixture<br>
     <p></p>
-    <p>Catenary curve properties:</p>
+    <p><b>Catenary curve properties:</b></p>
     <input type=number name=facetCount value=16> Number of Facets in Curve<br>
     <input type=number name=catenaryCableRadius value=0.01> Catenary Cable Radius<br>
     <p></p>

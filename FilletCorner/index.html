@@ -1,8 +1,8 @@
 <html>
 <head><link rel="stylesheet" type="text/css" href="stylesheet.css"/>
 <title>Fillet Corner</title>
-<META NAME="Title" CONTENT="Fillet Corner">
-<META NAME="Author" CONTENT="Josh Goldstein">
+<META NAME="Title" CONTENT="Fillet 2D Corners">
+<META NAME="Author" CONTENT="Autodesk FormIt">
 <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
 <script type="text/javascript" src="FilletCorner.js"></script>
 <script type="text/javascript">
@@ -10,14 +10,37 @@
 </script>
 </head>
 <body>
-<h1>Fillet Corner</h1>
-<p>Select a vertex, curve, or face. Eligible vertices will get a fillet arc of the specified radius. Vertices with more than 2 connected edges will be ignored.<br>
-    <br>If the Delete option is enabled, the original vertices will be deleted, leaving only the fillet arc.</p>
+<h1>Fillet 2D Corners</h1>
+<ul>
+    <li>Select vertices, lines, or faces</li>
+    <li>Click "Fillet Corner" to draw a new arc at all valid vertices</li>
+    <ul>
+        <li>Only vertices with 2 connected edges are considered valid</li>
+    </ul>
+    <li>Optionally delete the original vertex, leaving only the new fillet arc</li>
+</ul>
 
-<form name=a>
-        <input type=number name=radius value=5>  Radius<br>
+<form id="FilletCornerForm" name=a>
+        <input type=number name=radius id=radius value=5>  Radius<br>
         <input type=checkbox name=cleanup> Delete vertex<br>
-        <input type=button value="Fillet Corner" onClick="deanstein.Submit();">
+        <input type=button id="FilletCornerButton" value="Fillet Corner" onClick="deanstein.Submit();">
 </form>
+
+<script>
+    // handle enter in numeric inputs
+    var FilletCornerForm = document.getElementById("FilletCornerForm");
+    debugger;
+    FilletCornerForm.addEventListener("keyup", function(event) {
+    // cancel default action
+    event.preventDefault();
+    // 13 is the "Enter" key on the keyboard
+    if (event.keyCode === 13) {
+        console.log("Enter received!");
+    // Trigger the button element with a click
+        document.getElementById("FilletCornerButton").click();
+    }
+  });
+</script>
+
 </body>
 </html>

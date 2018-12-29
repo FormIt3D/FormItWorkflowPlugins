@@ -1,6 +1,7 @@
 {
-    "PluginName": "Rebuild Curve",
-    "PluginDescription": "Select a curve to rebuild it with specific faceting parameters.",
+    "PluginName": "Rebuild + Explode Curve",
+    "PluginDescription": "Rebuild the selected curve with a custom faceting count, or explode the curve into its constituent segments.",
+    "PluginType": "Panel",
     "Scripts": [
         "PLUGINLOCATION/RebuildCurve.js"
     ]

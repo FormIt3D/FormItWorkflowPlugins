@@ -1,6 +1,7 @@
 {
     "PluginName": "Move All Scene Cameras",
-    "PluginDescription": "Launches a panel which provides options for moving all cameras in the sketch by the specified amount in world X, Y, and Z directions.",
+    "PluginDescription": "Move all Scene cameras in the sketch by given XYZ values.",
+    "PluginType": "Panel",
     "Scripts": [
         "PLUGINLOCATION/MoveAllSceneCameras.js"
     ]

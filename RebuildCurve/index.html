@@ -1,8 +1,8 @@
 <html>
 <head><link rel="stylesheet" type="text/css" href="stylesheet.css"/>
-<title>Arc/Circle Faceter</title>
-<META NAME="Title" CONTENT="Rebuild Curve">
-<META NAME="Author" CONTENT="Josh Goldstein">
+<title>Rebuild + Explode Curve</title>
+<META NAME="Title" CONTENT="Rebuild + Explode Curve">
+<META NAME="Author" CONTENT="Autodesk FormIt">
 <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
 <script type="text/javascript" src="RebuildCurve.js"></script>
 <script type="text/javascript">
@@ -11,13 +11,23 @@
 </head>
 <body>
 <h1>Rebuild Curve</h1>
-<p>Select an arc or cicle to rebuild it to the following specifications:</p>
+
+<ul>
+    <li>Select an arc or a circle</li>
+    <li>Click "Rebuild Curve" to rebuild it with the specified facet count</li>
+</ul>
+
 <form name=a> 
     <input type=number name=facetCount value=16> Number of Facets<br>
     <input type=button value="Rebuild Curve" onClick="deanstein.Submit();">
 </form>
-<h1>Explode Curve</h1>
-<p>Select a curve to explode into its constituent segments.</p>
+
+<h1 class="secondHeader">Explode Curve</h1>
+<ul class="lastUL">
+    <li>Select a curve of any type</li>
+    <li>Click "Explode Curve" to deconstruct the curve into its constituent segments</li>
+</ul>
+
 <form name=b> 
     <input type=button value="Explode Curve" onClick="deanstein.SubmitExplode();">
 </form>

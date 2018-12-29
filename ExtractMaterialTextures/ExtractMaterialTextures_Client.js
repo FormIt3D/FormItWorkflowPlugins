@@ -6,14 +6,15 @@ if (typeof deanstein == 'undefined')
 deanstein.ExtractMaterialTextures = function(args)
 {
     console.clear();
+    console.log("Extract Material Maps");
 
     // get current history
     var nHistoryID = FormIt.GroupEdit.GetEditingHistoryID();
-    console.log("Current history: " + JSON.stringify(nHistoryID));
+    //console.log("Current history: " + JSON.stringify(nHistoryID));
 
     // get current selection
     var currentSelection = FormIt.Selection.GetSelections();
-    console.log("Current selection: " + JSON.stringify(currentSelection));
+    //console.log("Current selection: " + JSON.stringify(currentSelection));
 
     if (currentSelection.length < 1)
     {
@@ -26,15 +27,15 @@ deanstein.ExtractMaterialTextures = function(args)
 
     // if you're not in the Main History, calculate the depth to extract the correct history data
     var historyDepth = (currentSelection[0]["ids"].length) -1;
-    console.log("Current history depth: " + historyDepth);
+    //console.log("Current history depth: " + historyDepth);
 
     // get objectID of the current selection
     var nObjectID = currentSelection[0]["ids"][historyDepth]["Object"];
-    console.log("Current selection ID: " + nObjectID);
+    //console.log("Current selection ID: " + nObjectID);
 
     // get the material ID for the selection
     var selectionMaterialID = WSM.APIGetObjectMaterialReadOnly(nHistoryID, nObjectID);
-    console.log("Current selection material ID: " + selectionMaterialID);
+    //console.log("Current selection material ID: " + selectionMaterialID);
     // if the WSM Invalid ID is detected, throw an error and return undefined
     if (selectionMaterialID === 4294967295)
     {
@@ -47,7 +48,7 @@ deanstein.ExtractMaterialTextures = function(args)
 
     // get the material data for the selection
     var selectionMaterialData = WSM.APIGetMaterialDataReadOnly(nHistoryID, selectionMaterialID);
-    console.log("Current selection material data: " + JSON.stringify(selectionMaterialData));
+    //console.log("Current selection material data: " + JSON.stringify(selectionMaterialData));
 
     // define how to get texture bitmap data given the history and texture ID
     function getBitmapDataFromTextureID(nHistoryID, textureID) {
@@ -62,7 +63,7 @@ deanstein.ExtractMaterialTextures = function(args)
 
     // get the texture ID for the material
     var selectionTextureID = selectionMaterialData.nTextureID;
-    console.log("Selection textureID: " + selectionTextureID);
+    //console.log("Selection textureID: " + selectionTextureID);
 
     // get the texture data if it exists and push it into the array
     if (selectionTextureID != 4294967295)

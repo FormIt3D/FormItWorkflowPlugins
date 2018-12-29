@@ -1,6 +1,7 @@
 {
-    "PluginName": "Extract Material Textures",
-    "PluginDescription": "Get the texture, bump map, and cutout map from the selected Material.",
+    "PluginName": "Extract Material Maps",
+    "PluginDescription": "Extract the full-resolution texture map, bump map, and cutout map from a Material, then copy the images to your local machine for editing.",
+    "PluginType": "Panel",
     "Scripts": [
         "PLUGINLOCATION/ExtractMaterialTextures_Client.js"
     ]

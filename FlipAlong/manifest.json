@@ -1,5 +1,7 @@
 {
     "PluginName": "Flip Along",
+    "PluginDescription": "Quickly flip selected geometry along an axis.",
+    "PluginType": "Toolbar",
     "ToolbarURL": "PLUGINLOCATION/toolbar.json",
     "Scripts": [
         "PLUGINLOCATION/flipalong.js"

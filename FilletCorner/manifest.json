@@ -1,6 +1,7 @@
 {
-    "PluginName": "Fillet Corner (WIP)",
-    "PluginDescription": "Fillets between two edges given the point where they connect.",
+    "PluginName": "Fillet 2D Corners",
+    "PluginDescription": "Fillet 2-dimensional corners with a given radius and an option to delete the original vertex.",
+    "PluginType": "Panel",
     "Scripts": [
         "PLUGINLOCATION/FilletCorner.js"
     ]

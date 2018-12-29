@@ -9,7 +9,7 @@ var imgTypesArray = ["Texture","Bump","Cutout"];
 deanstein.PlaceholderImage = function()
 {
     // create a placeholder image and label for each type
-    console.log("Creating placeholder images and labels");
+    //console.log("Creating placeholder images and labels");
 
     function createPlaceholderHTMLElements(type) {
         var label = document.createElement('p');

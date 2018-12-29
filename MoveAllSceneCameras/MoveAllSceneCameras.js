@@ -18,7 +18,9 @@ var scenes = FormIt.Scenes.GetScenes();
 console.log("--------");
 console.log(JSON.stringify(scenes));*/
 
-console.log("Number of Scenes: " + scenes.length + '\n');
+console.log("Move All Cameras");
+console.log("Number of Cameras to Move: " + scenes.length + '\n');
+FormIt.UndoManagement.BeginState();
 
 for (i = 0; i < scenes.length; i++) {
 
@@ -71,6 +73,8 @@ for (i = 0; i < scenes.length; i++) {
 	}
 
 	FormIt.Scenes.SetScenes(scenes);
+
+	FormIt.UndoManagement.EndState("Move All Cameras Plugin");
 }
 
 
@@ -83,8 +87,8 @@ deanstein.Submit = function()
     "MoveY": parseFloat(document.a.Y.value),
     "MoveZ": parseFloat(document.a.Z.value)
     }
-    console.log("deanstein.MoveCameras");
-    console.log("args");
+    //console.log("deanstein.MoveCameras");
+    //console.log("args");
     // NOTE: window.FormItInterface.CallMethod will call the MoveCameras function
     // defined above with the given args.  This is needed to communicate
     // between the web JS enging process and the FormIt process.
