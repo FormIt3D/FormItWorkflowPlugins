@@ -1,0 +1,43 @@
+<html>
+<head><link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+<title>Validate + Clean Model</title>
+<META NAME="Title" CONTENT="Validate + Clean Model">
+<META NAME="Author" CONTENT="Autodesk FormIt">
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+<script type="text/javascript" src="ValidateCleanModel.js"></script>
+<script type="text/javascript">
+    FormItInterface.AddEventListener("DOMContentLoaded");
+</script>
+</head>
+<body>
+<h1>Validate + Clean Model</h1>
+
+<p>Note: This plugin is currently supported in FormIt for Windows only.</p>
+
+<hr>
+
+<p>Use Validate to check for any geometric corruption that could result in modeling failures.</p>
+
+<div id="form">
+    <form name=a>
+    <input type=button value="Validate Model" onClick="FormItWorkflowPlugins.SubmitValidate();">
+</form>
+
+<hr>
+
+<p>Use Clean to potentially fix issues found in Validate.</p>
+
+<p>Note that Clean may delete invalid geometry, and may change the appearance of the model.</p>
+
+<p>A tolerance value of 0 will fix issues found during validation. Higher values will delete and merge short edges in the model.</p>
+
+<div id="form">
+        <form name=b>
+        <input type=button value="Clean Model" onClick="FormItWorkflowPlugins.SubmitClean();">
+    </form>
+
+<hr>
+
+</div>
+</body>
+</html>

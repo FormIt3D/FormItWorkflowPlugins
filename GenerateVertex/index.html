@@ -1,0 +1,26 @@
+<html>
+<head><link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+<title>Generate Vertex</title>
+<META NAME="Title" CONTENT="Generate Vertex">
+<META NAME="Author" CONTENT="Autodesk FormIt">
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+<script type="text/javascript" src="GenerateVertex.js"></script>
+<script type="text/javascript">
+    FormItInterface.AddEventListener("DOMContentLoaded");
+</script>
+</head>
+<body>
+<h1>Generate Vertex</h1>
+
+<p>Generate a standalone vertex at the given XYZ coordinates.</p>
+
+<div id="form">
+    <form name=a>
+        <input type=number name=X value = 0> X Coordinate<br>
+        <input type=number name=Y value = 0> Y Coordinate<br>
+        <input type=number name=Z value = 0> Z Coordinate<br>
+    <input type=button value="Generate Vertex" onClick="FormItWorkflowPlugins.Submit();">
+</form>
+</div>
+</body>
+</html>

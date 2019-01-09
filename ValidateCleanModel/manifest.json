@@ -1,0 +1,9 @@
+{
+    "PluginName": "Validate + Clean Model",
+    "PluginDescription": "Check the FormIt model for fidelity issues that might lead to modeling failures, and automatically clean of invalid geometry in the FormIt model.",
+    "PluginType": "Panel",
+    "Scripts": [
+        "PLUGINLOCATION/ValidateCleanModel.js"
+    ]
+    ,"Panel": "PLUGINLOCATION/index.html"
+}

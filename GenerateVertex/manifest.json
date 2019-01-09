@@ -1,0 +1,9 @@
+{
+    "PluginName": "Generate Vertex",
+    "PluginDescription": "Generate a standalone vertex using XYZ coordinates.",
+    "PluginType": "Panel",
+    "Scripts": [
+        "PLUGINLOCATION/GenerateVertex.js"
+    ]
+    ,"Panel": "PLUGINLOCATION/index.html"
+}
