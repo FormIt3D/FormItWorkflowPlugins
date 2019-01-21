@@ -12,7 +12,7 @@
 <body>
 <h1>Validate + Clean Model</h1>
 
-<p>Note: This plugin is currently supported in FormIt for Windows only.</p>
+<!-- <p>Note: This plugin only works in FormIt for Windows.</p> -->
 
 <hr>
 
@@ -25,11 +25,15 @@
 
 <hr>
 
-<p>Use Clean to potentially fix issues found in Validate.</p>
+<p>Use Clean to try fixing issues found in Validate.</p>
 
 <p>Note that Clean may delete invalid geometry, and may change the appearance of the model.</p>
 
-<p>A tolerance value of 0 will fix issues found during validation. Higher values will delete and merge short edges in the model.</p>
+<b><p>Tolerance</p></b> 
+
+<p>A tolerance value of 0 will fix invalid geometry found during validation.</p>
+
+<p>Higher values will delete and merge any edges in the model that are shorter than the provided tolerance.</p>
 
 <div id="form">
         <form name=b>
