@@ -8,7 +8,6 @@
   "FlipAlong",
   "MoveAllSceneCameras",
   "StringLightGenerator",
-  "ExtractMaterialTextures",
-  "ValidateCleanModel"
+  "ExtractMaterialTextures"
   ]
 }
