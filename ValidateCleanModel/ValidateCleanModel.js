@@ -8,7 +8,7 @@ FormItWorkflowPlugins.ValidateModel = function()
     console.clear();
     console.log("Validate Model");
 
-    FormIt.Commands.DoCommand("Validate the model");
+    FormIt.Commands.DoCommand("Validate Model");
 }
 
 FormItWorkflowPlugins.CleanModel = function()
@@ -16,7 +16,7 @@ FormItWorkflowPlugins.CleanModel = function()
     console.clear();
     console.log("Clean Model");
 
-    FormIt.Commands.DoCommand("Clean the model");
+    FormIt.Commands.DoCommand("Clean Model");
 }
 
 // Submit runs from the HTML page.  This script gets loaded up in both FormIt's
