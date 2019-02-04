@@ -8,8 +8,6 @@ FormItWorkflowPlugins.MeshRecursively = function()
     console.clear();
     console.log("Mesh Group Recursively Plugin\n");
 
-    FormIt.UndoManagement.BeginState();
-
     // get selection info
     FormItWorkflowPlugins.getSelectionInfo();
     
@@ -22,6 +20,7 @@ FormItWorkflowPlugins.MeshRecursively = function()
 
     else
     {
+        FormIt.UndoManagement.BeginState();
         // for each object in the selection, do something
         for (var j = 0; j < objectIDArray.length; j++)
         {
@@ -55,6 +54,7 @@ FormItWorkflowPlugins.MeshRecursively = function()
                 WSM.APIConvertObjectsToMeshes(nHistoryID, objectIDArray[j]);
             }
         }
+        FormIt.UndoManagement.EndState("Object to Mesh Recursively");
     }
 
     if (!targetHistoriesArray)
@@ -65,16 +65,12 @@ FormItWorkflowPlugins.MeshRecursively = function()
     {
         console.log("Recursively converted selected Objects to Meshes, including inside " + targetHistoriesArray.length + " nested Groups.")
     }
-
-    FormIt.UndoManagement.EndState("Object to Mesh Recursively");
 }
 
 FormItWorkflowPlugins.UnmeshRecursively = function()
 {
     console.clear();
     console.log("Unmesh Group Recursively Plugin\n");
-
-    FormIt.UndoManagement.BeginState();
 
     // get selection info
     FormItWorkflowPlugins.getSelectionInfo();
@@ -91,6 +87,7 @@ FormItWorkflowPlugins.UnmeshRecursively = function()
 
     else
     {
+        FormIt.UndoManagement.BeginState();
         // for each object in the selection, do something
         for (var j = 0; j < objectIDArray.length; j++)
         {
@@ -126,6 +123,7 @@ FormItWorkflowPlugins.UnmeshRecursively = function()
                 WSM.APIConvertMeshesToObjects(nHistoryID, objectIDArray[j], smoothAngle);
             }
         }
+        FormIt.UndoManagement.EndState("Mesh to Object Recursively");
     }
 
     if (!targetHistoriesArray)
@@ -136,9 +134,6 @@ FormItWorkflowPlugins.UnmeshRecursively = function()
     {
         console.log("Recursively converted selected Meshes to Objects, including inside " + targetHistoriesArray.length + " nested Groups.")
     }
-
-    FormIt.UndoManagement.EndState("Mesh to Object Recursively");
-
 }
 
 // creates global variables and arrays for determining the items in the selection set
