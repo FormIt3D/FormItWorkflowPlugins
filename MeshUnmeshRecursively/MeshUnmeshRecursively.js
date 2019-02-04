@@ -6,7 +6,7 @@ if (typeof FormItWorkflowPlugins == 'undefined')
 FormItWorkflowPlugins.MeshRecursively = function()
 {
     console.clear();
-    console.log("Mesh Group Recursively Plugin");
+    console.log("Mesh Group Recursively Plugin\n");
 
     FormIt.UndoManagement.BeginState();
 
@@ -16,7 +16,7 @@ FormItWorkflowPlugins.MeshRecursively = function()
     // if nothing is selected, throw a message and return
     if (currentSelection.length === 0)
     {
-        console.log("\nSelect something to begin.");
+        console.log("Select something to begin.");
         return;
     }
 
@@ -30,40 +30,49 @@ FormItWorkflowPlugins.MeshRecursively = function()
             if (typeArray[j] === 24)
             {
                 var reachableHistoriesArray = WSM.APIGetAllReachableHistoriesReadOnly(nHistoryID, false);
-                console.log("Reachable histories: " + reachableHistoriesArray);
+                //console.log("Reachable histories: " + reachableHistoriesArray);
 
                 // remove the current history from the array
                 var targetHistoriesArray = reachableHistoriesArray.slice(1, reachableHistoriesArray.length);
-                console.log("Target histories: " + targetHistoriesArray);
+                //console.log("Target histories: " + targetHistoriesArray);
 
                 // in each target history, convert objects to meshes
-                for (var j = 0; j < targetHistoriesArray.length; j++)
+                for (var k = 0; k < targetHistoriesArray.length; k++)
                 {
                     // get all the objects in this history
                     // objects are WSM type 1
-                    var objectIdsInThisHistory = WSM.APIGetAllObjectsByTypeReadOnly(targetHistoriesArray[j], 1);
+                    var objectIdsInThisHistory = WSM.APIGetAllObjectsByTypeReadOnly(targetHistoriesArray[k], 1);
 
                     // convert all objects to meshes
-                    WSM.APIConvertObjectsToMeshes(targetHistoriesArray[j], objectIdsInThisHistory);
-                    console.log("Converting all Objects in History " + targetHistoriesArray[j] + " to Meshes...");
+                    WSM.APIConvertObjectsToMeshes(targetHistoriesArray[k], objectIdsInThisHistory);
+                    //console.log("Converting all Objects in History " + targetHistoriesArray[j] + " to Meshes...");
                 }
             }
-    
             else 
             {
                 // convert everything else to meshes
-                console.log("Converting other Objects found in the selection to Meshes...");
+                //console.log("Converting other Objects found in the selection to Meshes...");
                 WSM.APIConvertObjectsToMeshes(nHistoryID, objectIDArray[j]);
             }
         }
     }
+
+    if (!targetHistoriesArray)
+    {
+        console.log("Converted selected Objects to Meshes.");
+    }
+    else 
+    {
+        console.log("Recursively converted selected Objects to Meshes, including inside " + targetHistoriesArray.length + " nested Groups.")
+    }
+
     FormIt.UndoManagement.EndState("Object to Mesh Recursively");
 }
 
 FormItWorkflowPlugins.UnmeshRecursively = function()
 {
     console.clear();
-    console.log("Unmesh Group Recursively Plugin");
+    console.log("Unmesh Group Recursively Plugin\n");
 
     FormIt.UndoManagement.BeginState();
 
@@ -76,7 +85,7 @@ FormItWorkflowPlugins.UnmeshRecursively = function()
     // if nothing is selected, throw a message and return
     if (currentSelection.length === 0)
     {
-        console.log("\nSelect something to begin.");
+        console.log("Select something to begin.");
         return;
     }
 
@@ -90,35 +99,46 @@ FormItWorkflowPlugins.UnmeshRecursively = function()
             if (typeArray[j] === 24)
             {
                 var reachableHistoriesArray = WSM.APIGetAllReachableHistoriesReadOnly(nHistoryID, false);
-                console.log("Reachable histories: " + reachableHistoriesArray);
+                //console.log("Reachable histories: " + reachableHistoriesArray);
 
                 // remove the current history from the array
                 var targetHistoriesArray = reachableHistoriesArray.slice(1, reachableHistoriesArray.length);
-                console.log("Target histories: " + targetHistoriesArray);
+                //console.log("Target histories: " + targetHistoriesArray);
 
                 // in each target history, convert objects to meshes
-                for (var j = 0; j < targetHistoriesArray.length; j++)
+                for (var k = 0; k < targetHistoriesArray.length; k++)
                 {
                     // get all the meshes in this history
                     // meshes are WSM type 32
-                    var objectIdsInThisHistory = WSM.APIGetAllObjectsByTypeReadOnly(targetHistoriesArray[j], 32);
-                    console.log("Object IDs in this History: " + objectIdsInThisHistory);
+                    var objectIdsInThisHistory = WSM.APIGetAllObjectsByTypeReadOnly(targetHistoriesArray[k], 32);
+                    //console.log("Mesh IDs in this History: " + objectIdsInThisHistory);
 
-                    // convert all objects to meshes
-                    WSM.APIConvertMeshesToObjects(targetHistoriesArray[j], objectIdsInThisHistory, smoothAngle);
-                    console.log("Converting all Meshes in History " + targetHistoriesArray[j] + " to Objects...");
+                    // convert all meshes to objects
+                    WSM.APIConvertMeshesToObjects(targetHistoriesArray[k], objectIdsInThisHistory, smoothAngle);
+                    //console.log("Converting all Meshes in History " + targetHistoriesArray[j] + " to Objects...");
                 }
             }
     
             else 
             {
-                // convert everything else to meshes
-                console.log("Converting other Objects found in the selection to Meshes...");
-                WSM.APIConvertObjectsToMeshes(nHistoryID, objectIDArray[j], smoothAngle);
+                // convert everything else to objects
+                //console.log("Converting other Meshes found in the selection to Objects...");
+                WSM.APIConvertMeshesToObjects(nHistoryID, objectIDArray[j], smoothAngle);
             }
         }
     }
+
+    if (!targetHistoriesArray)
+    {
+        console.log("Converted selected Meshes to Objects.");
+    }
+    else 
+    {
+        console.log("Recursively converted selected Meshes to Objects, including inside " + targetHistoriesArray.length + " nested Groups.")
+    }
+
     FormIt.UndoManagement.EndState("Mesh to Object Recursively");
+
 }
 
 // creates global variables and arrays for determining the items in the selection set
