@@ -1,0 +1,31 @@
+<html>
+<head><link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+<title>Mesh + Unmesh Recursively</title>
+<META NAME="Title" CONTENT="Mesh + Unmesh Recursively">
+<META NAME="Author" CONTENT="Autodesk FormIt">
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+<script type="text/javascript" src="MeshUnmeshRecursively.js"></script>
+<script type="text/javascript">
+    FormItInterface.AddEventListener("DOMContentLoaded");
+</script>
+</head>
+<body>
+<h1>Mesh + Unmesh Recursively</h1>
+
+<p>Select a Group and convert all Objects inside the Group, including all nested Groups, into Meshes.</p>
+
+<div id="form">
+    <form name=a>
+    <input type=button value="Mesh Recursively" onClick="FormItWorkflowPlugins.SubmitMeshRecursive();">
+</form>
+
+<p>Select a Group and convert all Meshes inside the Group, including all nested Groups, back to Objects.</p>
+
+<div id="form">
+        <form name=b>
+        <input type=button value="Unmesh Recursively" onClick="FormItWorkflowPlugins.SubmitUnmeshRecursive();">
+    </form>
+
+</div>
+</body>
+</html>
