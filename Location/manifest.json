@@ -1,0 +1,7 @@
+{
+    "PluginName": "Location Dialog",
+    "PluginDescription": "Creates a toolbar UI with a button that launches an HTML page in a dialog to set location.",
+    "PluginType": "Toolbar",
+    "Scripts": [ "PLUGINLOCATION/location_formit.js" ],
+    "ToolbarURL_REMOVE_THIS_TO_SHOW_TOOLBAR": "PLUGINLOCATION/toolbar.json"
+}

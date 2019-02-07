@@ -1,0 +1,11 @@
+{
+    "name": "Location Toolbar",
+    "buttons": [
+        {
+            "name": "Location Toolbar",
+            "command": "LocationToolbar.ShowDialog",
+            "iconText": "Lo",
+            "iconURL": "PLUGINLOCATION/button_location_pin@2x.png"
+        }
+    ]
+}
