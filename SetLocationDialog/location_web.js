@@ -2,8 +2,6 @@ LocationDialog = {};
 
 LocationDialog.GetLocation = function(callback)
 {
-    console.log("WEB:LocationDialog.GetLocation");
-
     FormItInterface.CallMethod("LocationDialog.GetLocation", "", function(locationJSON)
         {
             let location = JSON.parse(locationJSON);

@@ -16,7 +16,6 @@ FormIt.Commands.RegisterJSCommand("LocationDialog.ShowDialog");
 
 LocationDialog.GetLocation = function()
 {
-    console.log("WEB:LocationDialog.GetLocation");
     return FormIt.SunAndLocation.GetProjectAddress();
 }
 
