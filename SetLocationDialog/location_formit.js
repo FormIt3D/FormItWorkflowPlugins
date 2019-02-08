@@ -3,7 +3,7 @@ LocationDialog.PluginLocation = "PLUGINLOCATION";
 LocationDialog.ShowDialog = function()
 {
     var dialogParams = {
-    "PluginName": "Specify the location",
+    "PluginName": "Set the Location",
     "DialogBox": "PLUGINLOCATION/location.html",
     "DialogBoxWidth": 1000,
     "DialogBoxHeight": 700,

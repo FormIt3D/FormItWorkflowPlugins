@@ -23,6 +23,7 @@ LocationDialog.SaveLocation = function(address, latitude, longitude)
         "longitude": longitude
         }
     FormItInterface.CallMethod("LocationDialog.SaveLocation", args);
+    PluginDialog.Close();
 }
 
 LocationDialog.FinishImport = function(importSettings)
