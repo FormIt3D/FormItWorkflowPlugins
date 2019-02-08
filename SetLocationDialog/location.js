@@ -19,7 +19,6 @@ class FormItMap {
         this._finishImportButton = document.getElementById('FinishImportButton');
         this._cancelImportButton = document.getElementById('CancelImportButton');
 
-        window.addEventListener('resize', this._handleResize.bind(this));
         this._importButton.addEventListener('click', this._startImport.bind(this));
         this._finishImportButton.addEventListener('click', this._finishImport.bind(this));
         this._cancelImportButton.addEventListener('click', this._cancelImport.bind(this));
@@ -27,13 +26,25 @@ class FormItMap {
         this._setLocationButton.addEventListener('click', this._saveLocationOnly.bind(this));
         this._cancelLocationButton.addEventListener('click', this._cancelLocation.bind(this));
 
+        this._addressInput.addEventListener('keypress', (event) => {
+            //enter key
+            if (event.keyCode === 13){
+                this._address = this._addressInput.value;
+                this._location = undefined;
+                this._geocodeLocationAddress(() => {
+                    this._updatePushPin();
+                    this._focusLocation();
+                });
+            }
+        });
+
         this._setLocationButton = document.getElementById('SetLocationButton');
         this._cancelLocationButton = document.getElementById('CancelLocationButton');
 
         this._maxMapImportSize = 640;
 
         //Boulder
-        const defaultLocation = new Microsoft.Maps.Location(40.019253, -105.274239)
+        const defaultLocation = new Microsoft.Maps.Location(40.019253, -105.274239);
 
         this._locationMap = new Microsoft.Maps.Map('#LocationMapControl', {
             location: defaultLocation,
@@ -65,6 +76,13 @@ class FormItMap {
             this._syncMaps();
         });
 
+        //window.addEventListener('resize', this._handleResize.bind(this));
+        Microsoft.Maps.Events.addHandler(this._locationMap, 'mapresize', () => {
+            this._handleResize();
+        });
+
+        //Fix for resize bug FORMIT-9236
+        //https://social.msdn.microsoft.com/Forums/SECURITY/en-US/fa924dad-fab4-46ad-b5d6-cecdeb9721c7/bing-map-control-v8-returns-wrong-values-after-resize?forum=bingmapsajax
         this._handleResize();
         this.resetAddress();
     }
@@ -295,9 +313,13 @@ class FormItMap {
         this._importMapControl.style.height = `${minLength}px`;
         this._importMapControl.style.width = `${minLength}px`;
         
-        this._syncMaps();
+        this._importMap.setView({
+            center: this._location,
+            width: minLength, 
+            height: minLength 
+        });
 
-        this._importMap.setView({ width: minLength, height: minLength });
+        this._syncMaps();
     }
 
     _syncMaps () {
