@@ -34,6 +34,12 @@ class FormItMap {
                 this._geocodeLocationAddress(() => {
                     this._updatePushPin();
                     this._focusLocation();
+
+                    //now reverseGeocode to get a formatted location
+                    this._address = "";
+                    this._geocodeLocationAddress(() => {
+                        this._addressInput.value = this._address;
+                    });
                 });
             }
         });
