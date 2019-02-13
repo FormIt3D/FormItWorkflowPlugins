@@ -1,9 +1,0 @@
-{
-    "PluginName": "Mesh + Unmesh Recursively",
-    "PluginDescription": "Mesh and Unmesh all geometry inside a Group, recursively.",
-    "PluginType": "Panel",
-    "Scripts": [
-        "PLUGINLOCATION/MeshUnmeshRecursively.js"
-    ]
-    ,"Panel": "PLUGINLOCATION/index.html"
-}

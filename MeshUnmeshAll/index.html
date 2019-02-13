@@ -1,37 +1,37 @@
 <html>
 <head><link rel="stylesheet" type="text/css" href="stylesheet.css"/>
 <title>Mesh + Unmesh Recursively</title>
-<META NAME="Title" CONTENT="Mesh + Unmesh Recursively">
+<META NAME="Title" CONTENT="Mesh + Unmesh All">
 <META NAME="Author" CONTENT="Autodesk FormIt">
 <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
-<script type="text/javascript" src="MeshUnmeshRecursively.js"></script>
+<script type="text/javascript" src="MeshUnmeshAll.js"></script>
 <script type="text/javascript">
     FormItInterface.AddEventListener("DOMContentLoaded");
 </script>
 </head>
 <body>
-<h1>Mesh Recursively</h1>
+<h1>Mesh All Nested Groups</h1>
 
 <ul>
     <li>Select one or more Groups.</li>
-    <li>Click "Mesh Recursively" to convert all nested Objects in all selected Groups into Meshes.</li>
+    <li>Click "Mesh All" to convert all nested Objects in all selected Groups into Meshes.</li>
 </ul>
 
 <div id="form">
     <form name=a>
-    <input type=button value="Mesh Recursively" onClick="FormItWorkflowPlugins.SubmitMeshRecursive();">
+    <input type=button value="Mesh All" onClick="FormItWorkflowPlugins.SubmitMeshAll();">
 </form>
 
-<h1>Unmesh Recursively</h1>
+<h1>Unmesh All Nested Groups</h1>
 
 <ul>
     <li>Select one or more Groups.</li>
-    <li>Click "Unmesh Recursively" to convert all nested Meshes in all selected Groups into Objects.</li>
+    <li>Click "Unmesh All" to convert all nested Meshes in all selected Groups into Objects.</li>
 </ul>
 
 <div id="form">
         <form name=b>
-        <input type=button value="Unmesh Recursively" onClick="FormItWorkflowPlugins.SubmitUnmeshRecursive();">
+        <input type=button value="Unmesh All" onClick="FormItWorkflowPlugins.SubmitUnmeshAll();">
     </form>
 
 </div>
