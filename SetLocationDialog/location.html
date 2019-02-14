@@ -4,9 +4,12 @@
         <title>Project Location</title>
         <meta charset="utf-8" />
         <link rel="stylesheet" href="location.css"/>
-        <script type='text/javascript'
-                src='https://www.bing.com/api/maps/mapcontrol?callback=FormItMapGlobalInit&key=aTphHcdwjT1VTmYuTJtY~_c1sk8Y8TEX8Yi8LlMlo0Q~AjeWhB3ZTE4eIbEyEKUwhl-ASEnrzYUiSigR6Pk5I7GQadZZYwZ2IbbyIsDjsFvJ'
-                async defer></script>
+        <script>
+            const not_important = 'YVRwaEhjZHdqVDFWVG1ZdVRKdFl+X2Mxc2s4WThURVg4WWk4TGxNbG8wUX5BamVXaEIzWlRFNGVJYkV5RUtVd2hsLUFTRW5yellVaVNpZ1I2UGs1STdHUWFkWlpZd1oySWJieUlzRGpzRnZK';
+            const script = document.createElement('script');
+            script.src = 'https://www.bing.com/api/maps/mapcontrol?callback=FormItMapGlobalInit&key=' + atob(not_important);
+            document.head.appendChild(script);
+         </script>
     <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
     <script type="text/javascript" src="location_web.js"></script>
     <script type='text/javascript'>
