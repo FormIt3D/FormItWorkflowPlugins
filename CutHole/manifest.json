@@ -1,0 +1,9 @@
+{
+    "PluginName": "Cut Hole",
+    "PluginDescription": "A plugin that creates and uses Components that cut holes.",
+    "PluginType": "Toolbar",
+    "ToolbarURL": "PLUGINLOCATION/toolbar.json",
+    "Scripts": [
+        "PLUGINLOCATION/cuthole.js"
+    ]
+}
