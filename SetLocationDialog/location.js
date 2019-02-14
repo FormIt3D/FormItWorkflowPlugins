@@ -6,6 +6,7 @@ window.prepareBindings = (bindings) =>{
 class FormItMap {
     constructor(){
         this._addressInput = document.getElementById('AddressInput');
+        this._addressInputContainer = document.getElementById('LocationSearchContainer');
         this._importMapContainer = document.getElementById('ImportMapContainer');
         this._importMapControl = document.getElementById('ImportMapControl');
 
@@ -29,18 +30,29 @@ class FormItMap {
         this._addressInput.addEventListener('keypress', (event) => {
             //enter key
             if (event.keyCode === 13){
-                this._address = this._addressInput.value;
-                this._location = undefined;
-                this._geocodeLocationAddress(() => {
-                    this._updatePushPin();
-                    this._focusLocation();
+                //Bing maps does not provide any event hooks for autosuggest results. So here we are
+                //creating an interval to check if we have any results, which we'll know by querying
+                //the DOM.
+                const suggestionCheckInterval = setInterval(() => {
+                    const suggestionResults = this._addressInputContainer.getElementsByClassName("suggestLink");
 
-                    //now reverseGeocode to get a formatted location
-                    this._address = "";
-                    this._geocodeLocationAddress(() => {
+                    if (suggestionResults.length > 0){
+                        //Doesn't work. Why?!
+                        //suggestionResults[0].click();
+                        //So parsing out location strings to reverse goecode.
+                        const addressLines = suggestionResults[0].getElementsByTagName('p');
+                        this._address = addressLines[0].innerText + ", " + addressLines[1].innerText;
                         this._addressInput.value = this._address;
-                    });
-                });
+                        this._location = undefined;
+
+                        this._geocodeLocationAddress(() => {
+                            this._updatePushPin();
+                            this._focusLocation();
+                        });
+
+                        clearInterval(suggestionCheckInterval);
+                    }
+                }, 100);
             }
         });
 
@@ -100,6 +112,7 @@ class FormItMap {
     resetAddress (){
         this._location = undefined;
         this._address = "";
+        this._addressInput.value = "";
 
         //Really annoying bug with Bing maps...
         //on first load, if we try to query bing apis from map control and the map isn't rendered,
@@ -123,14 +136,22 @@ class FormItMap {
             return;
         }
 
-        this._address = address;
-        this._addressInput.value = address;
-        this._location = undefined;
-
-        this._geocodeLocationAddress(() => {
+        //FORMIT-9271 handle addresses formatted Latitude: <val>, Longitude: <val>
+        if (address.startsWith('Latitude')){
+            const longLat = address.replace(/[^0-9$.,-]/g, '').split(',')
+            this._location = new Microsoft.Maps.Location(Number(longLat[0]), Number(longLat[1]));
             this._updatePushPin();
             this._focusLocation();
-        });
+        }else{
+            this._address = address;
+            this._addressInput.value = address;
+            this._location = undefined;
+    
+            this._geocodeLocationAddress(() => {
+                this._updatePushPin();
+                this._focusLocation();
+            });
+        }
     }
 
     _geocode(address, callback){
