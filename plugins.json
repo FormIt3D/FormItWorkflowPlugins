@@ -8,6 +8,9 @@
   "FlipAlong",
   "MoveAllSceneCameras",
   "StringLightGenerator",
-  "ExtractMaterialTextures"
+  "ExtractMaterialTextures",
+  "GenerateVertex",
+  "ValidateCleanModel",
+  "MeshUnmeshAll"
   ]
 }
