@@ -7,7 +7,6 @@
   "FilletCorner",
   "FlipAlong",
   "MoveAllSceneCameras",
-  "StringLightGenerator",
   "ExtractMaterialTextures",
   "GenerateVertex",
   "ValidateCleanModel",
