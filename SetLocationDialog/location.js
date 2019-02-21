@@ -30,10 +30,9 @@ class FormItMap {
         this._addressInput.addEventListener('keypress', (event) => {
             //enter key
             if (event.keyCode === 13){
-                //Bing maps does not provide any event hooks for autosuggest results. So here we are
-                //creating an interval to check if we have any results, which we'll know by querying
-                //the DOM.
-                const suggestionCheckInterval = setInterval(() => {
+                //Bing maps does not provide any event hooks for autosuggest results. So just wait a brief time
+                //to query results
+                setTimeout(() => {
                     const suggestionResults = this._addressInputContainer.getElementsByClassName("suggestLink");
 
                     if (suggestionResults.length > 0){
@@ -49,8 +48,14 @@ class FormItMap {
                             this._updatePushPin();
                             this._focusLocation();
                         });
-
-                        clearInterval(suggestionCheckInterval);
+                    //no results found by auto-suggest API, so try to geocode with exactly what the user gave us.
+                    }else{
+                        this._address = this._addressInput.value;
+                        this._location = undefined;
+                        this._geocodeLocationAddress(() => {
+                            this._updatePushPin();
+                            this._focusLocation();
+                        });
                     }
                 }, 100);
             }
