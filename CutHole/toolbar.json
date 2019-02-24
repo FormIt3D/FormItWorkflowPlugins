@@ -8,8 +8,8 @@
         },
         {
             "name": "Mark Glue to Surface",
-            "command": "CutHoles.GlueToSurface",
-            "iconText": "GS"
+            "command": "CutHoles.ApplyDecal",
+            "iconText": "ZU"
         },
         {
             "name": "Cut Holes",
