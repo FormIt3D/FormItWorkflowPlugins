@@ -6,7 +6,7 @@
 <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
 <script type="text/javascript" src="RebuildCurve.js"></script>
 <script type="text/javascript">
-    FormItInterface.AddEventListener("DOMContentLoaded");
+    FormItInterface.Initialize();
 </script>
 </head>
 <body>
@@ -17,10 +17,25 @@
     <li>Click "Rebuild Curve" to rebuild it with the specified facet count</li>
 </ul>
 
-<form name=a> 
+<form id="RebuildCurveForm" name=a> 
     <input type=number name=facetCount value=16> Number of Facets<br>
-    <input type=button value="Rebuild Curve" onClick="deanstein.Submit();">
+    <input id="RebuildCurveBtn" type=button value="Rebuild Curve" onClick="deanstein.Submit();">
 </form>
+
+<script>
+    var RebuildCurveForm = document.getElementById("RebuildCurveForm");
+    RebuildCurveForm.addEventListener("keyup", function(event) {
+        if (event.keyCode === 13) {
+            document.getElementById("RebuildCurveBtn").click();
+            event.preventDefault();
+        }
+    });
+    RebuildCurveForm.addEventListener("keydown", function(event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+        }
+    });
+    </script>
 
 <h1 class="secondHeader">Explode Curve</h1>
 <ul class="lastUL">
