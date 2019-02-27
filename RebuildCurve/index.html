@@ -4,6 +4,7 @@
 <META NAME="Title" CONTENT="Rebuild + Explode Curve">
 <META NAME="Author" CONTENT="Autodesk FormIt">
 <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"></script>
 <script type="text/javascript" src="RebuildCurve.js"></script>
 <script type="text/javascript">
     FormItInterface.Initialize();
@@ -23,19 +24,8 @@
 </form>
 
 <script>
-    var RebuildCurveForm = document.getElementById("RebuildCurveForm");
-    RebuildCurveForm.addEventListener("keyup", function(event) {
-        if (event.keyCode === 13) {
-            document.getElementById("RebuildCurveBtn").click();
-            event.preventDefault();
-        }
-    });
-    RebuildCurveForm.addEventListener("keydown", function(event) {
-        if (event.keyCode === 13) {
-            event.preventDefault();
-        }
-    });
-    </script>
+    FormIt.PluginUtils.HandleEnter("RebuildCurveForm", "RebuildCurveBtn");
+</script>
 
 <h1 class="secondHeader">Explode Curve</h1>
 <ul class="lastUL">
