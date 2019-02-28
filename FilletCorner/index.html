@@ -4,6 +4,7 @@
 <META NAME="Title" CONTENT="Fillet 2D Corners">
 <META NAME="Author" CONTENT="Autodesk FormIt">
 <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"></script>
 <script type="text/javascript" src="FilletCorner.js"></script>
 <script type="text/javascript">
     FormItInterface.AddEventListener("DOMContentLoaded");
@@ -27,6 +28,8 @@
 </form>
 
 <script>
+    FormIt.PluginUtils.HandleEnter("FilletCornerForm", "FilletCornerButton");
+
     // handle enter in numeric inputs
     var FilletCornerForm = document.getElementById("FilletCornerForm");
     debugger;
