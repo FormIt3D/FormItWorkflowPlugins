@@ -7,7 +7,7 @@ deanstein.RebuildCurve = function(args)
 {
 
     console.clear();
-    console.log("Rebuild Curve Plugin")
+    console.log("Rebuild Curve Plugin\n")
 
     // get current history
     var nHistoryID = FormIt.GroupEdit.GetEditingHistoryID();
@@ -23,7 +23,9 @@ deanstein.RebuildCurve = function(args)
 
     if (currentSelection.length === 0)
     {
-        console.log("\nSelect a line, arc, circle, or spline to begin.");
+        var message = "Select an arc or circle to begin.";
+        FormIt.UI.ShowNotification(message, FormIt.NotificationType.Error, 0);
+        console.log(message);
         return;
     }
 
@@ -182,7 +184,9 @@ deanstein.RebuildCurve = function(args)
 
         if (bIsSelectionEdgeTypeOnly === false)
         {
-            console.log("Can't continue: The selection set contains a mix of objects or incompatible objects. Try selecting only a single curve or line.");
+            var message = "The selection set contains a mix of objects or incompatible objects. Select a single arc or circle, and try again.";
+            FormIt.UI.ShowNotification(message, FormIt.NotificationType.Error, 0);
+            console.log(message);
         }
 
         // run the test for contiguity
@@ -195,7 +199,9 @@ deanstein.RebuildCurve = function(args)
         
         if (bIsSelectionContiguous === false)
         {
-            console.log("Can't continue: The selection set contains multiple edges. Try selecting only a single curve or line.");
+            var message = "The selection set contains multiple objects. Select a single arc or circle, and try again.";
+            FormIt.UI.ShowNotification(message, FormIt.NotificationType.Error, 0);
+            console.log(message);
         }
 
         // check if all required tests pass
@@ -309,7 +315,7 @@ deanstein.RebuildCurve = function(args)
 
                     // get the ID of the last vertex of the last edge in the array
                     var arcEndPosID = nVertexIDArrayFlattened[nVertexIDArrayFlattened.length - 2];
-                    console.log("End point vertexID: " + arcEndPosID);
+                    //console.log("End point vertexID: " + arcEndPosID);
 
                     // get the point3D equivalent
                     var arcEndPos = WSM.APIGetVertexPoint3dReadOnly(nHistoryID, arcEndPosID);
@@ -318,7 +324,7 @@ deanstein.RebuildCurve = function(args)
                 else
                 {
                     var bCircle = false;
-                    console.log("Determined this curve is an arc, not a circle.\n");
+                    //console.log("Determined this curve is an arc, not a circle.\n");
                     // get the ID of the first vertex of the first edge in the array
                     var arcStartPosID = nVertexIDUniqueArray[0];
                     //console.log("Start point vertexID: " + arcStartPosID);
@@ -420,8 +426,8 @@ deanstein.RebuildCurve = function(args)
                     {
                         var facetedArcLength = facetedArcLength + edgeLengthArray[q];
                     }
-                    console.log("Number of edges used to calculate length: " + edgeLengthArray.length);
-                    console.log("Existing arc length: " + facetedArcLength);
+                    //console.log("Number of edges used to calculate length: " + edgeLengthArray.length);
+                    //console.log("Existing arc length: " + facetedArcLength);
                     return facetedArcLength;
                 }
 
@@ -473,12 +479,14 @@ deanstein.RebuildCurve = function(args)
 
                 var newFacetCount = newEdgeIDArray.length;
                 //console.log("New edge IDs: " + newEdgeIDArray);
-                console.log("\nCreated a new curve with " + newFacetCount + " faceted edges.");
+
+                var message = "Created a new curve with " + newFacetCount + " faceted edges.";
+                FormIt.UI.ShowNotification(message, FormIt.NotificationType.Information, 0);
+                console.log("\n" + message);
 
                 // add the new edges to the selection
                 FormIt.Selection.AddSelections(newEdgeIDArray);
                 //console.log("\nAdded the new curve to the selection.");
-
 
                 return newFacetCount;
             }
@@ -503,11 +511,15 @@ deanstein.RebuildCurve = function(args)
         }
         else if (operationType === "spline")
         {
-            //console.log("\nRebuilding splines is not yet supported.");
+            var message = "Rebuilding Splines is not yet supported. Select an arc or circle and try again.";
+            FormIt.UI.ShowNotification(message, FormIt.NotificationType.Error, 0);
+            console.log("\n" + message);
         }
         else if (operationType === "line")
         {
-            //console.log("\nRebuilding lines is not yet supported");
+            var message = "Rebuilding lines is not yet supported. Select an arc or circle and try again.";
+            FormIt.UI.ShowNotification(message, FormIt.NotificationType.Error, 0);
+            console.log("\n" + message);
         }
     }
 
@@ -516,18 +528,14 @@ deanstein.RebuildCurve = function(args)
 
 }
 
-
-
 deanstein.ExplodeCurve = function()
 {
-
-    FormIt.UndoManagement.BeginState();
-
     console.clear();
+    console.log("Explode Curve Plugin\n");
     
     // get current history
     var nHistoryID = FormIt.GroupEdit.GetEditingHistoryID();
-    console.log("Current history: " + JSON.stringify(nHistoryID));
+    //console.log("Current history: " + JSON.stringify(nHistoryID));
 
     // get current selection
     var currentSelection = FormIt.Selection.GetSelections();
@@ -535,11 +543,13 @@ deanstein.ExplodeCurve = function()
 
     // report how many items in the selection
     var currentSelectionLength = currentSelection.length;
-    console.log("Number of objects in selection: " + currentSelectionLength);
+    //console.log("Number of objects in selection: " + currentSelectionLength);
 
     if (currentSelection.length === 0)
     {
-        console.log("Select a line, arc, circle, or spline to explode.");
+        var message = "Select an arc, circle, or spline to explode.";
+        FormIt.UI.ShowNotification(message, FormIt.NotificationType.Error, 0);
+        console.log(message);
         return;
     }
 
@@ -557,11 +567,17 @@ deanstein.ExplodeCurve = function()
         var nVertexID = WSM.APIGetObjectsByTypeReadOnly(nHistoryID, nObjectID, WSM.nVertexType, false);
         //console.log("nVertex ID: " + nVertexID);
 
-        WSM.APISetEdgesOrVerticesMarkedSmooth(nHistoryID, nVertexID, false);
-    }
-    console.log("\nExploded the curve into " + edgeCount + " discrete edges.");
+        FormIt.UndoManagement.BeginState();
 
-    FormIt.UndoManagement.EndState("Explode Curve");
+        WSM.APISetEdgesOrVerticesMarkedSmooth(nHistoryID, nVertexID, false);
+
+        FormIt.UndoManagement.EndState("Explode Curve");
+    }
+
+    var message = "Exploded the curve into " + edgeCount + " discrete edges.";
+    FormIt.UI.ShowNotification(message, FormIt.NotificationType.Information, 0);
+    console.log("\n" + message);
+
 }
 
 

@@ -15,7 +15,7 @@ FormItWorkflowPlugins.MeshAll = function()
     if (currentSelection.length === 0)
     {
         var message = "Nothing selected for conversion. Select Objects and/or Groups and try again.";
-        FormIt.UI.ShowNotification(message, FormIt.NotificationType.Information, 0);
+        FormIt.UI.ShowNotification(message, FormIt.NotificationType.Error, 0);
         console.log(message);
         return;
     }
@@ -104,7 +104,7 @@ FormItWorkflowPlugins.UnmeshAll = function()
     if (currentSelection.length === 0)
     {
         var message = "Nothing selected for conversion. Select Meshes and/or Groups and try again.";
-        FormIt.UI.ShowNotification(message, FormIt.NotificationType.Information, 0);
+        FormIt.UI.ShowNotification(message, FormIt.NotificationType.Error, 0);
         console.log(message);
         return;
     }
