@@ -4,9 +4,10 @@
 <META NAME="Title" CONTENT="Move All Scene Cameras">
 <META NAME="Author" CONTENT="Autodesk FormIt">
 <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"></script>
 <script type="text/javascript" src="MoveAllSceneCameras.js"></script>
 <script type="text/javascript">
-    FormItInterface.AddEventListener("DOMContentLoaded");
+    FormItInterface.Initialize();
 </script>
 </head>
 <body>
@@ -17,13 +18,17 @@
     <li>To undo, move them in the opposite directions</li>
 </ul>
 
-<div id="form">
+<div id="MoveAllSceneCamerasForm">
     <form name=a>
         <input type=number name=X value = 0> Move X<br>
         <input type=number name=Y value = 0> Move Y<br>
         <input type=number name=Z value = 0> Move Z<br>
-    <input type=button value="Move All Cameras" onClick="deanstein.Submit();">
+    <input id="MoveAllSceneCamerasBtn" type=button value="Move All Cameras" onClick="deanstein.Submit();">
 </form>
 </div>
+<script>
+        FormIt.PluginUtils.HandleEnter("MoveAllSceneCamerasForm", "MoveAllSceneCamerasBtn");
+</script>
+    
 </body>
 </html>
