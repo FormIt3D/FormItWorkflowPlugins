@@ -4,6 +4,7 @@
 <META NAME="Title" CONTENT="Generate String Lights">
 <META NAME="Author" CONTENT="Autodesk FormIt">
 <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"></script>
 <script type="text/javascript" src="StringLightGenerator.js"></script>
 <script type="text/javascript">
     FormItInterface.AddEventListener("DOMContentLoaded");
@@ -18,7 +19,7 @@
     <li>Fixtures will be generated in identical Groups, so manual changes can be applied consistently to all fixtures</li>
 </ul>
 
-<form name=a> 
+<form id="StringLightGeneratorForm" name=a> 
     <p><b>Fixture properties:</b></p>
     <input type=number name=lightCount value=6> Number of Fixtures<br>
     <input type=number name=verticalCableOrHousingLength value=0.1667> Vertical Cable or Housing Height<br>
@@ -33,7 +34,10 @@
     <p>If creating a new arc:</p>
     <input type=number name=arcBulge value=2> Cable Dip<br>
     
-    <input type=button value="Generate String Lights" onClick="deanstein.Submit();">
+    <input id="StringLightGeneratorBtn" type=button value="Generate String Lights" onClick="deanstein.Submit();">
 </form>
+<script>
+        FormIt.PluginUtils.HandleEnter("StringLightGeneratorForm", "StringLightGeneratorBtn");
+</script>
 </body>
 </html>
