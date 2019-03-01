@@ -1,15 +1,13 @@
 CutHoles = {};
 
-CutHoles.ApplyDecal = function()
+CutHoles.GlueToSurface = function()
 {
-    var value = {};
-    value.PlacementOrientation = WSM.Tools.PlacementOrientation.Decal;
-    // Apply the FormIt::PlacementOptions attribute to the component
-    var currentHistory = FormIt.GroupEdit.GetEditingHistoryID();
+    var value = {GlueToSurface: true};
+    var currentHistory = FormIt.Model.GetHistoryID();
     WSM.Utils.SetOrCreateStringAttributeForObject(currentHistory,
-        WSM.INVALID_ID, "WSM::Tools::PlacementOrientation", JSON.stringify(value));
+        WSM.INVALID_ID, "FormIt::PlacementOptions", JSON.stringify(value));
 }
-FormIt.Commands.RegisterJSCommand("CutHoles.ApplyDecal");
+FormIt.Commands.RegisterJSCommand("CutHoles.GlueToSurface");
 
 // MakeCuttingObject marks selection to be the cutting object(s) and sets the layer to CutHoles.CutHole and
 // applies the CutHoles.CutHole attribute.
