@@ -2,19 +2,14 @@
     "name": "Cut Hole Plugin",
     "buttons": [
         {
-            "name": "Mark Cutting Component",
-            "command": "CutHoles.MakeCuttingObject",
-            "iconText": "MC"
-        },
-        {
-            "name": "Mark Glue to Surface",
-            "command": "CutHoles.GlueToSurface",
-            "iconText": "GS"
-        },
-        {
             "name": "Cut Holes",
             "command": "CutHoles.CutHoles",
             "iconText": "CH"
+        },
+        {
+            "name": "Cut Holes Dialog",
+            "command": "CutHoles.ShowDialog",
+            "iconText": "CD"
         }
     ]
 }

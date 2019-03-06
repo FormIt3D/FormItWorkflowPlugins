@@ -9,45 +9,106 @@ CutHoles.GlueToSurface = function()
 }
 FormIt.Commands.RegisterJSCommand("CutHoles.GlueToSurface");
 
+// MakeInstanceCuttingObject marks the given instance to be the cutting object and sets the layer to CutHoles.CutHole and
+// applies the CutHoles.CutHole attribute.
+// An instance (1) should be selected.
+CutHoles.MakeInstanceCuttingObject = function(instance)
+{
+    if (WSM.Utils.IsObjectType(instance, [WSM.nInstanceType]))
+    {
+        var finalObjectHistoryID = WSM.GroupInstancePath.GetFinalObjectHistoryID(instance);
+        var nRefHistoryID = WSM.APIGetGroupReferencedHistoryReadOnly(finalObjectHistoryID.History, finalObjectHistoryID.Object);
+        var editingHistoryID = FormIt.GroupEdit.GetEditingHistoryID();
+        // Apply the CutHoles.CutHole attribute to the instance's ref History
+        WSM.Utils.SetOrCreateStringAttributeForObject(nRefHistoryID, WSM.INVALID_ID, "CutHoles.CutHole", "");
+
+        var allObjs = WSM.APIGetAllNonOwnedReadOnly(editingHistoryID);
+        var layerID = WSM.INVALID_ID;
+        // Get the existing layer ID.
+        for (var j = 0; j < allObjs.length; ++j)
+        {
+            if (WSM.Utils.IsObjectType(WSM.ObjectHistoryID(editingHistoryID, allObjs[j]), [WSM.nLayerType]))
+            {
+                var layerData = WSM.APIGetLayerDataReadOnly(editingHistoryID, allObjs[j]);
+                if (layerData.name == "CutHoles.CutHole")
+                {
+                    layerID = allObjs[j];
+                }
+            }
+        }
+        if (layerID === WSM.INVALID_ID)
+        {
+            layerID = WSM.APICreateLayer(editingHistoryID, "CutHoles.CutHole", true /*bDisplayed*/);
+        }
+
+        // Set the Layer for the instance
+        WSM.APIAddObjectsLayers(editingHistoryID, [layerID], instance);
+    }
+}
+
 // MakeCuttingObject marks selection to be the cutting object(s) and sets the layer to CutHoles.CutHole and
 // applies the CutHoles.CutHole attribute.
 // An instance (1) should be selected.
 CutHoles.MakeCuttingObject = function()
 {
     var selections = FormIt.Selection.GetSelections();
-    if (selections.length == 1)
+    if (selections.length > 0)
     {
-        var selection = selections[0];
-        if (WSM.Utils.IsObjectType(selection, [WSM.nInstanceType]))
+        // If one selection, allow a Group (instance) or a Body.
+        if (selections.length == 1)
         {
-            var finalObjectHistoryID = WSM.GroupInstancePath.GetFinalObjectHistoryID(selection);
-            var nRefHistoryID = WSM.APIGetGroupReferencedHistoryReadOnly(finalObjectHistoryID.History, finalObjectHistoryID.Object);
-            var editingHistoryID = FormIt.GroupEdit.GetEditingHistoryID();
-            // Apply the CutHoles.CutHole attribute to the instance's ref History
-            WSM.Utils.SetOrCreateStringAttributeForObject(nRefHistoryID, WSM.INVALID_ID, "CutHoles.CutHole", "");
-
-            var allObjs = WSM.APIGetAllNonOwnedReadOnly(editingHistoryID);
-            var layerID = WSM.INVALID_ID;
-            // Get the existing layer ID.
-            for (var j = 0; j < allObjs.length; ++j)
+            var selection = selections[0];
+            if (WSM.Utils.IsObjectType(selection, [WSM.nInstanceType]))
             {
-                if (WSM.Utils.IsObjectType(WSM.ObjectHistoryID(editingHistoryID, allObjs[j]), [WSM.nLayerType]))
+                CutHoles.MakeInstanceCuttingObject(selection);
+                return;
+            }
+            else if (WSM.Utils.IsObjectType(selection, [WSM.nBodyType]))
+            {
+                var editingHistoryID = FormIt.GroupEdit.GetEditingHistoryID();
+                var nCreatedGroupID = WSM.APICreateGroup(editingHistoryID, selection);
+                var nRefHistory = WSM.APIGetGroupReferencedHistoryReadOnly(editingHistoryID, nCreatedGroupID);
+                var instanceAggregate = WSM.APIGetAllAggregateTransf3dsReadOnly(nRefHistory, editingHistoryID);
+                if (instanceAggregate.paths.length == 1)
                 {
-                    var layerData = WSM.APIGetLayerDataReadOnly(editingHistoryID, allObjs[j]);
-                    if (layerData.name == "CutHoles.CutHole")
-                    {
-                        layerID = allObjs[j];
-                    }
+                    CutHoles.MakeInstanceCuttingObject(instanceAggregate.paths[0]);
+                }
+                else
+                {
+                    FormIt.UI.ShowNotification("Failed to Group Body.", FormIt.NotificationType.Error, 0);
                 }
             }
-            if (layerID === WSM.INVALID_ID)
+            else
             {
-                layerID = WSM.APICreateLayer(editingHistoryID, "CutHoles.CutHole", true /*bDisplayed*/);
-            }
-
-            // Set the Layer for the instance
-            WSM.APIAddObjectsLayers(editingHistoryID, [layerID], selection);
+                FormIt.UI.ShowNotification("Please select one group or one or more Bodys.", FormIt.NotificationType.Error, 0);
+            }   
         }
+        else
+        {
+            // Verify only Bodys were selected.
+            var bodys = [];
+            for (var i = 0; i < selections.length; ++i)
+            {
+                if (!WSM.Utils.IsObjectType(selections[i], [WSM.nBodyType]))
+                {
+                    FormIt.UI.ShowNotification("Select only Body geometry that will be used to cut holes.", FormIt.NotificationType.Error, 0);
+                    return;
+                }
+            }
+            // Group the Bodys and then mark as cutting object.
+            var editingHistoryID = FormIt.GroupEdit.GetEditingHistoryID();
+            var nCreatedGroupID = WSM.APICreateGroup(editingHistoryID, selections);
+            var nRefHistory = WSM.APIGetGroupReferencedHistoryReadOnly(editingHistoryID, nCreatedGroupID);
+            var instanceAggregate = WSM.APIGetAllAggregateTransf3dsReadOnly(nRefHistory, editingHistoryID);
+            if (instanceAggregate.paths.length == 1)
+            {
+                CutHoles.MakeInstanceCuttingObject(instanceAggregate.paths[0]);
+            }
+        }
+    }
+    else
+    {
+        FormIt.UI.ShowNotification("Select the geometry that will be used to cut holes.", FormIt.NotificationType.Error, 0);
     }
 }
 FormIt.Commands.RegisterJSCommand("CutHoles.MakeCuttingObject");
@@ -113,3 +174,21 @@ CutHoles.CutHoles = function()
     }
 }
 FormIt.Commands.RegisterJSCommand("CutHoles.CutHoles");
+
+CutHoles.ShowDialog = function()
+{
+    var dialogParams = {
+    "PluginName": "Cut Hole",
+    "DialogBox": "PLUGINLOCATION/index.html",
+    "DialogBoxWidth": 640,
+    "DialogBoxHeight": 480,
+    "DialogBoxType": "Modeless"};
+
+    FormIt.CreateDialogBox(JSON.stringify(dialogParams));
+}
+FormIt.Commands.RegisterJSCommand("CutHoles.ShowDialog");
+
+CutHoles.DefineComponentGeometry = function()
+{
+    FormIt.Commands.DoCommand("Edit: Select All");
+}
