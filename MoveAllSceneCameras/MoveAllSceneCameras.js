@@ -6,9 +6,9 @@ if (typeof deanstein == 'undefined')
 deanstein.MoveCameras = function(args)
 {
 
-var deltaX = args.MoveX;
-var deltaY = args.MoveY;
-var deltaZ = args.MoveZ;
+var deltaX = FormIt.PluginUtils.currentUnits(args.MoveX);
+var deltaY = FormIt.PluginUtils.currentUnits(args.MoveY);
+var deltaZ = FormIt.PluginUtils.currentUnits(args.MoveZ);
 console.clear();
 
 //Get all scenes

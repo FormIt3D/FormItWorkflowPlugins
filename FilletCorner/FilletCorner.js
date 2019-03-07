@@ -6,7 +6,7 @@ if (typeof deanstein == 'undefined')
 deanstein.FilletCorner = function(args)
 {
     //args = JSON.parse(args);
-    var radius = args.radius;
+    var radius = FormIt.PluginUtils.currentUnits(args.radius);
     var cleanup = args.cleanup;
 
     console.clear();

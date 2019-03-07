@@ -4,7 +4,8 @@
     "PluginType": "Panel",
     "Scripts": [
         "PLUGINLOCATION/StringLightGenerator.js",
-        "PLUGINLOCATION/../Utils.js"
+        "PLUGINLOCATION/../Utils.js",
+        "https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"
     ]
     ,"Panel": "PLUGINLOCATION/index.html"
 }

@@ -3,7 +3,8 @@
     "PluginDescription": "Move all Scene cameras in the sketch by given XYZ values.",
     "PluginType": "Panel",
     "Scripts": [
-        "PLUGINLOCATION/MoveAllSceneCameras.js"
+        "PLUGINLOCATION/MoveAllSceneCameras.js",
+        "https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"
     ]
     ,"Panel": "PLUGINLOCATION/index.html"
 }

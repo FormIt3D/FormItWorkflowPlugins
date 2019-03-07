@@ -218,7 +218,7 @@ deanstein.GenerateStringLights.createCatenaryArcFromLine = function(nHistoryID, 
     // midpoint function is stored in utils
     var midPoint = getMidPointBetweenTwoPoints(x0,y0,z0,x1,y1,z1);
 
-    var arcBulge = args.arcBulge;
+    var arcBulge = FormIt.PluginUtils.currentUnits(args.arcBulge);
 
     // assume gravity is down, and subtract the desired arc bulge from the z-value of the current midpoint
     var newMidPointZ = midPoint[2] - arcBulge;
@@ -615,7 +615,7 @@ deanstein.GenerateStringLights.drawSingleLightFixture = function(placementPoint,
     console.log("\nDrawing the typical light fixture...");
 
     // take the placement point and move it down to represent a cable or bulb housing length
-    var verticalCableOrHousingLength = args.verticalCableOrHousingLength;
+    var verticalCableOrHousingLength = FormIt.PluginUtils.currentUnits(args.verticalCableOrHousingLength);
     var verticalCableBottomPointPos = WSM.Geom.Point3d(placementPoint["x"], placementPoint["y"], placementPoint["z"] - verticalCableOrHousingLength);
 
     console.log("Bottom point of vertical cable " + JSON.stringify(verticalCableBottomPointPos));
@@ -639,12 +639,12 @@ deanstein.GenerateStringLights.drawSingleLightFixture = function(placementPoint,
     console.log("New path ID: " + JSON.stringify(cablePathID));
 
     var bulbCount = args.bulbCount;
-    var verticalCableOrHousingRadius = args.verticalCableOrHousingRadius;
+    var verticalCableOrHousingRadius = FormIt.PluginUtils.currentUnits(args.verticalCableOrHousingRadius);
 
     // define how to create bulbs
     function createBulbs(args)
     {
-        var bulbRadius = args.bulbRadius;
+        var bulbRadius = FormIt.PluginUtils.currentUnits(args.bulbRadius);
         //console.log("Bulb radius: " + bulbRadius);
         var bulbCount = args.bulbCount;
 
@@ -858,7 +858,7 @@ deanstein.GenerateStringLights.execute = function(args)
 
     // sweep the catenary cable
     console.log("Begin sweep of catenary cable...");
-    var catenaryCableRadius = args.catenaryCableRadius;
+    var catenaryCableRadius = FormIt.PluginUtils.currentUnits(args.catenaryCableRadius);
 
     // define the xAxis
     var xAxis = WSM.Geom.Vector3d(1,0,1);

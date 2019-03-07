@@ -5,23 +5,23 @@ if (typeof DSGenerateVertex == 'undefined')
 
 DSGenerateVertex.GenerateVertex = function(args)
 {
-console.clear();
-console.log("Generate Vertex");
-FormIt.UndoManagement.BeginState();
+    console.clear();
+    console.log("Generate Vertex");
+    FormIt.UndoManagement.BeginState();
 
-// get current history
-var nHistoryID = FormIt.GroupEdit.GetEditingHistoryID();
-//console.log("Current history: " + JSON.stringify(nHistoryID));
+    // get current history
+    var nHistoryID = FormIt.GroupEdit.GetEditingHistoryID();
+    //console.log("Current history: " + JSON.stringify(nHistoryID));
 
-var posX = args.posX;
-var posY = args.posY;
-var posZ = args.posZ;
+    var posX = FormIt.PluginUtils.currentUnits(args.posX);
+    var posY = FormIt.PluginUtils.currentUnits(args.posY);
+    var posZ = FormIt.PluginUtils.currentUnits(args.posZ);
 
-var point3d = WSM.Geom.Point3d(posX, posY, posZ);
+    var point3d = WSM.Geom.Point3d(posX, posY, posZ);
 
-WSM.APICreateVertex(nHistoryID, point3d);
+    WSM.APICreateVertex(nHistoryID, point3d);
 
-FormIt.UndoManagement.EndState("Generate Vertex Plugin");
+    FormIt.UndoManagement.EndState("Generate Vertex Plugin");
 }
 
 // Submit runs from the HTML page.  This script gets loaded up in both FormIt's

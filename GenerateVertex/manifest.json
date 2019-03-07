@@ -3,7 +3,8 @@
     "PluginDescription": "Generate a standalone vertex using XYZ coordinates.",
     "PluginType": "Panel",
     "Scripts": [
-        "PLUGINLOCATION/GenerateVertex.js"
+        "PLUGINLOCATION/GenerateVertex.js",
+        "https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"
     ]
     ,"Panel": "PLUGINLOCATION/index.html"
 }
