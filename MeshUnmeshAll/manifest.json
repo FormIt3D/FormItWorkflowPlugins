@@ -1,6 +1,6 @@
 {
     "PluginName": "Mesh + Unmesh All",
-    "PluginDescription": "Mesh and Unmesh all nested geometry inside a Group.",
+    "PluginDescription": "Mesh and Unmesh all nested geometry inside selected Groups.",
     "PluginType": "Panel",
     "Scripts": [
         "PLUGINLOCATION/MeshUnmeshAll.js"
