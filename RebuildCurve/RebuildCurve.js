@@ -110,48 +110,6 @@ deanstein.RebuildCurve = function(args)
 
     getSelectionInfo();
 
-    // define generic function to test each item in the array, compare for equality, and return a new array containing boolean values
-    function testForIdentical(array, bArray, message) 
-    {
-        for (var k = 0; k < array.length - 1; k++)
-        {
-            if (array[k] === array[k+1])
-            {
-                bArray.push(true);
-            }
-            if (array[k] != array[k+1])
-            {
-                bArray.push(false);
-            }
-        }
-        //console.log(message + bArray);
-    }
-
-    // define generic function that returns true only if all booleans evaluated are true
-    function booleanReduce(array)
-    {
-        function isTrue(bool) 
-        {
-            if (bool === true) 
-            {
-                return true;
-            }
-            else 
-            {
-                return false;
-            }
-        }
-        
-        if (array.every(isTrue))
-        {
-            return true;
-        }
-        else 
-        {
-            return false;
-        }
-    }
-
     // run pre-checks to determine whether we can proceed with the given selection set
     function preCheck() 
     {
@@ -178,7 +136,7 @@ deanstein.RebuildCurve = function(args)
 
         defineValidType();
 
-        // TEST if selection contains only edges
+        // TEST if selection contains only edges (this function is stored in utils)
         var bIsSelectionEdgeTypeOnly = booleanReduce(bIsEdgeTypeArray);
         //console.log("TEST: Is selection set edges only? " + bIsSelectionEdgeTypeOnly);
 
@@ -189,7 +147,7 @@ deanstein.RebuildCurve = function(args)
             console.log(message);
         }
 
-        // run the test for contiguity
+        // run the test for contiguity (this function is stored in utils)
         testForIdentical(siblingArray, bIsSameSiblingArray, "Is same sibling results: ");
 
         // TEST if the selected edges are contiguous
@@ -383,13 +341,7 @@ deanstein.RebuildCurve = function(args)
                         var z1 = point3DArray[p + 1]["z"];
                         //console.log("z0 = " + z0 + " and z1 = " + z1);
 
-                        //generic function to get the distance between two points [x,y,z]
-                        function getDistanceBetweenTwoPoints(x0,y0,z0, x1,y1,z1)
-                        {
-                            var distance = Math.sqrt((Math.pow((x1-x0),2)) + (Math.pow((y1-y0),2)) + (Math.pow((z1-z0),2)));
-                            //console.log("Distance: " + distance);
-                            return distance;
-                        }
+                        // this function is stored in utils
                         var distanceBetweenTwoPoints = getDistanceBetweenTwoPoints(x0,y0,z0,x1,y1,z1);
                         edgeLengthArray.push(distanceBetweenTwoPoints);
                         //console.log("Edge length array: " + edgeLengthArray);
