@@ -9,28 +9,33 @@ if (typeof deanstein.GenerateStringLights == 'undefined')
 }
 
 // these get populated with the getSelectionBasics()function
+
+// the current editing history
 var nHistoryID;
+// the current selection
 var currentSelection;
 
 // define how to get the current history, query the selection, and report the number of items successfully selected
 deanstein.GenerateStringLights.getSelectionBasics = function()
 {
-    console.log("\nGetting selection basics...");
+    //console.log("\nGetting selection basics...");
     // get current history
     nHistoryID = FormIt.GroupEdit.GetEditingHistoryID();
-    console.log("\nCurrent history: " + JSON.stringify(nHistoryID));
+    //console.log("\nCurrent history: " + JSON.stringify(nHistoryID));
 
     // get current selection
     currentSelection = FormIt.Selection.GetSelections();
-    // console.log("Current selection: " + JSON.stringify(currentSelection));
+    //console.log("Current selection: " + JSON.stringify(currentSelection));
 
     // report how many items in the selection
     var currentSelectionLength = currentSelection.length;
-    console.log("Number of objects in selection: " + currentSelectionLength);
+    //console.log("Number of objects in selection: " + currentSelectionLength);
 
     if (currentSelection.length === 0)
     {
-        console.log("\nSelect a line or series of lines to begin.");
+        var message = "Select a line or an arc to begin.";
+        FormIt.UI.ShowNotification(message, FormIt.NotificationType.Information, 0);
+        console.log("\n" + message);
         return false;
     }
 }
@@ -43,6 +48,7 @@ deanstein.GenerateStringLights.getSelectionInfo = function(nHistoryID, currentSe
     deanstein.GenerateStringLights.arrays.typeArray = new Array();
     deanstein.GenerateStringLights.arrays.nObjectIDArray = new Array();
     deanstein.GenerateStringLights.arrays.nVertexIDArray = new Array();
+    deanstein.GenerateStringLights.arrays.nVertexIDUniqueArray = new Array();
     deanstein.GenerateStringLights.arrays.point3DArray = new Array();
     deanstein.GenerateStringLights.arrays.bIsEdgeTypeArray = new Array();
     deanstein.GenerateStringLights.arrays.edgeLengthArray = new Array();
@@ -53,7 +59,10 @@ deanstein.GenerateStringLights.getSelectionInfo = function(nHistoryID, currentSe
     deanstein.GenerateStringLights.arrays.arcCircle3PointIDArray = new Array();
     deanstein.GenerateStringLights.arrays.arcCircle3PointPosArray = new Array();
 
-    // for each edge in the selection, get info
+    // edge type is defined in WSM as the number 7
+    var validType = 7;
+
+    // for each object in the selection, get info
     for (var j = 0; j < currentSelection.length; j++)
     {
         // if you're not in the Main History, calculate the depth to extract the correct history data
@@ -114,19 +123,10 @@ deanstein.GenerateStringLights.getSelectionInfo = function(nHistoryID, currentSe
         deanstein.GenerateStringLights.arrays.siblingArray.push(currentSiblings);
 
     }
-}
 
-// define how to pre-check to determine whether we can proceed with the given selection set
-deanstein.GenerateStringLights.preCheck = function()
-{
-
-    console.log("\nStart selection precheck... \n");
-
-    // creates an array of boolean values depending on whether the selection contains edges
-    function defineValidType()
+    // for each object added to the typeArray, check whether the type matches the desired type (edges) and create a new array of boolean values
+    function createSelectionTypeArray()
     {
-        // the edge type is defined in WSM as the number 7
-        var validType = 7;
         for (var m = 0; m < deanstein.GenerateStringLights.arrays.typeArray.length; m++)
         {
             if (deanstein.GenerateStringLights.arrays.typeArray[m] === validType)
@@ -140,20 +140,85 @@ deanstein.GenerateStringLights.preCheck = function()
         }
         //console.log("Is valid array: " + deanstein.GenerateStringLights.arrays.bIsEdgeTypeArray);
     }
+    createSelectionTypeArray();
+}
 
-    defineValidType();
+// define how to pre-check to determine whether we can proceed with the given selection set
+deanstein.GenerateStringLights.preCheck = function()
+{
+    var bIsSelectionValid = true;
+
+    // if the type array is empty, nothing was selected, and this is an invalid selection
+    if (!deanstein.GenerateStringLights.arrays.typeArray)
+    {
+        var bIsSelectionValid = false;
+    }
+
+    //console.log("\nStart selection precheck... \n");
 
     // TEST if selection contains only edges
     var bIsSelectionEdgeTypeOnly = booleanReduce(deanstein.GenerateStringLights.arrays.bIsEdgeTypeArray);
-    console.log("TEST: Is selection set edges only? " + bIsSelectionEdgeTypeOnly);
-
+    //console.log("TEST: Is selection set edges only? " + bIsSelectionEdgeTypeOnly);
     if (bIsSelectionEdgeTypeOnly === false)
     {
-        console.log("Can't continue: The selection set contains a mix of objects or incompatible objects. Try selecting only curves or lines.");
+        var message = "Can't generate string lights given the selected geometry. \nSelect a single arc or a line, and try again.";
+        FormIt.UI.ShowNotification(message, FormIt.NotificationType.Error, 0);
+        console.log(message);
+
+        return false;
+    }
+
+    // determine the operation type
+    var operationType = deanstein.GenerateStringLights.getOperationType();
+
+    // if the operation type is a line, we first need to make an arc from scratch, then select it
+    if (operationType === "line") 
+    {
+        console.log("\nOperation type detected: line");
+        var bIsOperationTypeValid = true;
+    }
+
+    // if the operation is an arc or circle, do some more digging to determine which type exactly
+    if (operationType === "arcCircle")
+    {
+        console.log("\nOperation type detected: arc/circle");
+
+        // run the function to populate arrays with unique vertices, if they exist
+        deanstein.GenerateStringLights.getUniqueVertexIDArray(deanstein.GenerateStringLights.arrays.nVertexIDArray);
+
+        // check if the current vertexIDs in the array form a circle, and set the flag appropriately
+        bCircle = deanstein.GenerateStringLights.checkIfCircle(deanstein.GenerateStringLights.arrays.nVertexIDUniqueArray);
+
+        // if the operation is a circle, throw an error because this isn't supported yet
+        if (bCircle === true) 
+        {
+            var message = "Circles aren't supported yet. \nSelect an arc or a line, and try again.";
+            FormIt.UI.ShowNotification(message, FormIt.NotificationType.Error, 0);
+            console.log(message);
+            var bIsOperationTypeValid = false;
+        }
+
+        // otherwise, this is an arc and we can proceed
+        else 
+        {
+            var bIsOperationTypeValid = true;
+        }
+    }
+
+    // if the operation is a spline, throw an error because this isn't supported yet
+    if (operationType === "spline")
+    {
+        console.log("\nOperation type detected: spline");
+
+        var message = "Splines aren't supported yet. \nSelect an arc or a line, and try again.";
+        FormIt.UI.ShowNotification(message, FormIt.NotificationType.Error, 0);
+        console.log(message);
+
+        var bIsOperationTypeValid = false;
     }
 
     // check if all required tests pass
-    if (bIsSelectionEdgeTypeOnly) 
+    if (bIsSelectionValid && bIsSelectionEdgeTypeOnly && bIsOperationTypeValid) 
     {
         var preCheckPassed = true;
         console.log("\nPrecheck passed! \n");
@@ -165,7 +230,6 @@ deanstein.GenerateStringLights.preCheck = function()
     }
 
     return preCheckPassed;
-    console.log(preCheckPassed);
 }
 
 // define how to determine the type of operation to proceed with
@@ -193,19 +257,19 @@ deanstein.GenerateStringLights.getOperationType = function()
         var operationType = "line";
     }
 
-    console.log("Operation type: " + operationType);
+    //console.log("Operation type: " + operationType);
     return operationType;
 }
 
 // define how to generate a new arc from the selected line
 deanstein.GenerateStringLights.createCatenaryArcFromLine = function(nHistoryID, args)
 {
-    console.log("\nCreating a catenary arc from line");
+    //console.log("\nCreating a catenary arc from line");
     var arcStartPos = deanstein.GenerateStringLights.arrays.point3DArray[0];
-    console.log("Arc start point: " + JSON.stringify(arcStartPos));
+    //console.log("Arc start point: " + JSON.stringify(arcStartPos));
 
     var arcEndPos = deanstein.GenerateStringLights.arrays.point3DArray[1];
-    console.log("Arc end point: " + JSON.stringify(arcEndPos));
+    //console.log("Arc end point: " + JSON.stringify(arcEndPos));
 
     var x0 = arcStartPos["x"];
     var y0 = arcStartPos["y"];
@@ -228,7 +292,7 @@ deanstein.GenerateStringLights.createCatenaryArcFromLine = function(nHistoryID, 
 
     // create a point 3D at the bulge point
     var thirdPoint = WSM.Geom.Point3d(bulgePoint[0], bulgePoint[1], bulgePoint[2]);
-    console.log("Third point: " + JSON.stringify(thirdPoint));
+    //console.log("Third point: " + JSON.stringify(thirdPoint));
 
     // set parameters for initial catenary arc
     var accuracyORcount = 5;
@@ -248,21 +312,21 @@ deanstein.GenerateStringLights.createCatenaryArcFromLine = function(nHistoryID, 
     var newEdgeIDArray = changedData["created"];
 
     // eliminate the current selection
-    console.log("\nClearing the original selection.");
+    //console.log("\nClearing the original selection.");
     FormIt.Selection.ClearSelections();	
 
     // add the new edges to the selection
     FormIt.Selection.AddSelections(newEdgeIDArray);
-    console.log("\nAdded the new curve to the selection set.");
+    //console.log("\nAdded the new curve to the selection set.");
 
     currentSelection = FormIt.Selection.GetSelections();
-    console.log("\nRedefining the current selection.");
+    //console.log("\nRedefining the current selection.");
 
     // get basic info about the new selection
 
     // report how many items in the selection
     var currentSelectionLength = currentSelection.length;
-    console.log("Number of objects in selection: " + currentSelectionLength);
+    //console.log("Number of objects in selection: " + currentSelectionLength);
 
     if (currentSelection.length === 0)
     {
@@ -272,136 +336,106 @@ deanstein.GenerateStringLights.createCatenaryArcFromLine = function(nHistoryID, 
 
     // re-run the get info on selection routine to populate the arrays with the new curve information
     deanstein.GenerateStringLights.getSelectionInfo(nHistoryID, currentSelection);
-    console.log("\nPopulating arrays with new selection info.");
+    //console.log("\nPopulating arrays with new selection info.");
 
     // set the curve to be rebuilt to the newly created curve
     var vertexIDArrayForRebuild = deanstein.GenerateStringLights.arrays.nVertexIDArray;
 
-    console.log("\nNew curve available for rebuild.");
+    //console.log("\nNew curve available for rebuild.");
     return vertexIDArrayForRebuild;
-}
-
-// define how to flatten array of Vertex IDs so they're not organized in sets for each edge
-deanstein.GenerateStringLights.flatten = function(array) 
-{
-    return array.reduce(function (flat, toFlatten) 
-    {
-        return flat.concat(Array.isArray(toFlatten) ? deanstein.GenerateStringLights.flatten(toFlatten) : toFlatten);
-    }, []);
 }
 
 // define how to check if the vertexIDs form a circle; returns true if circle
 deanstein.GenerateStringLights.checkIfCircle = function(nVertexIDUniqueArray)
 {
+    // first, flatten the array
+    // this function is stored in utils
+    var nVertexIDUniqueArrayFlattened = flattenArray(nVertexIDUniqueArray);
 
-    // if no unique values are found, this is a circle
-    if (nVertexIDUniqueArray.length === 0)
+    // if any unique values were found, this is an arc
+    if (nVertexIDUniqueArrayFlattened.length > 0)
     {
-        var bCircle = true;
-        console.log("Determined this curve is a full circle.\n");
-        return bCircle;
-    }
-    
-    // otherwise, this arc is not a circle
-    else
-    {
-        var bCircle = false;
+        bCircle = false;
         console.log("Determined this curve is not a circle.\n");
         return bCircle;
     }
+    
+    // otherwise, this is a full circle
+    else
+    {
+        bCircle = true;
+        console.log("Determined this curve is a full circle.\n");
+        return bCircle;
+    }
+}
+
+// define how to flatten and return unique values in an array
+deanstein.GenerateStringLights.getUniqueVertexIDArray = function(nVertexIDArray)
+{
+    // first, flatten the vertex ID array
+    // this function is stored in utils
+    var nVertexIDArrayFlattened = flattenArray(nVertexIDArray);
+    //console.log("Flattened nVertexID array: " + nVertexIDArrayFlattened);
+
+    // take the flattened ID array and remove duplicates. 
+    // if this is an arc, this will return two end points. if not, it will return nothing.
+    // this function is stored in utils
+    var nVertexIDUniqueArray = getUniqueValuesInArray(nVertexIDArrayFlattened);
+
+    // push the unique vertexIDs into an array
+    deanstein.GenerateStringLights.arrays.nVertexIDUniqueArray.push(nVertexIDUniqueArray);
+
+    return nVertexIDUniqueArray;
 }
 
 // define how to get 3 points defining the arc or circle
 deanstein.GenerateStringLights.getArcCircle3PointPosArray = function()
 {
-    console.log("\nGetting 3 points to define the current arc or circle...\n");
+    //console.log("\nGetting 3 points to define the current arc or circle...\n");
 
     // set the vertex IDs for rebuild to the current vertexIDArray in selection
     var vertexIDArrayForRebuild = deanstein.GenerateStringLights.arrays.nVertexIDArray;
 
     var edgeCount = currentSelection.length;
-    console.log("Edges selected: " + (vertexIDArrayForRebuild.length));
+    //console.log("Edges selected: " + (vertexIDArrayForRebuild.length));
 
-    // flatten the vertexIDs slated for rebuild
-    var nVertexIDArrayFlattened = deanstein.GenerateStringLights.flatten(vertexIDArrayForRebuild);
-    //console.log("Flattened nVertexID array: " + nVertexIDArrayFlattened);
-
-    // define how to search through an array, and return an array of only unique values
-    function getUniqueValuesInArray(array)
-    {
-
-        var uniqueArray = [];
-        var count = 0;
-        
-        // in the flattened vertex array, find the end points by searching for unique IDs
-        for (var i = 0; i < array.length; i++)
-        {
-            count = 0;
-            for (var j = 0; j < array.length; j++)
-            {
-                if (array[j] === array[i])
-                    count++;
-            }
-            if (count === 1)
-                uniqueArray.push(array[i]);
-        }
-        //console.log("Array of unique vertex IDs: " + nVertexIDUniqueArray);
-        return uniqueArray;
-    }
-
-    var nVertexIDUniqueArray = getUniqueValuesInArray(nVertexIDArrayFlattened);
-
-    // check if the current vertexIDs in the array form a circle, and set the flag appropriately
-    var bCircle = deanstein.GenerateStringLights.checkIfCircle(nVertexIDArrayFlattened);
+    var nVertexIDUniqueArray = deanstein.GenerateStringLights.getUniqueVertexIDArray(vertexIDArrayForRebuild);
 
     // if this is a circle, we have to pick the end points differently to ensure they are distinct
     if (bCircle === true)
     {
-        // get the ID of the second vertex of the first edge in the array
-        var arcStartPosID = nVertexIDArrayFlattened[0];
-        console.log("Start point vertexID: " + arcStartPosID);
-
-        // get the point3D equivalent
-        var arcStartPos = WSM.APIGetVertexPoint3dReadOnly(nHistoryID, arcStartPosID);
-        console.log("Start point point3D: " + JSON.stringify(arcStartPos))
-
-        // get the ID of the last vertex of the last edge in the array
-        var arcEndPosID = nVertexIDArrayFlattened[nVertexIDArrayFlattened.length - 2];
-        console.log("End point vertexID: " + arcEndPosID);
-
-        // get the point3D equivalent
-        var arcEndPos = WSM.APIGetVertexPoint3dReadOnly(nHistoryID, arcEndPosID);
-        console.log("End point point 3D: " + JSON.stringify(arcEndPos));
+        // not going to support this case, yet. for now, this is stopped at the precheck
+        // TODO: if a circle, allow choosing down or "out" for light directions
     }
 
-    // otherwise, pick the end points normally
+    // otherwise, we're working with an arc, so figure out the end points
     else if (bCircle === false)
     {
         // get the ID of the first vertex of the first edge in the array
         var arcStartPosID = nVertexIDUniqueArray[0];
-        console.log("Start point vertexID: " + arcStartPosID);
+        //console.log("Start point vertexID: " + arcStartPosID);
 
         // get the point3D equivalent
         var arcStartPos = WSM.APIGetVertexPoint3dReadOnly(nHistoryID, arcStartPosID);
-        console.log("Start point point3D: " + JSON.stringify(arcStartPos));
+        //console.log("Start point point3D: " + JSON.stringify(arcStartPos));
 
         // get the ID of the last vertex of the last edge in the array
         var arcEndPosID = nVertexIDUniqueArray[1];
-        console.log("End point vertexID: " + arcEndPosID);
+        //console.log("End point vertexID: " + arcEndPosID);
 
         // get the point3D equivalent
         var arcEndPos = WSM.APIGetVertexPoint3dReadOnly(nHistoryID, arcEndPosID);
-        console.log("End point point 3D: " + JSON.stringify(arcEndPos));
+        //console.log("End point point 3D: " + JSON.stringify(arcEndPos));
     }
 
     // get the third point: a point on or near the midpoint of the arc, at a segment vertex
     //console.log("nVertexIDArray: " + deanstein.GenerateStringLights.arrays.nVertexIDArray);
     var thirdPointID = deanstein.GenerateStringLights.arrays.nVertexIDArray[Math.ceil(edgeCount / 2)][0];
-    console.log("Third point vertexID: " + JSON.stringify(thirdPointID));
+    //console.log("Third point vertexID: " + JSON.stringify(thirdPointID));
 
     // get the point3D equivalent
     var thirdPointPos = WSM.APIGetVertexPoint3dReadOnly(nHistoryID, thirdPointID);
-    console.log("Third point 3D: " + JSON.stringify(thirdPointPos));
+    //console.log("Third point 3D: " + JSON.stringify(thirdPointPos));
 
     // push the three points into the appropriate array
     deanstein.GenerateStringLights.arrays.arcCircle3PointIDArray.push(arcStartPosID, thirdPointID, arcEndPosID);
@@ -413,9 +447,8 @@ deanstein.GenerateStringLights.rebuildArcCircle = function(vertexIDArrayForRebui
 {
     console.log("\nBegin rebuild of arc or circle...");
 
-    var nVertexIDArrayFlattened = deanstein.GenerateStringLights.flatten(vertexIDArrayForRebuild);
-    // check if the current vertexIDs in the array form a circle, and set the flag appropriately
-    var bCircle = deanstein.GenerateStringLights.checkIfCircle(nVertexIDArrayFlattened);
+    // this function is stored in utils
+    var nVertexIDArrayFlattened = flattenArray(vertexIDArrayForRebuild);
 
     // get the 3 points representing the arc or circle
     deanstein.GenerateStringLights.getArcCircle3PointPosArray();
@@ -428,7 +461,7 @@ deanstein.GenerateStringLights.rebuildArcCircle = function(vertexIDArrayForRebui
     var arcCircleAnalysis = deanstein.GenerateStringLights.arrays.arcCircleAnalysisArray[0];
     //console.log("Arc/circle analysis to use as reference: " + JSON.stringify(arcCircleAnalysis));
 
-    var radius = arcCircleAnalysis["radius"];
+    radius = arcCircleAnalysis["radius"];
     //console.log("Radius of circle: " + JSON.stringify(radius));
 
     var center = arcCircleAnalysis["center"];
@@ -441,13 +474,13 @@ deanstein.GenerateStringLights.rebuildArcCircle = function(vertexIDArrayForRebui
     //console.log("Normal of circle or arc: " + JSON.stringify(normal));
     
     var pi = 3.1415926535897932384626433832795;
-    var circumference = radius * 2 * pi;
+    circumference = radius * 2 * pi;
     //console.log("Circumference of circle or arc: " + JSON.stringify(circumference));
 
     // define how to get the total arc length by adding faceted edge lengths together
     function getFacetedArcLength(nObjectIDArray, point3DArray)
     {
-        console.log("\nCalculating faceted arc length by adding up all segments...");
+        //console.log("\nCalculating faceted arc length by adding up all segments...");
         // for each edge on the arc or circle, measure the distance between the two points
         for(var p = 0; p < nObjectIDArray.length * 2; p++)
         {
@@ -489,11 +522,11 @@ deanstein.GenerateStringLights.rebuildArcCircle = function(vertexIDArrayForRebui
             return getDistanceBetweenTwoPoints(x0,y0,z0, x1,y1,z1);
         }
 
-        console.log("\nVerifying the calculated radius to compare against the radius reported from the attribute...\n");
-        console.log("Radius of circle or arc (from attribute): " + JSON.stringify(radius));
-        console.log("Distance from arcStartPos to center (calculated): " + getDistanceToCircleCenter(arcStartPos, center));
-        console.log("Distance from arcEndPos to center (calculated): " + getDistanceToCircleCenter(arcEndPos, center));
-        console.log("Distance from thirdPointPos to center (calculated): " + getDistanceToCircleCenter(thirdPointPos, center) + "\n");
+        //console.log("\nVerifying the calculated radius to compare against the radius reported from the attribute...\n");
+        //console.log("Radius of circle or arc (from attribute): " + JSON.stringify(radius));
+        //console.log("Distance from arcStartPos to center (calculated): " + getDistanceToCircleCenter(arcStartPos, center));
+        //console.log("Distance from arcEndPos to center (calculated): " + getDistanceToCircleCenter(arcEndPos, center));
+        //console.log("Distance from thirdPointPos to center (calculated): " + getDistanceToCircleCenter(thirdPointPos, center) + "\n");
 
         var facetedArcLength = 0;
 
@@ -501,31 +534,31 @@ deanstein.GenerateStringLights.rebuildArcCircle = function(vertexIDArrayForRebui
         {
             var facetedArcLength = facetedArcLength + deanstein.GenerateStringLights.arrays.edgeLengthArray[q];
         }
-        console.log("Number of edges used to calculate length: " + deanstein.GenerateStringLights.arrays.edgeLengthArray.length);
-        console.log("Existing arc length: " + facetedArcLength);
+        //console.log("Number of edges used to calculate length: " + deanstein.GenerateStringLights.arrays.edgeLengthArray.length);
+        //console.log("Existing arc length: " + facetedArcLength);
         return facetedArcLength;
     }
 
     var nObjectIDArray = deanstein.GenerateStringLights.arrays.nObjectIDArray;
     var point3DArray = deanstein.GenerateStringLights.arrays.point3DArray;
 
-    var facetedArcLength = getFacetedArcLength(nObjectIDArray, point3DArray);
+    facetedArcLength = getFacetedArcLength(nObjectIDArray, point3DArray);
 
-    var quarterCircleLength = circumference / 4;
+    quarterCircleLength = circumference / 4;
 
     // determine how many quarter-circles this faceted arc represents
-    var quarterCircleMultiplier = facetedArcLength / quarterCircleLength;
-    console.log("Quarter circle multiplier: " + quarterCircleMultiplier);
+    quarterCircleMultiplier = facetedArcLength / quarterCircleLength;
+    //console.log("Quarter circle multiplier: " + quarterCircleMultiplier);
 
     // Number of facets in each 90 degree arc segment; if circle, 4x this amount
     //var accuracyORcount = (quarterCircleMultiplier / 0.25) * (args.facetCount);
     var accuracyORcount = (Math.floor(args.facetCount / quarterCircleMultiplier));
-    console.log("accuracyORcount: " + accuracyORcount);
-    console.log("Effective accuracyORcount (x multiplier): " + (Math.ceil(quarterCircleMultiplier * accuracyORcount)));
-    console.log("Requested facet count: " + args.facetCount);
+    //console.log("accuracyORcount: " + accuracyORcount);
+    //console.log("Effective accuracyORcount (x multiplier): " + (Math.ceil(quarterCircleMultiplier * accuracyORcount)));
+    //console.log("Requested facet count: " + args.facetCount);
     if (Math.ceil(accuracyORcount * quarterCircleMultiplier) < args.facetCount)
     {
-        console.log("The requested facet count was higher than the resulting accuracyORcount value, so accuracyORcount was ignored.")
+        //console.log("The requested facet count was higher than the resulting accuracyORcount value, so accuracyORcount was ignored.")
     }
     var bReadOnly = false;
     var trans;
@@ -549,19 +582,19 @@ deanstein.GenerateStringLights.rebuildArcCircle = function(vertexIDArrayForRebui
     // execute the rebuild
     WSM.APICreateCircleOrArcFromPoints(nHistoryID, arcStartPos, arcEndPos, thirdPointPos, accuracyORcount, bReadOnly, trans, nMinimumNumberOfFacets, bCircle);
 
-    // find the geometry that was changed so it can be highlighted and checked
+    // find the geometry that was changed so it can be selected and checked
     var changedData = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(nHistoryID, 7);
     //console.log("Changed data: " + JSON.stringify(changedData));
 
     var newEdgeIDArray = changedData["created"];
 
     // eliminate the current selection
-    console.log("\nClearing the original selection.");
+    //console.log("\nClearing the original selection.");
     FormIt.Selection.ClearSelections();	
 
     // add the new edges to the selection
     FormIt.Selection.AddSelections(newEdgeIDArray);
-    console.log("\nAdded the new curve to the selection set.");
+    //console.log("\nAdded the new curve to the selection set.");
 
     var newFacetCount = newEdgeIDArray.length;
     //console.log("New edge IDs: " + newEdgeIDs);
@@ -574,7 +607,7 @@ deanstein.GenerateStringLights.rebuildArcCircle = function(vertexIDArrayForRebui
 deanstein.GenerateStringLights.generatePointsAlongArcCircle = function(args)
 {
     // assume the selected curve is the target curve, and that the getInfo() arrays represent that selection
-    console.log("\nBegin drawing evenly-spaced points along the arc/circle...");
+    //console.log("\nBegin drawing evenly-spaced points along the arc/circle...");
 
     // get the three definition points
     deanstein.GenerateStringLights.getArcCircle3PointPosArray();
@@ -588,7 +621,7 @@ deanstein.GenerateStringLights.generatePointsAlongArcCircle = function(args)
     var facetCountForLights = lightCount + 1;
 
     // set parameters for temporary arc to get light points
-    var accuracyORcount = facetCountForLights;
+    var accuracyORcount = (Math.floor(facetCountForLights / quarterCircleMultiplier));
     // if true, no arc will be drawn, but the points will be returned
     var bReadOnly = true;
     var trans;
@@ -597,11 +630,11 @@ deanstein.GenerateStringLights.generatePointsAlongArcCircle = function(args)
 
     // create a temporary arc
     var temporaryArcPointPosArray = WSM.APICreateCircleOrArcFromPoints(nHistoryID, arcStartPos, arcEndPos, thirdPoint, accuracyORcount, bReadOnly, trans, nMinimumNumberOfFacets, bCircle);
-    console.log("Created a new temporary arc based on the input line.");
+    //console.log("Created a new temporary arc based on the input line.");
     //console.log("Points from temporary arc: " + JSON.stringify(temporaryArcPointPosArray));
 
     // remove the first and last points from the temporary arc points to create the points at which new lights will hang
-    console.log("Number of points in temporary arc point array: " + temporaryArcPointPosArray.length);
+    //console.log("Number of points in temporary arc point array: " + temporaryArcPointPosArray.length);
     temporaryArcPointPosArray.splice((temporaryArcPointPosArray.length - 1), 1);
     temporaryArcPointPosArray.splice(0, 1);
     var lightMountPointPosArray = temporaryArcPointPosArray;
@@ -612,31 +645,31 @@ deanstein.GenerateStringLights.generatePointsAlongArcCircle = function(args)
 // define how to draw a single light fixture; returns the group ID the fixture exists in
 deanstein.GenerateStringLights.drawSingleLightFixture = function(placementPoint, args)
 {
-    console.log("\nDrawing the typical light fixture...");
+    //console.log("\nDrawing the typical light fixture...");
 
     // take the placement point and move it down to represent a cable or bulb housing length
     var verticalCableOrHousingLength = FormIt.PluginUtils.currentUnits(args.verticalCableOrHousingLength);
     var verticalCableBottomPointPos = WSM.Geom.Point3d(placementPoint["x"], placementPoint["y"], placementPoint["z"] - verticalCableOrHousingLength);
 
-    console.log("Bottom point of vertical cable " + JSON.stringify(verticalCableBottomPointPos));
+    //console.log("Bottom point of vertical cable " + JSON.stringify(verticalCableBottomPointPos));
 
     // create an empty group
     var typicalLightFixtureGroupID = WSM.APICreateGroup(nHistoryID, []);
-    console.log("Created a new group for a typical fixture: " + typicalLightFixtureGroupID);
+    //console.log("Created a new group for a typical fixture: " + typicalLightFixtureGroupID);
 
     // create a new history to create the light fixture
     var typicalLightFixtureHistoryID =  WSM.APIGetGroupReferencedHistoryReadOnly(nHistoryID, typicalLightFixtureGroupID);
-    console.log("Created a new history for the typical light fixture: " + typicalLightFixtureHistoryID);
+    //console.log("Created a new history for the typical light fixture: " + typicalLightFixtureHistoryID);
 
     // draw a single vertical line connecting the two points
     var cablePath = WSM.APIConnectPoint3ds(typicalLightFixtureHistoryID, placementPoint, verticalCableBottomPointPos);
-    console.log("Drew a single line representing the cable length or bulb housing.");
+    //console.log("Drew a single line representing the cable length or bulb housing.");
 
-    // find theedgeface that was just created so it can be highlighted and checked
+    // find the edge that was just created so it can be highlighted and checked
     var changedData = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(typicalLightFixtureHistoryID, 7);
     //console.log("Changed data: " + JSON.stringify(changedData));
     var cablePathID = changedData["created"][0];
-    console.log("New path ID: " + JSON.stringify(cablePathID));
+    //console.log("New path ID: " + JSON.stringify(cablePathID));
 
     var bulbCount = args.bulbCount;
     var verticalCableOrHousingRadius = FormIt.PluginUtils.currentUnits(args.verticalCableOrHousingRadius);
@@ -653,17 +686,17 @@ deanstein.GenerateStringLights.drawSingleLightFixture = function(placementPoint,
         //console.log("Bulb center point: " + JSON.stringify(bulbCenterPointPos));
 
         // draw the bulb
-        console.log("Drawing typical bulb...");
+        //console.log("Drawing typical bulb...");
 
         // create a group for typical bulb
         var typicalBulbGroupID = WSM.APICreateGroup(typicalLightFixtureHistoryID, []);
-        console.log("Created a new group for a typical bulb: " + typicalBulbGroupID);
+        //console.log("Created a new group for a typical bulb: " + typicalBulbGroupID);
 
         var typicalBulbInstanceIDArray = WSM.APIGetObjectsByTypeReadOnly(typicalLightFixtureHistoryID, typicalBulbGroupID, WSM.nInstanceType);
 
         // create a new history for the bulb
         var typicalBulbHistoryID =  WSM.APIGetGroupReferencedHistoryReadOnly(typicalLightFixtureHistoryID, typicalBulbGroupID);
-        console.log("Created a new history for the typical light fixture: " + typicalBulbHistoryID);
+        //console.log("Created a new history for the typical light fixture: " + typicalBulbHistoryID);
 
         var bulbAccuracyORcount = 4;
         var bulbTopHalf = WSM.APICreateHemisphere(typicalBulbHistoryID, bulbRadius, bulbCenterPointPos, bulbAccuracyORcount);
@@ -683,7 +716,7 @@ deanstein.GenerateStringLights.drawSingleLightFixture = function(placementPoint,
 
             // create a group to contain multiple bulbs
             var bulbContainerGroupID = WSM.APICreateGroup(typicalLightFixtureHistoryID, bulbGroupIDArray);
-            console.log("Created a new group for multiple bulbs " + bulbContainerGroupID);
+            //console.log("Created a new group for multiple bulbs " + bulbContainerGroupID);
         }
     }
 
@@ -698,15 +731,15 @@ deanstein.GenerateStringLights.drawSingleLightFixture = function(placementPoint,
     }
 
     // sweep the initial line into a cable or housing
-    console.log("Begin sweep of vertical cable...");
-    var aProfilePoints = WSM.APICreateCircleOrArc(typicalLightFixtureHistoryID, verticalCableOrHousingRadius, placementPoint);
+    //console.log("Begin sweep of vertical cable...");
+    var profileSurface = WSM.APICreateCircleOrArc(typicalLightFixtureHistoryID, verticalCableOrHousingRadius, placementPoint);
 
     // find the face that was just created
     var changedData = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(typicalLightFixtureHistoryID, 4);
     //console.log("Changed data: " + JSON.stringify(changedData));
     var newProfileFaceID = changedData["created"][0];
-    console.log("New profile face ID: " + JSON.stringify(newProfileFaceID));
-    console.log("Typical light fixture history ID: " + typicalLightFixtureHistoryID);
+    //console.log("New profile face ID: " + JSON.stringify(newProfileFaceID));
+    //console.log("Typical light fixture history ID: " + typicalLightFixtureHistoryID);
 
     var aProfile = [{"ids":[{"History":typicalLightFixtureHistoryID,"Object":newProfileFaceID,"objectName":"ObjectHistoryID"}], "objectName": "GroupInstancePath"}];
     var aPath = [{"ids":[{"History":typicalLightFixtureHistoryID,"Object":cablePathID,"objectName":"ObjectHistoryID"}], "objectName": "GroupInstancePath"}];
@@ -717,7 +750,7 @@ deanstein.GenerateStringLights.drawSingleLightFixture = function(placementPoint,
 
     var typicalFixtureInstanceIDArray = WSM.APIGetObjectsByTypeReadOnly(nHistoryID, typicalLightFixtureGroupID, WSM.nInstanceType);
 
-    console.log("Done making the typical fixture inside instance ID " + JSON.stringify(typicalFixtureInstanceIDArray[0]));
+    //console.log("Done making the typical fixture inside instance ID " + JSON.stringify(typicalFixtureInstanceIDArray[0]));
     return typicalFixtureInstanceIDArray[0];
 }
     
@@ -725,7 +758,7 @@ deanstein.GenerateStringLights.drawSingleLightFixture = function(placementPoint,
 // define how to array the light fixtures at each point
 deanstein.GenerateStringLights.arrayStringLights = function(typicalFixtureInstanceID, placementPointArray)
 {
-    console.log("\nArraying string light fixtures...");
+    //console.log("\nArraying string light fixtures...");
 
     var transformArray = [];
 
@@ -752,24 +785,17 @@ deanstein.GenerateStringLights.arrayStringLights = function(typicalFixtureInstan
         WSM.APICopyOrSketchAndTransformObjects(nHistoryID, nHistoryID, typicalFixtureInstanceID, transform, 1, false);
     }
 
-    console.log("Arrayed instance ID " + typicalFixtureInstanceID + " " + placementPointArray.length + " times.");
+    //console.log("Arrayed instance ID " + typicalFixtureInstanceID + " " + placementPointArray.length + " times.");
 }
 
-// macro list of all commands related to generating the new string light assemblies
+// execute all code required to generate string lights
 deanstein.GenerateStringLights.execute = function(args)
 {
-            
-    FormIt.UndoManagement.BeginState()
     console.clear();
+    console.log("String Light Generator Plugin\n");
 
     // execute the get selection basics routine
     deanstein.GenerateStringLights.getSelectionBasics();
-
-    // if selection is empty, stop
-    if (deanstein.GenerateStringLights.getSelectionBasics() === false)
-    {
-        return;
-    }
 
     // execute the get selection info routine
     deanstein.GenerateStringLights.getSelectionInfo(nHistoryID, currentSelection);
@@ -791,48 +817,38 @@ deanstein.GenerateStringLights.execute = function(args)
     // if the operation type is a line, we first need to make an arc from scratch, then select it
     if (operationType === "line") 
     {
-        console.log("\nLine detected.");
-
-        FormIt.UndoManagement.BeginState();
-
         // create the new catenary arc, then define the target curve as this new curve
         var vertexIDArrayForRebuild = deanstein.GenerateStringLights.createCatenaryArcFromLine(nHistoryID, args);
-        console.log("Vertex ID array for curve to be rebuilt: " + JSON.stringify(vertexIDArrayForRebuild));
-
-        FormIt.UndoManagement.EndState("Create new string light cable arc");
     }
 
-    // if the operation is an arc or circle, set the target curve to the current selection
-    if (operationType === "arcCircle")
+    // otherwise, use the selected curve
+    else if (operationType === "arcCircle")
     {
-        console.log("\nArc or circle detected.");
-
         // define the target curve as the selected curve
         var vertexIDArrayForRebuild = deanstein.GenerateStringLights.arrays.nVertexIDArray;
-        console.log("Vertex ID array for curve to be rebuilt: " + JSON.stringify(vertexIDArrayForRebuild));
+        //console.log("Vertex ID array for curve to be rebuilt: " + JSON.stringify(vertexIDArrayForRebuild));
     }
+
+    FormIt.UndoManagement.BeginState();
     
     // rebuild the arc, if enabled
     var bRebuildArc = true;
-    console.log("\nRebuild arc/circle? " + bRebuildArc);
+    //console.log("\nRebuild arc/circle? " + bRebuildArc);
     if (bRebuildArc) 
     {
         var facetCount = args.facetCount;
-
         deanstein.GenerateStringLights.rebuildArcCircle(vertexIDArrayForRebuild, args);
+
+        // execute the get selection basics routine to capture the rebuilt curve
+        deanstein.GenerateStringLights.getSelectionBasics();
+        //console.log("Getting basic info on the rebuilt curve.")
+
+        // execute the get selection info routine to analyze the rebuilt curve
+        deanstein.GenerateStringLights.getSelectionInfo(nHistoryID, currentSelection);
+        //console.log("Updating matrices with new curve information");
     }
 
-    // execute the get selection basics routine to capture the rebuilt curve
-    deanstein.GenerateStringLights.getSelectionBasics();
-    console.log("Getting basic info on the rebuilt curve.")
-
-    // execute the get selection info routine to analyze the rebuilt curve
-    deanstein.GenerateStringLights.getSelectionInfo(nHistoryID, currentSelection);
-    console.log("Updating matrices with new curve information");
-
     // execute drawing new points along the arc or circle; returns an array of points for use in generating new lights
-    deanstein.GenerateStringLights.generatePointsAlongArcCircle(args);
-
     var placementPointArray = deanstein.GenerateStringLights.generatePointsAlongArcCircle(args);
     var placementPoint = placementPointArray[0];
 
@@ -845,89 +861,120 @@ deanstein.GenerateStringLights.execute = function(args)
     // get all the group IDs from the array of fixtures
     var fixtureGroupIDArray = WSM.APIGetObjectsByTypeReadOnly(nHistoryID, typicalFixtureInstanceID, WSM.nGroupType, true);
 
+    // use the first Group ID to get the typical ID for all Groups
     var fixtureGroupID = fixtureGroupIDArray[0];
     
     // define the group ID that will contain all pieces of the new string light assembly
     var stringLightContainerGroupID = WSM.APICreateGroup(nHistoryID, fixtureGroupID);
-
     // make a new history for the light fixture group
     var stringLightContainerHistoryID = WSM.APIGetGroupReferencedHistoryReadOnly(nHistoryID, stringLightContainerGroupID);
-
     // get the instance ID
-    var stringLightContainerInstanceID = WSM.APIGetObjectsByTypeReadOnly(stringLightContainerHistoryID, stringLightContainerGroupID, WSM.nInstanceType);
+    var stringLightContainerInstanceID = WSM.APIGetObjectsByTypeReadOnly(nHistoryID, stringLightContainerGroupID, WSM.nInstanceType);
+    //console.log("stringLightContainerInstanceID: " + stringLightContainerInstanceID);
+
+    // define the group ID that will contain all final pieces
+    var finalContainerGroupID = WSM.APICreateGroup(nHistoryID, stringLightContainerGroupID);
+    // make a new history for the final pieces
+    var finalContainerHistoryID = WSM.APIGetGroupReferencedHistoryReadOnly(nHistoryID, finalContainerGroupID);
+    // get the instance ID
+    // WSM.nInstanceType = 24
+    var finalContainerInstanceID = WSM.APIGetObjectsByTypeReadOnly(nHistoryID, finalContainerGroupID, WSM.nInstanceType);
+    //console.log("finalContainerInstanceID: " + JSON.stringify(finalContainerInstanceID));
+
+    // move the path curve into the final container group
+    WSM.APICopyOrSketchAndTransformObjects(nHistoryID, finalContainerHistoryID, deanstein.GenerateStringLights.arrays.nObjectIDArray, WSM.Geom.MakeRigidTransform(WSM.Geom.Point3d(0, 0, 0), WSM.Geom.Vector3d(1, 0, 0), WSM.Geom.Vector3d(0, 1, 0), WSM.Geom.Vector3d(0, 0, 1)), 1, false);
+
+    // delete the old curve
+    for (var i = 0; i < deanstein.GenerateStringLights.arrays.nObjectIDArray.length; i++)
+    {
+        WSM.APIDeleteObject(nHistoryID, deanstein.GenerateStringLights.arrays.nObjectIDArray[i]);
+    }
+
+    // find the curve that was just created
+    var changedCurveData = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(finalContainerHistoryID, 7);
+    //console.log("Changed curve data: " + JSON.stringify(changedCurveData));
+    var pathIDArray = changedCurveData["created"];
+    //console.log("PathIDArray: " + pathIDArray);
+
+    // get the objectHistoryIDArray for the edge IDs that make up the sweep path
+    var aPath = WSM.Utils.ObjectHistoryIDArray(pathIDArray);
+
+    // for each of the objects in aPath, correct the HistoryID to reflect the finalContainerHistoryID
+    // TODO: consume the updated WSM.Utils.ObjectHistoryIDArray which will take a History argument, so we don't have to do this anymore
+    function correctHistoryIDsInObjectHistoryIDArray()
+    {
+        for (var i = 0; i < aPath.length; i++ )
+        {
+            aPath[i]["History"] = finalContainerHistoryID;
+            //correctedPath.push
+        }
+    }
+    correctHistoryIDsInObjectHistoryIDArray();
+    //console.log("Path: " + JSON.stringify(aPath));
 
     // sweep the catenary cable
-    console.log("Begin sweep of catenary cable...");
+    //console.log("Begin sweep of catenary cable...");
+
+    // get the radius from the HTML page
     var catenaryCableRadius = FormIt.PluginUtils.currentUnits(args.catenaryCableRadius);
-
-    // define the xAxis
-    var xAxis = WSM.Geom.Vector3d(1,0,1);
-
-    // define the yAxis
-    var yAxis;
-    
     // get the end point of the arc
     var catenaryCableProfileCenterPos = deanstein.GenerateStringLights.arrays.arcCircle3PointPosArray[0];
-    //onsole.log("Center point for catenary profile: " + JSON.stringify(catenaryCableProfileCenterPos));
+    //console.log("Center point for catenary profile: " + JSON.stringify(catenaryCableProfileCenterPos));
+
+    // use the vector created by the two end points of the selected line or arc as the profile surface normal
+    var arcStartPos = deanstein.GenerateStringLights.arrays.arcCircle3PointPosArray[0];
+    var arcEndPos = deanstein.GenerateStringLights.arrays.arcCircle3PointPosArray[2];
+    var zAxisVector = getVectorBetweenTwoPoints(arcStartPos["x"], arcStartPos["y"], arcStartPos["z"], arcEndPos["x"], arcEndPos["y"], arcEndPos["z"]);
+    var zAxisWSMVector3d = WSM.Geom.Vector3d(zAxisVector[0], zAxisVector[1], zAxisVector[2]);
+    //console.log(JSON.stringify("Profile surface Z-axis vector: " + JSON.stringify(zAxisWSMVector3d)));
+
+    // set an arbitrary x-axis for the circle to start
+    var xAxisVector = [1, 0, 0];
+    // check if xAxis is in the same direction as zAxis, and if so, change the arbitrary xAxis vector
+    if (1 - Math.abs(dotProductVector(zAxisVector, xAxisVector)) < 1.0e-10)
+    {
+        //console.log("Switching xAxis...");
+        xAxisVector = [0, 1, 0];
+    }
+    var xAxisWSMVector3d = WSM.Geom.Vector3d(xAxisVector[0], xAxisVector[1], xAxisVector[2]);
+    //console.log(JSON.stringify("Profile surface arbitrary X-axis vector: " + JSON.stringify(xAxisWSMVector3d)));
+
+    // determine the y-axis vector for the circle, using cross-product of X and Z
+    // this function is stored in utils
+    var yAxisVector = crossProductVector(zAxisVector, xAxisVector);
+    var yAxisWSMVector3d = WSM.Geom.Vector3d(yAxisVector[0], yAxisVector[1], yAxisVector[2]);
+    //console.log(JSON.stringify("Profile surface Y-axis vector: " + JSON.stringify(yAxisWSMVector3d)));
+
+    // recalculate the actual x-axis vector for the circle, using cross-product of Y and Z
+    // this function is stored in utils
+    var xAxisVector = crossProductVector(yAxisVector, zAxisVector);
+    var xAxisWSMVector3d = WSM.Geom.Vector3d(xAxisVector[0], xAxisVector[1], xAxisVector[2]);
+    //console.log(JSON.stringify("Profile surface X-axis vector: " + JSON.stringify(xAxisWSMVector3d)));
 
     // create the profile at one of the end points of the catenary curve
-    var aProfilePoints = WSM.APICreateCircleOrArc(nHistoryID, catenaryCableRadius, catenaryCableProfileCenterPos);
+    var profileSurface = WSM.APICreateCircleOrArc(finalContainerHistoryID, catenaryCableRadius, catenaryCableProfileCenterPos, xAxisWSMVector3d, yAxisWSMVector3d);
 
     // find the face that was just created
-    var changedData = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(nHistoryID, 4);
-    console.log("Changed data: " + JSON.stringify(changedData));
+    var changedData = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(finalContainerHistoryID, 4);
+    //console.log("Changed data: " + JSON.stringify(changedData));
     var newProfileFaceID = changedData["created"][0];
-    console.log("New profile face ID: " + JSON.stringify(newProfileFaceID));
+    //console.log("New profile face ID: " + JSON.stringify(newProfileFaceID));
 
-    var aProfile = [{"ids":[{"History":nHistoryID,"Object":newProfileFaceID,"objectName":"ObjectHistoryID"}], "objectName": "GroupInstancePath"}];
+    // manually create the WSM path to the profile face
+    var aProfile = [{"ids":[{"History":finalContainerHistoryID,"Object":newProfileFaceID,"objectName":"ObjectHistoryID"}], "objectName": "GroupInstancePath"}];
+    //console.log("Profile: " + JSON.stringify(aProfile));
 
-    // construct the path based on the rebuilt curve
-    function constructPathArrays()
-    {
-        // for each edge in the catenary curve, generate a current path to access this edge for sweep
-        var pathArray = new Array();
-        for (var i = 0; i < deanstein.GenerateStringLights.arrays.nObjectIDArray.length; i++)
-        {
-            var currentPath = {"ids": [{"History": nHistoryID,"Object": deanstein.GenerateStringLights.arrays.nObjectIDArray[i],"objectName": "ObjectHistoryID"}],"objectName": "GroupInstancePath"};
-            pathArray.push(currentPath);
-        }
-        return pathArray;
-    }
-    var aPath = constructPathArrays();
-    //console.log("Path array: " + JSON.stringify(aPath));
-     /*= [{"ids":[{"History":stringLightContainerHistoryID,"Object":cablePathID,"objectName":"ObjectHistoryID"}], "objectName": "GroupInstancePath"}];*/
     var bRemoveUnusedProfileAndPath = true;
 
     // execute the catenary cable sweep
-    WSM.APISweep(nHistoryID, aProfile, aPath, bRemoveUnusedProfileAndPath);
-
-    // find the body that was just created
-    var changedData = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(nHistoryID, 1);
-    console.log("Changed data: " + JSON.stringify(changedData));
-    var catenaryCableSweepBodyID = changedData["created"][0];
-    console.log("catenaryCableSweepBodyID: " + JSON.stringify(catenaryCableSweepBodyID));
-
-    // move the sweep into the main fixture container group
-    WSM.APICopyOrSketchAndTransformObjects(nHistoryID, stringLightContainerHistoryID, catenaryCableSweepBodyID, WSM.Geom.MakeRigidTransform(WSM.Geom.Point3d(0, 0, 0), WSM.Geom.Vector3d(1, 0, 0), WSM.Geom.Vector3d(0, 1, 0), WSM.Geom.Vector3d(0, 0, 1)), 1, false);
-
-    // delete the original sweep
-    WSM.APIDeleteObject(nHistoryID, catenaryCableSweepBodyID);
-
-    // delete the catenary arc
-    for (var i = 0; i < deanstein.GenerateStringLights.arrays.nObjectIDArray.length; i++)
-    {
-        WSM.APIDeleteObject(nHistoryID, deanstein.GenerateStringLights.arrays.nObjectIDArray[i])
-    }
-
-    // if the operation is a spline, we throw an error because this isn't supported yet
-    if (operationType === "spline")
-    {
-        console.log("\nSpline detected.");
-        console.log("Splines aren't supported yet, sorry.");
-    }
+    WSM.APISweep(finalContainerHistoryID, aProfile, aPath, bRemoveUnusedProfileAndPath);
 
     FormIt.UndoManagement.EndState("Generate String Lights");
 
+    // indicate the operation has finished
+    var message = "Successfully created string lights along the selected edge(s).";
+    FormIt.UI.ShowNotification(message, FormIt.NotificationType.Information, 0);
+    console.log("\n" + message);
 }
 
 // Submit runs from the HTML page.  This script gets loaded up in both FormIt's

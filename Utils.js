@@ -24,7 +24,7 @@ function getMidPointBetweenTwoPoints(x0,y0,z0, x1,y1,z1)
     var midPoint = new Array(x, y, z);
     // returns [x,y,z]
     return midPoint;
-    console.log(midPoint);
+    //console.log(midPoint);
 }
 
 // generic function to test each item in the array, compare for equality, and return a new array containing boolean values
@@ -80,4 +80,56 @@ function booleanAnyTrue(array)
             return true;
         }
     }
+}
+
+// search through an array, and return an array of only unique values
+function getUniqueValuesInArray(array)
+{
+    var uniqueArray = [];
+    var count = 0;
+    
+    for (var i = 0; i < array.length; i++)
+    {
+        count = 0;
+        for (var j = 0; j < array.length; j++)
+        {
+            if (array[j] === array[i])
+                count++;
+        }
+        if (count === 1)
+            uniqueArray.push(array[i]);
+    }
+    //console.log("Array of unique values: " + uniqueArray);
+    return uniqueArray;
+}
+
+function flattenArray(array)
+{
+    return array.reduce(function (flat, toFlatten) 
+    {
+        return flat.concat(Array.isArray(toFlatten) ? deanstein.GenerateStringLights.flatten(toFlatten) : toFlatten);
+    }, []);
+}
+
+function crossProductVector(vector0, vector1)
+{
+    var crossProductVectorX = (vector0[1]*vector1[2] - vector0[2]*vector1[1]);
+    var crossProductVectorY = (vector0[2]*vector1[0] - vector0[0]*vector1[2]);
+    var crossProductVectorZ = (vector0[0]*vector1[1] - vector0[1]*vector1[0]);
+    var crossProductVector = [crossProductVectorX, crossProductVectorY, crossProductVectorZ];
+    return crossProductVector;
+}
+
+function vectorMagnitude(vector)
+{
+    var vectorMagnitude = Math.sqrt((vector[0] * vector[0]) + (vector[1] * vector[1]) + (vector[2] * vector[2]));
+    return vectorMagnitude;
+}
+
+function dotProductVector(vector0, vector1)
+{
+    var vector0Magnitude = vectorMagnitude(vector0);
+    var vector1Magnitude = vectorMagnitude(vector1);
+    var dotProduct = (vector0[0]/vector0Magnitude * vector1[0]/vector1Magnitude) + (vector0[1]/vector0Magnitude * vector1[1]/vector1Magnitude) + (vector0[2]/vector0Magnitude * vector1[2]/vector1Magnitude);
+    return dotProduct;
 }
