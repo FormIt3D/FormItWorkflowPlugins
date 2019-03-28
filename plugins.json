@@ -10,6 +10,7 @@
   "ExtractMaterialTextures",
   "GenerateVertex",
   "ValidateCleanModel",
-  "MeshUnmeshAll"
+  "MeshUnmeshAll",
+  "StringLightGenerator"
   ]
 }
