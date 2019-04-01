@@ -103,14 +103,16 @@ function getUniqueValuesInArray(array)
     return uniqueArray;
 }
 
+// flatten a multi-dimensional array into a 1D array
 function flattenArray(array)
 {
     return array.reduce(function (flat, toFlatten) 
     {
-        return flat.concat(Array.isArray(toFlatten) ? deanstein.GenerateStringLights.flatten(toFlatten) : toFlatten);
+        return flat.concat(Array.isArray(toFlatten) ? flattenArray(toFlatten) : toFlatten);
     }, []);
 }
 
+// return the cross product of two vectors
 function crossProductVector(vector0, vector1)
 {
     var crossProductVectorX = (vector0[1]*vector1[2] - vector0[2]*vector1[1]);
@@ -120,12 +122,14 @@ function crossProductVector(vector0, vector1)
     return crossProductVector;
 }
 
+// return the magnitude of the given vector
 function vectorMagnitude(vector)
 {
     var vectorMagnitude = Math.sqrt((vector[0] * vector[0]) + (vector[1] * vector[1]) + (vector[2] * vector[2]));
     return vectorMagnitude;
 }
 
+// return the dot product of two vectors
 function dotProductVector(vector0, vector1)
 {
     var vector0Magnitude = vectorMagnitude(vector0);
