@@ -1,0 +1,350 @@
+/* http://meyerweb.com/eric/tools/css/reset/ 
+    v2.0 | 20110126
+    License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+body {
+    line-height: 1;
+}
+ol, ul {
+    list-style: none;
+}
+blockquote, q {
+    quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: '';
+    content: none;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+<!-- css reset end -->
+
+html {
+    font: 12px Arial;
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow:hidden;
+    font-family: Arial, sans-serif;
+}
+
+input:focus {
+    outline:1px solid #4675A8;
+    box-shadow: 0 0 4px #0cbbf4;
+}
+
+.button {
+    background-color: white;
+    color: #4675A8;
+    height: 30px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    cursor: pointer;
+    border: solid 1px #A7BFD3;
+    border-radius: 3px;
+    margin:5px;
+}
+
+.button:hover {
+    box-shadow: 0 0 4px #0cbbf4;
+}
+
+.button.positive{
+    color: white;
+    background-color: #4675a8;
+}
+
+.buttons {
+    position: absolute;
+    top:0;
+    right:10px;
+}
+
+.none{
+    display:none;
+}
+
+.noneImportant{
+    display:none !important;
+}
+
+#ImportModeButtons{
+    display:none;
+}
+
+#LocationMapControl {
+    width: auto !important;
+    position:absolute;
+    right:0px;
+    top:40px;
+    left:0;
+    bottom:0;
+}
+#LocationMapControl .MicrosoftMap{
+    position: absolute !important; 
+    width: 100% !important; 
+    height: 100% !important; 
+    left: 0px !important; 
+    top: 0px !important;
+}
+
+
+#LocationMapControl.importMode {
+    right:0;
+}
+
+#ImportMapContainer {
+    display:none;
+    position: absolute;
+    top: 40px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    background-color: rgba(200, 200, 200, .8);
+    z-index: 2;
+}
+
+#ImportMapControl {
+    border: dashed 1px black;
+    margin: auto;
+    position: absolute !important;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+#LocationSearchContainer input{
+    width: 300px;
+    height: 23px;
+    opacity: 1;
+    padding-left: 10px;
+    font-family: Arial;
+    font-size: 11px;
+    margin:5px;
+}
+
+#WeatherGraphDisplayContainer{
+    pointer-events: auto;
+    background: #FFFFFF;
+    box-shadow: 0 0 20px #4675A8;
+    border-radius: 5px;
+    border: solid 1px #4675A8;
+    width: 385px;
+    height: 355px;
+    z-index: 1;
+
+    position: fixed;
+    xtop: calc(50% + 26px);
+    xleft: calc(50% + 132px);
+    top: 50%;
+    left: 50%;
+    margin-left: -60px;
+    margin-top: -150px;
+    xtransform: translate(-50%,-50%);
+}
+
+#WeatherGraphDisplayContainer:after{
+    width: 0;
+    height: 0;
+    border-top: 20px solid transparent;
+    border-bottom: 20px solid transparent;
+    border-right: 20px solid #4675A8;
+    content: " ";
+    position: absolute;
+    top: 150px;
+    left: -21px;
+}
+
+#WeatherGraphDisplayContainer #GraphCloseButton{
+    cursor: pointer;
+    color: #4675A8;
+    background: #FFFFFF;
+    border: 1px solid #4675A8;
+    border-radius: 12px;
+    font-size: 24px;
+    font-weight: bold;
+    display: inline-block;
+    line-height: 0px;
+    padding: 10px 5px 13px;
+    text-decoration: none;
+    position: absolute;
+    right: -10px;
+    top: -10px;
+    z-index: 1000;
+}
+
+#WeatherGraphDisplayContainer #GraphCloseButton:hover{
+    color: #FFFFFF;
+    background: #4675A8;
+    border: 1px solid #FFFFFF;
+}
+
+#WeatherGraphDisplayContainer #WeatherStationDistance{
+    color: #999999;
+    font-size: 13px;
+}
+
+#WeatherGraphDisplayContainer #WeatherGraphDisplay{
+    width: 385px;
+    height: 272px;
+    margin: 10px 0;
+}
+    
+#WeatherGraphDisplayContainer #WeatherGraphName
+{
+    font-size: 16px;
+    text-align: center;
+}
+
+#WeatherGraphDisplayContainer #WeatherStationId{
+    margin:10px 0 0 10px;
+    font-size:16px;
+}
+
+#WeatherGraphDisplayContainer #WeatherStationDistance{
+    color:#999999;
+    font-size:13px;
+    margin: 5px 0 0 10px;
+}
+
+#WeatherGraphDisplayContainer #LoadingSpinner{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
+#WeatherGraphDisplayContainer #LoadingSpinner .spinner{
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+}
+
+
+#WeatherGraphList{
+    background-color: white;
+    position: absolute;
+    top: 10px;
+    right: 0px;
+    left:10px;
+    bottom: 0px;
+    width: 205px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#WeatherGraphList .weatherGraphPreviewContainer{
+    background-color:#FFFFFF;
+    border:solid 1px #CCCCCC;
+    width:200px;
+    height:150px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+    margin:10px 0px;
+}
+
+#WeatherGraphList .weatherGraphPreviewContainer.active{
+    border:solid 1px #4675A8;
+}
+
+#WeatherGraphList .weatherGraphPreviewContainer .weatherGraphPreviewName{
+    color:#4675A8;
+    font-size:12px;
+    margin:5px;
+}
+
+#WeatherGraphList .weatherGraphPreview{
+    width:180px;
+    height:120px;
+}
+
+#WeatherGraphList .weatherGraphPreviewContainer:hover{
+    border:solid 1px #4675A8;
+    cursor:pointer;
+}
+
+#WeatherGraphList .weatherGraphPreviewContainer.active{
+    border:solid 1px #4675A8;
+}
+
+/*This blocks the graph mouse interactions for the previews */
+#WeatherGraphList .weatherGraphPreviewContainer:before{
+    content:" ";
+    position:absolute;
+    width:180px;
+    height:150px;
+    z-index:2;
+}
+
+#RightPanel{
+    position: absolute;
+    top:40px;
+    right: 0;
+    width:200px;
+    background-color: white;
+    height: 100%;
+    border-left: solid 1px #CCCCCC;
+    padding: 10px;
+}
+
+#RightPanel > div {
+    margin-top: 10px;
+}
+
+#RightPanel p {
+    line-height:18px;
+}
+
+#RightPanel img{
+    float:left;
+    margin-top:5px;
+}
+
+#RightPanel img + p{
+    margin-left: 50px;
+}
+
+#RightPanel #NoLocationState p{
+    margin-left: 30px;
+}
+
+#NotSignedInState a {
+    color:#4675A8;
+}

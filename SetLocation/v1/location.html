@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Project Location</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="location.css"/>
+        <script type="text/javascript" src="location_web.js"></script>
+        <script type='text/javascript'>
+            window.prepareBindings = (bindings) => {
+                window._map_global_bindings = bindings;
+            }
+            
+            window.prepareBindings({
+                cancel: LocationDialog.Cancel,
+                saveLocation: LocationDialog.SaveLocation,
+                getAddressAsync: LocationDialog.GetLocation,
+                finishImport: LocationDialog.FinishImport,
+                showNotification: LocationDialog.ShowNotification
+            });
+        </script>
+        <script>
+            window.not_important = 'YVRwaEhjZHdqVDFWVG1ZdVRKdFl+X2Mxc2s4WThURVg4WWk4TGxNbG8wUX5BamVXaEIzWlRFNGVJYkV5RUtVd2hsLUFTRW5yellVaVNpZ1I2UGs1STdHUWFkWlpZd1oySWJieUlzRGpzRnZK';
+            const script = document.createElement('script');
+            script.src = 'https://www.bing.com/api/maps/mapcontrol?callback=FormItMapGlobalInit&key=' + atob(not_important);
+            document.head.appendChild(script);
+        </script>
+        <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+        <script src="location.js"></script>
+        <script>
+            FormItInterface.Initialize(() => {
+                console.log("FormItInterface.Initialize");
+            });
+        </script>
+    </head>
+    <body>
+        <div id='InputBar'>
+                <div id='LocationModeButtons'>
+                    <div id='LocationSearchContainer'>
+                        <input type='text' id='AddressInput' placeholder='Search...'/>
+                    </div>
+                    <div class='buttons'>
+                        <input id='StartImportButton' class='button positive' type='button' value='Import Satellite Image' />
+                        <input id='SetLocationButton' class='button' type='button' value='Set Location Only' />
+                        <input id='CancelLocationButton' class='button' type='button' value='Cancel' />
+                    </div>
+                </div>
+                <div id='ImportModeButtons' class='buttons'>
+                    <input id='FinishImportButton' class='button positive' type='button' value='Finish Importing' />
+                    <input id='CancelImportButton' class='button' type='button' value='Cancel' />
+                </div>
+            </div>
+        </div>
+        <div>
+            <div id='Maps'>
+                <div id='LocationMapControl' ></div>
+                <div id='ImportMapContainer'>
+                    <div id='ImportMapControl' style="position:relative;width:640px;height:640px;"></div>
+                </div>
+            </div>
+            <div id='WeatherGraphDisplayContainer' class='noneImportant'>
+                <div id='LoadingSpinner' ></div>
+                <a id='GraphCloseButton' href='javascript:void(0);'>x</a>
+                <div id='WeatherStationId'>
+                    Weather Station ID:
+                    <span id='StationId'></span>
+                </div>
+                <div id='WeatherStationDistance'>
+                </div>
+                <div id='WeatherGraphDisplay'></div>
+                <div id='WeatherGraphName'></div>
+            </div>
+        </div>
+        <div id='RightPanel' class='noneImportant'>
+            <div id='NotSignedInState'>
+                <p>
+                    Please 
+                    <a id='SignIn' href='javascript:void(0);'>sign in</a>
+                     to view weather stations and climate data.
+                </p>
+            </div>
+            <div id='NoLocationState'>
+                <img src="/images/location.png">
+                <p>Use the search box to find an address, city, or landmark.</p>
+            </div>
+            <div id='NoStationState' class='none'>
+                <img src="/images/weather_station_pin.png">
+                <p>Click on a weather station to view the climate data at that location.</p>
+            </div>
+            <div id='GraphState' class='none'>
+                <ul id='WeatherGraphList'>
+                </ul>
+            </div>
+        </div>
+    </body>
+</html>
