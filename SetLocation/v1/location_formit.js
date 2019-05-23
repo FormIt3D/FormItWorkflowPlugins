@@ -64,10 +64,6 @@ LocationDialog.FetchDashboardWidgets = function()
 
 LocationDialog.FetchWidgetsForStation = function (args)
 {
-    console.log(args.stationId)
-    console.log(args.widgetIds)
-    console.log(args.widgetVersions)
-
     return FormIt.FetchWidgetsForStation(args.stationId, args.widgetIds, args.widgetVersions);
 }
 

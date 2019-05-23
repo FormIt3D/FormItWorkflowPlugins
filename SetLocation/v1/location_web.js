@@ -66,7 +66,7 @@ LocationDialog.FetchDashboardWidgets = function (callback)
         "LocationDialog.FetchDashboardWidgets",
         "",
         function(result){
-            //TODO Why is this stringified twice?
+            //Not entirely sure why this is stringified twice...
             callback(JSON.parse(JSON.parse(result)));
         }
     );
@@ -84,7 +84,7 @@ LocationDialog.FetchWidgetsForStation = function (stationId, widgetIds, widgetVe
         "LocationDialog.FetchWidgetsForStation",
         args,
         function(result){
-            //TODO Why is this stringified twice?
+            //Not entirely sure why this is stringified twice...
             callback(JSON.parse(JSON.parse(result)));
         }
     );
