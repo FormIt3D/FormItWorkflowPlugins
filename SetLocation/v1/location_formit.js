@@ -44,3 +44,35 @@ LocationDialog.ShowNotification = function(messageObj)
 {
     FormIt.UI.ShowNotification(messageObj.message, messageObj.type, messageObj.timeout || 0);
 }
+
+LocationDialog.FetchNearestWeatherStations = function(locationObj)
+{
+    return FormIt.FetchNearestWeatherStations(
+        locationObj.latitude, locationObj.longitude);
+}
+
+LocationDialog.IsImperialUnitType = function()
+{
+    //return bool
+    return !FormIt.Model.GetUnitType();
+}
+
+LocationDialog.FetchDashboardWidgets = function()
+{
+    return FormIt.FetchDashboardWidgets();
+}
+
+LocationDialog.FetchWidgetsForStation = function (args)
+{
+    console.log(args.stationId)
+    console.log(args.widgetIds)
+    console.log(args.widgetVersions)
+
+    return FormIt.FetchWidgetsForStation(args.stationId, args.widgetIds, args.widgetVersions);
+}
+
+LocationDialog.CheckLogin = function()
+{
+    //return bool
+    return !!FormIt.IsLoggedIn();
+}

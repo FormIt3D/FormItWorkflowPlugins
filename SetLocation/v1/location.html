@@ -15,7 +15,13 @@
                 saveLocation: LocationDialog.SaveLocation,
                 getAddressAsync: LocationDialog.GetLocation,
                 finishImport: LocationDialog.FinishImport,
-                showNotification: LocationDialog.ShowNotification
+                showNotification: LocationDialog.ShowNotification,
+                fetchNearestWeatherStations: LocationDialog.FetchNearestWeatherStations,
+                isImperialUnitType: LocationDialog.IsImperialUnitType,
+                fetchDashboardWidgets: LocationDialog.FetchDashboardWidgets,
+                fetchWidgetsForStation: LocationDialog.FetchWidgetsForStation,
+                checkLogin: LocationDialog.CheckLogin,
+
             });
         </script>
         <script>
@@ -57,7 +63,7 @@
                     <div id='ImportMapControl' style="position:relative;width:640px;height:640px;"></div>
                 </div>
             </div>
-            <div id='WeatherGraphDisplayContainer' class='noneImportant'>
+            <div id='WeatherGraphDisplayContainer' class='none'>
                 <div id='LoadingSpinner' ></div>
                 <a id='GraphCloseButton' href='javascript:void(0);'>x</a>
                 <div id='WeatherStationId'>
@@ -70,8 +76,8 @@
                 <div id='WeatherGraphName'></div>
             </div>
         </div>
-        <div id='RightPanel' class='noneImportant'>
-            <div id='NotSignedInState'>
+        <div id='RightPanel'>
+            <div id='NotSignedInState' class='none'>
                 <p>
                     Please 
                     <a id='SignIn' href='javascript:void(0);'>sign in</a>
@@ -79,17 +85,22 @@
                 </p>
             </div>
             <div id='NoLocationState'>
-                <img src="/images/location.png">
+                <img src="images/location.png">
                 <p>Use the search box to find an address, city, or landmark.</p>
             </div>
             <div id='NoStationState' class='none'>
-                <img src="/images/weather_station_pin.png">
+                <img src="images/weather_station_pin.png">
                 <p>Click on a weather station to view the climate data at that location.</p>
             </div>
             <div id='GraphState' class='none'>
                 <ul id='WeatherGraphList'>
                 </ul>
             </div>
+        </div>
+        <!--Preload marker images-->
+        <div class='none'>
+            <img id='StationMarkerImg' src='images/weather_station_pin.png'>
+            <img id='StationMarkerHoverImg' src='images/weather_station_pin_selected.png'>
         </div>
     </body>
 </html>

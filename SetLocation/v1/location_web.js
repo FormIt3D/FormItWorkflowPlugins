@@ -36,3 +36,68 @@ LocationDialog.ShowNotification = function(messageObj)
 {
     FormItInterface.CallMethod("LocationDialog.ShowNotification", messageObj);
 }
+
+LocationDialog.FetchNearestWeatherStations = function(locationObj, callback)
+{
+    FormItInterface.CallMethod(
+        "LocationDialog.FetchNearestWeatherStations",
+        locationObj,
+        function(result){
+            //TODO Why is this stringified twice?
+            callback(JSON.parse(JSON.parse(result)));
+        }
+    );
+}
+
+LocationDialog.IsImperialUnitType = function(callback)
+{
+    FormItInterface.CallMethod(
+        "LocationDialog.IsImperialUnitType",
+        "",
+        function(result){
+            callback(JSON.parse(result));
+        }
+    );
+}
+
+LocationDialog.FetchDashboardWidgets = function (callback)
+{
+    FormItInterface.CallMethod(
+        "LocationDialog.FetchDashboardWidgets",
+        "",
+        function(result){
+            //TODO Why is this stringified twice?
+            callback(JSON.parse(JSON.parse(result)));
+        }
+    );
+}
+
+LocationDialog.FetchWidgetsForStation = function (stationId, widgetIds, widgetVersions, callback)
+{
+    const args = {
+        stationId,
+        widgetIds,
+        widgetVersions
+    };
+
+    FormItInterface.CallMethod(
+        "LocationDialog.FetchWidgetsForStation",
+        args,
+        function(result){
+            //TODO Why is this stringified twice?
+            callback(JSON.parse(JSON.parse(result)));
+        }
+    );
+}
+
+LocationDialog.CheckLogin = function (callback)
+{
+    FormItInterface.CallMethod(
+        "LocationDialog.CheckLogin",
+        "",
+        function(result){
+            debugger;
+            callback(JSON.parse(result));
+        }
+    );
+}
