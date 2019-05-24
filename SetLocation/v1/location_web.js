@@ -96,7 +96,6 @@ LocationDialog.CheckLogin = function (callback)
         "LocationDialog.CheckLogin",
         "",
         function(result){
-            debugger;
             callback(JSON.parse(result));
         }
     );
