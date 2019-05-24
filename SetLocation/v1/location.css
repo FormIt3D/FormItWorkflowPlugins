@@ -98,10 +98,6 @@ input:focus {
     display:none;
 }
 
-.noneImportant{
-    display:none !important;
-}
-
 #ImportModeButtons{
     display:none;
 }
@@ -109,7 +105,7 @@ input:focus {
 #LocationMapControl {
     width: auto !important;
     position:absolute;
-    right:0px;
+    right:200px;
     top:40px;
     left:0;
     bottom:0;
@@ -167,16 +163,12 @@ input:focus {
     border: solid 1px #4675A8;
     width: 385px;
     height: 355px;
-    z-index: 1;
-
+    z-index: 10;
     position: fixed;
-    xtop: calc(50% + 26px);
-    xleft: calc(50% + 132px);
     top: 50%;
     left: 50%;
     margin-left: -60px;
-    margin-top: -150px;
-    xtransform: translate(-50%,-50%);
+    margin-top: -172px;
 }
 
 #WeatherGraphDisplayContainer:after{
@@ -255,15 +247,14 @@ input:focus {
     transform: translate(-50%,-50%);
 }
 
-
 #WeatherGraphList{
     background-color: white;
     position: absolute;
     top: 10px;
     right: 0px;
     left:10px;
-    bottom: 0px;
-    width: 205px;
+    bottom: 60px;
+    width: 210px;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -271,7 +262,7 @@ input:focus {
 #WeatherGraphList .weatherGraphPreviewContainer{
     background-color:#FFFFFF;
     border:solid 1px #CCCCCC;
-    width:200px;
+    width:180px;
     height:150px;
     border-bottom-right-radius: 5px;
     border-bottom-left-radius: 5px;

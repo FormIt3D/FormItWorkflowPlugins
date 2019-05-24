@@ -528,8 +528,8 @@ class FormItMap {
     }
 
     _addStationMarker (station) {
-        const icon = window.location.origin + "/images/weather_station_pin.png";
-        const hoverIcon = window.location.origin + "/images/weather_station_pin_selected.png";
+        const icon = document.getElementById("StationMarkerImg").src;
+        const hoverIcon = document.getElementById("StationMarkerHoverImg").src;
         const stationLatLng = new Microsoft.Maps.Location(station.latitude, station.longitude)
         const pin = new Microsoft.Maps.Pushpin(stationLatLng, {
             icon: icon
@@ -567,7 +567,7 @@ class FormItMap {
     }
 
     _deactivateAllPins () {
-        const icon = window.location.origin + "/images/weather_station_pin.png";
+        const icon = document.getElementById("StationMarkerImg").src;
         
         this._allWeatherPins.forEach((pin) => {
             pin.setOptions({ icon: icon });
@@ -607,18 +607,20 @@ class FormItMap {
         const cardinals = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"];
         const cardinal = cardinals[Math.round((heading % 360) / 45)];
 
-        const isImperialUnitType = this._bindings.isImperialUnitType();
-        
-        if (isImperialUnitType) {
-            distance = (distanceInMeters * 0.000621371).toFixed(1);
-            distanceString = cardinal + " " + distance + " miles away";
-        } else {
-            distance = (distanceInMeters / 1000).toFixed(1);
-            distanceString = cardinal + " " + distance + " km away";
+        const renderDistanceCallback = (isImperialUnitType) => {
+            if (isImperialUnitType) {
+                distance = (distanceInMeters * 0.000621371).toFixed(1);
+                distanceString = cardinal + " " + distance + " miles away";
+            } else {
+                distance = (distanceInMeters / 1000).toFixed(1);
+                distanceString = cardinal + " " + distance + " km away";
+            }
+    
+            document.getElementById("StationId").innerHTML = station.stationId;
+            document.getElementById("WeatherStationDistance").innerHTML = distanceString;
         }
 
-        document.getElementById("StationId").innerHTML = station.stationId;
-        document.getElementById("WeatherStationDistance").innerHTML = distanceString;
+        this._bindings.isImperialUnitType(renderDistanceCallback);
 
         const callback = (result) => {
             const dashboardsResult = result;
@@ -681,13 +683,13 @@ class FormItMap {
         const callback = (result) => {
             this._weatherStationCache[stationId] = result.widgets;
 
-            this._loadWidgets(result.widgets)
+            this._loadWidgets(result.widgets);
         }
 
         if (this._weatherStationCache[stationId]){
             this._loadWidgets(this._weatherStationCache[stationId]);
         }else{
-            this._bindings.fetchWidgetsForStation(stationId, widgetIds, widgetVersions, callback);
+            this._bindings.fetchWidgetsForStation(`${stationId}`, widgetIds, widgetVersions, callback);
         }
     }
 
