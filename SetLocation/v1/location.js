@@ -583,7 +583,8 @@ class FormItMap {
 
     _zoomToPin (pin) {
         this._locationMap.setView({
-            center: pin.stationLocation
+            center: pin.stationLocation,
+            centerOffset: new Microsoft.Maps.Point(-200,0)
         });
     }
 
