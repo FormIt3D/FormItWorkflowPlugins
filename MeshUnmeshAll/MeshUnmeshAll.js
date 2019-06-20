@@ -30,9 +30,8 @@ FormItWorkflowPlugins.MeshAll = function()
         // for each object in the selection, do something
         for (var j = 0; j < selectedObjectsIDArray.length; j++)
         {
-            // groups are WSM type 24
             // if this is a group, execute the convert operation in each reachable history
-            if (selectedObjectsTypeArray[j] === 24)
+            if (selectedObjectsTypeArray[j] === WSM.nInstanceType)
             {
                 var referenceHistoryId = WSM.APIGetGroupReferencedHistoryReadOnly(nHistoryID, selectedObjectsIDArray[j]);
                 //console.log("Reference history for this Group: " + referenceHistoryId);
@@ -50,9 +49,9 @@ FormItWorkflowPlugins.MeshAll = function()
                         continue;
                     }
 
-                    // get all the objects in this history
-                    // objects are WSM type 1
-                    var objectIdsInThisHistory = WSM.APIGetAllObjectsByTypeReadOnly(reachableHistoriesArray[k], 1);
+                    // get all top-level objects and meshes in this history
+                    // if they're already meshes, WSM will skip them
+                    var objectIdsInThisHistory = WSM.APIGetAllNonOwnedReadOnly(reachableHistoriesArray[k]);
 
                     // convert all objects to meshes
                     WSM.APIConvertObjectsToMeshes(reachableHistoriesArray[k], objectIdsInThisHistory);
@@ -119,9 +118,8 @@ FormItWorkflowPlugins.UnmeshAll = function()
         // for each object in the selection, do something
         for (var j = 0; j < selectedObjectsIDArray.length; j++)
         {
-            // groups are WSM type 24
             // if this is a group, execute the convert operation in each reachable history
-            if (selectedObjectsTypeArray[j] === 24)
+            if (selectedObjectsTypeArray[j] === WSM.nInstanceType)
             {
                 var referenceHistoryId = WSM.APIGetGroupReferencedHistoryReadOnly(nHistoryID, selectedObjectsIDArray[j]);
                 //console.log("Reference history for this Group: " + referenceHistoryId);
@@ -141,10 +139,10 @@ FormItWorkflowPlugins.UnmeshAll = function()
                         totalInstanceHits ++;
                         continue;
                     }
-                    // get all the meshes in this history
-                    // meshes are WSM type 32
-                    var objectIdsInThisHistory = WSM.APIGetAllObjectsByTypeReadOnly(reachableHistoriesArray[k], 32);
-                    //console.log("Mesh IDs in this History: " + objectIdsInThisHistory);
+
+                    // get all top-level objects and meshes in this history
+                    // if they're already objects, WSM will skip them
+                    var objectIdsInThisHistory = WSM.APIGetAllNonOwnedReadOnly(reachableHistoriesArray[k]);
 
                     // convert all meshes to objects
                     WSM.APIConvertMeshesToObjects(reachableHistoriesArray[k], objectIdsInThisHistory, smoothAngle);
@@ -214,7 +212,7 @@ FormItWorkflowPlugins.getSelectionInfo = function()
         var nType =  WSM.APIGetObjectTypeReadOnly(nHistoryID, nObjectID);
         //console.log("Object type: " + nType);
 
-        if (nType == 24)
+        if (nType == WSM.nInstanceType)
         {
             numberOfGroupsInSelection ++;
         }
