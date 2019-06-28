@@ -1,0 +1,36 @@
+<html>
+<head><link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+<title>Properties Plus</title>
+<META NAME="Title" CONTENT="Properties Plus">
+<META NAME="Author" CONTENT="Autodesk FormIt">
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+<script type="text/javascript" src="PropertiesPlus_Web.js"></script>
+<script type="text/javascript">
+    FormItInterface.Initialize(function () {
+        FormItInterface.SubscribeMessage("FormIt.Message.kSelectionsChanged", function(msg)
+            {
+                var jsonMessage = JSON.parse(msg);
+                // This callback will be invoked whenever the signal is emitted on the C++/QML side.
+                //FormItInterface.ConsoleLog("(Web Side) Message: " + JSON.stringify(jsonMessage));
+
+                // when the FormIt selection changes, automatically click "Submit" to update the plugin UI
+                PropertiesPlus.Submit();
+            });
+
+        // create the initial UI
+        PropertiesPlus.CreateQuantificationSection();
+        PropertiesPlus.CreateGroupInfoSection();
+    }); // DOMContentLoaded
+
+</script>
+</head>
+<body>
+<h1>Properties Plus</h1>
+<p>Select objects in the canvas to see additional properties.<br><br>This plugin is a preview and will be updated with additional functionality in the near future!</p>
+
+<!---<form name=a>
+        <input type=checkbox name=calcVolume> Auto-Update?<br>
+        <input type=button value="Get Properties" onClick="PropertiesPlus.Submit();">
+</form> -->
+</body>
+</html>

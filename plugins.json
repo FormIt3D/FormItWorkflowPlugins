@@ -11,6 +11,7 @@
   "GenerateVertex",
   "ValidateCleanModel",
   "MeshUnmeshAll",
-  "StringLightGenerator"
+  "StringLightGenerator",
+  "PropertiesPlus"
   ]
 }
