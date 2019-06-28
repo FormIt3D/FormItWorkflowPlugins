@@ -24,7 +24,7 @@ PropertiesPlus.CreateQuantificationSection = function()
     selectionInfoContainerDiv.appendChild(selectionInfoHeaderDiv);
 
     objectCountDiv = document.createElement('div');
-    objectCountLabel = "Number of objects selected: ";
+    objectCountLabel = "Objects selected: ";
     objectCountDiv.innerHTML = objectCountLabel + objectCount;
     selectionInfoContainerDiv.appendChild(objectCountDiv);
 }
@@ -44,7 +44,7 @@ PropertiesPlus.CreateGroupInfoSection = function()
     groupInfoContainerDiv.appendChild(groupInfoHeaderDiv);
 
     groupInstanceCountDiv = document.createElement('div');
-    groupInstanceCountLabel = "Number of instances in the entire model: ";
+    groupInstanceCountLabel = "Instances in the model: ";
     groupInstanceCountDiv.innerHTML = groupInstanceCountLabel + groupInstanceCount;
     groupInfoContainerDiv.appendChild(groupInstanceCountDiv);
 }
