@@ -1,6 +1,7 @@
 {
     "PluginName": "Properties Plus",
     "PluginDescription": "Calculates various properties not available in the built-in Properties panel.",
+    "PluginType": "Panel",
     "Scripts": [
         "PLUGINLOCATION/PropertiesPlus_Client.js"
     ]
