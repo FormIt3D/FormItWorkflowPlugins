@@ -1,0 +1,43 @@
+<html>
+<head><link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+<title>String Light Generator</title>
+<META NAME="Title" CONTENT="Generate String Lights">
+<META NAME="Author" CONTENT="Autodesk FormIt">
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"></script>
+<script type="text/javascript" src="StringLightGenerator.js"></script>
+<script type="text/javascript">
+    FormItInterface.AddEventListener("DOMContentLoaded");
+</script>
+</head>
+<body>
+<h1>Generate String Lights</h1>
+
+<ul>
+    <li>Select a line or an arc to generate string lights along</li>
+    <li>Set the desired options, then click "Generate String Lights"</li>
+    <li>Fixtures will be generated in identical Groups, so changes in one fixture Group (like applying Materials) will apply to all fixtures</li>
+</ul>
+
+<form id="StringLightGeneratorForm" name=a> 
+    <p><b>Fixture properties:</b></p>
+    <input type=number name=lightCount value=6> Number of Fixtures<br>
+    <input type=number name=verticalCableOrHousingLength value=0.0833> Vertical Cable or Housing Height<br>
+    <input type=number name=verticalCableOrHousingRadius value=0.0625> Vertical Cable or Housing Radius<br>
+    <input type=number name=bulbRadius value=0.1667> Bulb Radius<br>
+    <input type=number name=bulbCount value=1> Bulbs Per Fixture<br>
+    <p></p>
+    <p><b>Catenary curve properties:</b></p>
+    <input type=number name=facetCount value=16> Number of Facets in Curve<br>
+    <input type=number name=catenaryCableRadius value=0.01> Catenary Cable Radius<br>
+    <p></p>
+    <p>If creating a new arc:</p>
+    <input type=number name=arcBulge value=2> Cable Dip<br>
+    
+    <input id="StringLightGeneratorBtn" type=button value="Generate String Lights" onClick="deanstein.Submit();">
+</form>
+<script>
+        FormIt.PluginUtils.HandleEnter("StringLightGeneratorForm", "StringLightGeneratorBtn");
+</script>
+</body>
+</html>

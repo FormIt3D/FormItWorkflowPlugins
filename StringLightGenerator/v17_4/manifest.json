@@ -1,0 +1,11 @@
+{
+    "PluginName": "Generate String Lights",
+    "PluginDescription": "Create architectural string lights given a selected line or arc.",
+    "PluginType": "Panel",
+    "Scripts": [
+        "PLUGINLOCATION/StringLightGenerator.js",
+        "PLUGINLOCATION/../Utils.js",
+        "https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils17_4.js"
+    ]
+    ,"Panel": "PLUGINLOCATION/index.html"
+}

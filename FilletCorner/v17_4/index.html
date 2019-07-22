@@ -1,0 +1,49 @@
+<html>
+<head><link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+<title>Fillet Corner</title>
+<META NAME="Title" CONTENT="Fillet 2D Corners">
+<META NAME="Author" CONTENT="Autodesk FormIt">
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"></script>
+<script type="text/javascript" src="FilletCorner.js"></script>
+<script type="text/javascript">
+    FormItInterface.AddEventListener("DOMContentLoaded");
+</script>
+</head>
+<body>
+<h1>Fillet 2D Corners</h1>
+<ul>
+    <li>Select vertices, lines, or faces</li>
+    <li>Click "Fillet Corner" to draw a new arc at all valid vertices</li>
+    <ul>
+        <li>Only vertices with 2 connected edges are considered valid</li>
+    </ul>
+    <li>Optionally delete the original vertex, leaving only the new fillet arc</li>
+</ul>
+
+<form id="FilletCornerForm" name=a>
+        <input type=number name=radius id=radius value=5>  Radius<br>
+        <input type=checkbox name=cleanup> Delete vertex<br>
+        <input type=button id="FilletCornerButton" value="Fillet Corner" onClick="deanstein.Submit();">
+</form>
+
+<script>
+    FormIt.PluginUtils.HandleEnter("FilletCornerForm", "FilletCornerButton");
+
+    // handle enter in numeric inputs
+    var FilletCornerForm = document.getElementById("FilletCornerForm");
+    debugger;
+    FilletCornerForm.addEventListener("keyup", function(event) {
+    // cancel default action
+    event.preventDefault();
+    // 13 is the "Enter" key on the keyboard
+    if (event.keyCode === 13) {
+        console.log("Enter received!");
+    // Trigger the button element with a click
+        document.getElementById("FilletCornerButton").click();
+    }
+  });
+</script>
+
+</body>
+</html>
