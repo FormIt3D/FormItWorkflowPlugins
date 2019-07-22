@@ -4,14 +4,14 @@
   "Plugins": 
   [
     "RebuildCurve",
-    "FilletCorner/17_4",
+    "FilletCorner/v17_4",
     "FlipAlong",
-    "MoveAllSceneCameras/17_4",
+    "MoveAllSceneCameras/v17_4",
     "ExtractMaterialTextures",
-    "GenerateVertex/17_4",
+    "GenerateVertex/v17_4",
     "ValidateCleanModel",
     "MeshUnmeshAll",
-    "StringLightGenerator/17_4",
+    "StringLightGenerator/v17_4",
     "PropertiesPlus"
   ]
 }
