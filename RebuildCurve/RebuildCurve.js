@@ -118,8 +118,8 @@ deanstein.RebuildCurve = function(args)
         // creates an array of boolean values depending on whether the selection contains edges
         function defineValidType()
         {
-            // the valid edge type is defined in WSM as the number 7
-            var validType = 7;
+            // the valid edge type in WSM
+            var validType = WSM.nEdgeType;
             for (var m = 0; m < typeArray.length; m++)
             {
                 if (typeArray[m] === validType)
@@ -148,7 +148,8 @@ deanstein.RebuildCurve = function(args)
         }
 
         // run the test for contiguity (this function is stored in utils)
-        testForIdentical(siblingArray, bIsSameSiblingArray, "Is same sibling results: ");
+        var bIsSameSiblingArray = testForIdentical(siblingArray);
+        //console.log("Is same sibling results: ");
 
         // TEST if the selected edges are contiguous
         var bIsSelectionContiguous = booleanReduce(bIsSameSiblingArray);
@@ -424,7 +425,7 @@ deanstein.RebuildCurve = function(args)
                 WSM.APICreateCircleOrArcFromPoints(nHistoryID, arcStartPos, arcEndPos, thirdPointPos, accuracyORcount, bReadOnly, trans, nMinimumNumberOfFacets, bCircle);
 
                 // find the geometry that was changed so it can be highlighted and checked
-                var changedData = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(nHistoryID, 7);
+                var changedData = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(nHistoryID, WSM.nEdgeType);
                 //console.log("Changed data : " + JSON.stringify(changedData));
 
                 var newEdgeIDArray = changedData["created"];

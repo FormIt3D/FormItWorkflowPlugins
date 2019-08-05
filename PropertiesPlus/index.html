@@ -13,24 +13,28 @@
                 // This callback will be invoked whenever the signal is emitted on the C++/QML side.
                 //FormItInterface.ConsoleLog("(Web Side) Message: " + JSON.stringify(jsonMessage));
 
-                // when the FormIt selection changes, automatically click "Submit" to update the plugin UI
-                PropertiesPlus.Submit();
+                // when the FormIt selection changes, automatically update the plugin UI
+                PropertiesPlus.UpdateUI();
             });
 
         // create the initial UI
         PropertiesPlus.CreateQuantificationSection();
-        PropertiesPlus.CreateGroupInfoSection();
-    }); // DOMContentLoaded
+        PropertiesPlus.CreateSingleGroupInstanceDetailsSection();
+        PropertiesPlus.CreateMultiGroupInstanceDetailsSection();
 
+    }); // DOMContentLoaded
 </script>
 </head>
 <body>
 <h1>Properties Plus</h1>
-<p>Select objects in the canvas to see additional properties.<br><br>This plugin is a preview, and will be updated with more features soon.</p>
+<p>
+    Select objects in the canvas to view and modify additional properties.<br>
+</p>
 
-<!---<form name=a>
-        <input type=checkbox name=calcVolume> Auto-Update?<br>
-        <input type=button value="Get Properties" onClick="PropertiesPlus.Submit();">
-</form> -->
+<script>
+    // TODO: why isn't this working?
+    //FormIt.PluginUtils.HandleEnter("instanceNameContainer", "renameButton");
+</script>
+
 </body>
 </html>

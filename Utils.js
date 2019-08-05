@@ -27,21 +27,23 @@ function getMidPointBetweenTwoPoints(x0,y0,z0, x1,y1,z1)
     //console.log(midPoint);
 }
 
-// generic function to test each item in the array, compare for equality, and return a new array containing boolean values
-function testForIdentical(array, bArray, message) 
+// generic function to test each item in the array, compare it to its siblings for equality, and return a new array containing boolean values
+function testForIdentical(array) 
 {
+    var bArray = [];
     for (var k = 0; k < array.length - 1; k++)
     {
-        if (array[k] === array[k+1])
+        if (array[k] === array[k + 1])
         {
             bArray.push(true);
         }
-        if (array[k] != array[k+1])
+        if (array[k] != array[k + 1])
         {
             bArray.push(false);
         }
     }
     //console.log(message + bArray);
+    return bArray;
 }
 
 // generic function that returns true only if all booleans evaluated are true
