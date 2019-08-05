@@ -8,12 +8,23 @@ if (typeof deanstein.GenerateStringLights == 'undefined')
     deanstein.GenerateStringLights = {};
 }
 
-// these get populated with the getSelectionBasics()function
+// global operation type
+var operationType;
 
 // the current editing history
 var nHistoryID;
+
+// the current history depth
+var historyDepth;
+
 // the current selection
 var currentSelection;
+
+// all the arrays
+deanstein.GenerateStringLights.arrays = {};
+
+//if set to false, we hit an error and need to terminate gracefully
+var success;
 
 // define how to get the current history, query the selection, and report the number of items successfully selected
 deanstein.GenerateStringLights.getSelectionBasics = function()
@@ -26,10 +37,7 @@ deanstein.GenerateStringLights.getSelectionBasics = function()
     // get current selection
     currentSelection = FormIt.Selection.GetSelections();
     //console.log("Current selection: " + JSON.stringify(currentSelection));
-
-    // report how many items in the selection
-    var currentSelectionLength = currentSelection.length;
-    //console.log("Number of objects in selection: " + currentSelectionLength);
+    //console.log("Number of objects in selection: " + currentSelection.length);
 
     if (currentSelection.length === 0)
     {
@@ -40,13 +48,60 @@ deanstein.GenerateStringLights.getSelectionBasics = function()
     }
 }
 
+// define how to create an array of objectIDs from a given selection
+deanstein.GenerateStringLights.getObjectIDsBySelection = function(currentSelection)
+{
+    // create or empty the objectID array
+    deanstein.GenerateStringLights.arrays.nObjectIDArray = new Array();
+
+    // for each object in the selection, get info
+    for (var j = 0; j < currentSelection.length; j++)
+    {
+        // if you're not in the Main History, calculate the depth to extract the correct history data
+        historyDepth = (currentSelection[j]["ids"].length) - 1;
+
+        // get objectID of the current selection, then push the results into an array
+        var nObjectID = currentSelection[j]["ids"][historyDepth]["Object"];
+        //console.log("Selection ID: " + nObjectID);
+
+        deanstein.GenerateStringLights.arrays.nObjectIDArray.push(nObjectID);
+    }
+    
+    // return the filled array of object IDs
+    return deanstein.GenerateStringLights.arrays.nObjectIDArray;
+}
+
+// define how to create an array of objectIDs by looking for the geometry that changed in this history
+deanstein.GenerateStringLights.getIDsByCreatedChangedOrDeletedDataInHistory = function(nHistoryID, type, createdOrChanged)
+{
+    // create or empty the objectID array
+    deanstein.GenerateStringLights.arrays.nObjectIDArray = new Array();
+
+    // find the geometry that was just changed
+    var createdOrChangedData = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(nHistoryID, type);
+    //console.log("Created/changed/deleted data: " + JSON.stringify(createdOrChangedData));
+
+    // return different data depending on whether "created" or "changed" was requested
+    if (createdOrChanged == "created")
+    {
+        deanstein.GenerateStringLights.arrays.nObjectIDArray = createdOrChangedData["created"];
+        //console.log("Created data array: " + deanstein.GenerateStringLights.arrays.nObjectIDArray );
+    }
+    else if (createdOrChanged == "changed")
+    {
+        deanstein.GenerateStringLights.arrays.nObjectIDArray  = createdOrChangedData["changed"];
+        //console.log("Changed data array: " + deanstein.GenerateStringLights.arrays.nObjectIDArray );
+    }
+
+    // return the filled array of object IDs
+    return deanstein.GenerateStringLights.arrays.nObjectIDArray;
+}
+
 // define how to gather necessary data about the selection and store it in arrays
-deanstein.GenerateStringLights.getSelectionInfo = function(nHistoryID, currentSelection)
+deanstein.GenerateStringLights.getInfoByIDs = function(nHistoryID, objectIDArray)
 {
     // create or empty the arrays before starting
-    deanstein.GenerateStringLights.arrays = {};
     deanstein.GenerateStringLights.arrays.typeArray = new Array();
-    deanstein.GenerateStringLights.arrays.nObjectIDArray = new Array();
     deanstein.GenerateStringLights.arrays.nVertexIDArray = new Array();
     deanstein.GenerateStringLights.arrays.nVertexIDUniqueArray = new Array();
     deanstein.GenerateStringLights.arrays.point3DArray = new Array();
@@ -59,28 +114,23 @@ deanstein.GenerateStringLights.getSelectionInfo = function(nHistoryID, currentSe
     deanstein.GenerateStringLights.arrays.arcCircle3PointIDArray = new Array();
     deanstein.GenerateStringLights.arrays.arcCircle3PointPosArray = new Array();
 
-    // edge type is defined in WSM as the number 7
-    var validType = 7;
+    // selections must contain only edges
+    var validType = WSM.nEdgeType;
 
-    // for each object in the selection, get info
-    for (var j = 0; j < currentSelection.length; j++)
+    // for each object, get info
+    for (var j = 0; j < objectIDArray.length; j++)
     {
-        // if you're not in the Main History, calculate the depth to extract the correct history data
-        var historyDepth = (currentSelection[j]["ids"].length) - 1;
+        // get objectID of this element
+        var nObjectID = objectIDArray[j];
+        //console.log("This object ID: " + nObjectID);
 
-        // get objectID of the current selection, then push the results into an array
-        var nObjectID = currentSelection[j]["ids"][historyDepth]["Object"];
-        //console.log("Selection ID: " + nObjectID);
-        deanstein.GenerateStringLights.arrays.nObjectIDArray.push(nObjectID);
-        //console.log("ObjectID array: " + deanstein.GenerateStringLights.arrays.nObjectIDArray);
-
-        // get object type of the current selection, then push the results into an array
+        // get object type, then push the results into an array
         var nType =  WSM.APIGetObjectTypeReadOnly(nHistoryID, nObjectID);
         //console.log("Object type: " + nType);
         deanstein.GenerateStringLights.arrays.typeArray.push(nType);
         //console.log("Object type array: " + deanstein.GenerateStringLights.arrays.typeArray);
 
-        // get vertexIDs of the current selection, then push the results into an array
+        // get vertexIDs, then push the results into an array
         var nVertexIDSet = WSM.APIGetObjectsByTypeReadOnly(nHistoryID, nObjectID, WSM.nVertexType, false);
         //console.log("nVertex ID: " + nVertexIDSet);
         deanstein.GenerateStringLights.arrays.nVertexIDArray.push(nVertexIDSet);
@@ -109,7 +159,7 @@ deanstein.GenerateStringLights.getSelectionInfo = function(nHistoryID, currentSe
 
         function getSplineAnalysis()
         {
-            // test selection for spline attributes, then push the results into an array
+            // test for spline attributes, then push the results into an array
             var splineAnalysis = WSM.APIIsEdgeOnSplineReadOnly(nHistoryID, nObjectID);
             var bIsOnSpline = splineAnalysis["bHasSplineAttribute"];
             deanstein.GenerateStringLights.arrays.bIsOnSplineArray.push(bIsOnSpline);
@@ -140,11 +190,12 @@ deanstein.GenerateStringLights.getSelectionInfo = function(nHistoryID, currentSe
         }
         //console.log("Is valid array: " + deanstein.GenerateStringLights.arrays.bIsEdgeTypeArray);
     }
+
     createSelectionTypeArray();
 }
 
 // define how to pre-check to determine whether we can proceed with the given selection set
-deanstein.GenerateStringLights.preCheck = function()
+deanstein.GenerateStringLights.preCheck = function(args)
 {
     var bIsSelectionValid = true;
 
@@ -169,12 +220,20 @@ deanstein.GenerateStringLights.preCheck = function()
     }
 
     // determine the operation type
-    var operationType = deanstein.GenerateStringLights.getOperationType();
+    var operationType = deanstein.GenerateStringLights.getOperationType(args);
 
     // if the operation type is a line, we first need to make an arc from scratch, then select it
     if (operationType === "line") 
     {
         console.log("\nOperation type detected: line");
+        var bIsOperationTypeValid = true;
+    }
+
+    // a line with 0 arcBulge is valid too, but will get treated differently downstream (no automatic rebuild)
+    if (operationType === "lineNoBulge")
+    {
+        console.log("\nOperation type detected: line with 0 resulting bulge");
+
         var bIsOperationTypeValid = true;
     }
 
@@ -233,7 +292,7 @@ deanstein.GenerateStringLights.preCheck = function()
 }
 
 // define how to determine the type of operation to proceed with
-deanstein.GenerateStringLights.getOperationType = function() 
+deanstein.GenerateStringLights.getOperationType = function(args) 
 {
     // TEST if the entire selection has the circle attribute
     var bIsArcCircleType = booleanReduce(deanstein.GenerateStringLights.arrays.bIsOnCircleArray);
@@ -242,19 +301,32 @@ deanstein.GenerateStringLights.getOperationType = function()
     // TEST if the entire selection has the spline attribute
     var bIsSplineType = booleanReduce(deanstein.GenerateStringLights.arrays.bIsOnSplineArray);
 
+    // get the specified arc bulge
+    var arcBulge = FormIt.PluginUtils.currentUnits(args.arcBulge);
+
     if (bIsArcCircleType === true)
     {
-        var operationType = "arcCircle";
+        operationType = "arcCircle";
+    }
+
+    else if (bIsArcCircleType === true)
+    {
+        operationType = "arcCircle";
     }
 
     else if (bIsSplineType === true)
     {
-        var operationType = "spline";
+        operationType = "spline";
+    }
+
+    else if (arcBulge === 0)
+    {
+        operationType = "lineNoBulge";
     }
 
     else
     {
-        var operationType = "line";
+        operationType = "line";
     }
 
     //console.log("Operation type: " + operationType);
@@ -305,37 +377,18 @@ deanstein.GenerateStringLights.createCatenaryArcFromLine = function(nHistoryID, 
     var catenaryArcFromLine = WSM.APICreateCircleOrArcFromPoints(nHistoryID, arcStartPos, arcEndPos, thirdPoint, accuracyORcount, bReadOnly, trans, nMinimumNumberOfFacets, bCircle);
     console.log("Created a new arc based on the input line.");
 
-    // find the geometry that was just changed so it can be highlighted and checked
-    var changedData = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(nHistoryID, 7);
-    //console.log("Changed data: " + JSON.stringify(changedData));
+    // get the changed data and fill out the object ID array with the data
+    var createdDataIDs = deanstein.GenerateStringLights.getIDsByCreatedChangedOrDeletedDataInHistory(nHistoryID, WSM.nEdgeType, "created");
 
-    var newEdgeIDArray = changedData["created"];
-
-    // eliminate the current selection
-    //console.log("\nClearing the original selection.");
-    FormIt.Selection.ClearSelections();	
-
-    // add the new edges to the selection
-    FormIt.Selection.AddSelections(newEdgeIDArray);
-    //console.log("\nAdded the new curve to the selection set.");
-
-    currentSelection = FormIt.Selection.GetSelections();
-    //console.log("\nRedefining the current selection.");
-
-    // get basic info about the new selection
-
-    // report how many items in the selection
-    var currentSelectionLength = currentSelection.length;
-    //console.log("Number of objects in selection: " + currentSelectionLength);
-
-    if (currentSelection.length === 0)
+    if (catenaryArcFromLine.length === 0)
     {
         console.log("\nError: no new arc was created.");
+        success = false;
         return;
     }
 
-    // re-run the get info on selection routine to populate the arrays with the new curve information
-    deanstein.GenerateStringLights.getSelectionInfo(nHistoryID, currentSelection);
+    // re-run the get info routine to populate the arrays with the new curve information
+    deanstein.GenerateStringLights.getInfoByIDs(nHistoryID, createdDataIDs);
     //console.log("\nPopulating arrays with new selection info.");
 
     // set the curve to be rebuilt to the newly created curve
@@ -581,26 +634,13 @@ deanstein.GenerateStringLights.rebuildArcCircle = function(vertexIDArrayForRebui
 
     // execute the rebuild
     WSM.APICreateCircleOrArcFromPoints(nHistoryID, arcStartPos, arcEndPos, thirdPointPos, accuracyORcount, bReadOnly, trans, nMinimumNumberOfFacets, bCircle);
+    
+    // get the changed data and fill out the object ID array with the data
+    var createdDataIDs = deanstein.GenerateStringLights.getIDsByCreatedChangedOrDeletedDataInHistory(nHistoryID, WSM.nEdgeType, "created");
 
-    // find the geometry that was changed so it can be selected and checked
-    var changedData = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(nHistoryID, 7);
-    //console.log("Changed data: " + JSON.stringify(changedData));
-
-    var newEdgeIDArray = changedData["created"];
-
-    // eliminate the current selection
-    //console.log("\nClearing the original selection.");
-    FormIt.Selection.ClearSelections();	
-
-    // add the new edges to the selection
-    FormIt.Selection.AddSelections(newEdgeIDArray);
-    //console.log("\nAdded the new curve to the selection set.");
-
-    var newFacetCount = newEdgeIDArray.length;
+    var newFacetCount = createdDataIDs.length;
     //console.log("New edge IDs: " + newEdgeIDs);
     console.log("\nCreated a new curve with " + newFacetCount + " faceted edges.");
-
-    return newEdgeIDArray;
 }
 
 // define how to place points evenly on an arc/circle
@@ -637,8 +677,25 @@ deanstein.GenerateStringLights.generatePointsAlongArcCircle = function(args)
     //console.log("Number of points in temporary arc point array: " + temporaryArcPointPosArray.length);
     temporaryArcPointPosArray.splice((temporaryArcPointPosArray.length - 1), 1);
     temporaryArcPointPosArray.splice(0, 1);
+
     var lightMountPointPosArray = temporaryArcPointPosArray;
-    //console.log("Points for mounting lights: " + JSON.stringify(verticalCableTopPointPosArray));
+    //console.log("Points for mounting lights: " + JSON.stringify(temporaryArcPointPosArray));
+
+    // if no arcBulge was set to 0, we need to use the Z-value from an end point, and replace the Z-values of all other points
+    // this will create string lights along a straight line, not an arc
+    if (operationType === "lineNoBulge")
+    {
+        // this is the Z-height we want to apply to all other points
+        var correctedZHeight = arcStartPos.z;
+        //console.log("Z-height: " + zHeight);
+
+        // for each point, replace the current Z-value with the corrected Z-height
+        for (var i = 0; i < lightMountPointPosArray.length; i++)
+        {
+            lightMountPointPosArray[i].z = correctedZHeight;
+        }
+    }
+
     return lightMountPointPosArray;
 }
 
@@ -666,7 +723,7 @@ deanstein.GenerateStringLights.drawSingleLightFixture = function(placementPoint,
     //console.log("Drew a single line representing the cable length or bulb housing.");
 
     // find the edge that was just created so it can be highlighted and checked
-    var changedData = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(typicalLightFixtureHistoryID, 7);
+    var changedData = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(typicalLightFixtureHistoryID, WSM.nEdgeType);
     //console.log("Changed data: " + JSON.stringify(changedData));
     var cablePathID = changedData["created"][0];
     //console.log("New path ID: " + JSON.stringify(cablePathID));
@@ -794,34 +851,67 @@ deanstein.GenerateStringLights.execute = function(args)
     console.clear();
     console.log("String Light Generator Plugin\n");
 
+    // by default, rebuild the arc so it's smoother
+    var bRebuildArc = true;
+
+    // assume the previous operation was successful - this flag will change if this operation fails
+    success = true;
+
     // execute the get selection basics routine
     deanstein.GenerateStringLights.getSelectionBasics();
 
+    // get the object IDs of the selected geometry
+    var selectedObjectIDs = deanstein.GenerateStringLights.getObjectIDsBySelection(currentSelection);
+
     // execute the get selection info routine
-    deanstein.GenerateStringLights.getSelectionInfo(nHistoryID, currentSelection);
+    deanstein.GenerateStringLights.getInfoByIDs(nHistoryID, selectedObjectIDs);
 
     // set a flag based on whether we precheck
-    var preCheckPassed = deanstein.GenerateStringLights.preCheck();
+    var preCheckPassed = deanstein.GenerateStringLights.preCheck(args);
 
     // if we prechecked, then define the operation type; otherwise, stop
     if (preCheckPassed === true)
     {
-        var operationType = deanstein.GenerateStringLights.getOperationType();
+        var operationType = deanstein.GenerateStringLights.getOperationType(args);
     }
-
     else
     {
         return;
     }
 
-    // if the operation type is a line, we first need to make an arc from scratch, then select it
+    
+    FormIt.UndoManagement.BeginState();
+
+    // if the operation type is a line, we first need to make an arc from scratch
     if (operationType === "line") 
     {
         // create the new catenary arc, then define the target curve as this new curve
         var vertexIDArrayForRebuild = deanstein.GenerateStringLights.createCatenaryArcFromLine(nHistoryID, args);
     }
 
-    // otherwise, use the selected curve
+    // if 0 arc bulge is specified, we have to do a few things differently
+    else if (operationType === "lineNoBulge")
+    {
+        // temporarily set the arc bulge to a non-0 to create a temporary arc to place points correctly
+        args.arcBulge = 1;
+
+        // later, the Z-values will be reset to keep this at no bulge
+        var vertexIDArrayForRebuild = deanstein.GenerateStringLights.createCatenaryArcFromLine(nHistoryID, args);
+    }
+
+    // if creating the new arc was unsuccessful, we need to return before the undo management starts
+    if (success === false)
+    {
+        // indicate the operation was unsuccessful
+        var message = "Something went wrong creating string lights. \nIf the selected path was vertical, try selecting a path that is partially horizontal.";
+        FormIt.UI.ShowNotification(message, FormIt.NotificationType.Error, 0);
+        console.log("\n" + message);
+        
+        FormIt.UndoManagement.EndState("Generate String Lights");
+        return;
+    }
+
+    // otherwise, use the selected curve to generate lights along
     else if (operationType === "arcCircle")
     {
         // define the target curve as the selected curve
@@ -829,23 +919,18 @@ deanstein.GenerateStringLights.execute = function(args)
         //console.log("Vertex ID array for curve to be rebuilt: " + JSON.stringify(vertexIDArrayForRebuild));
     }
 
-    FormIt.UndoManagement.BeginState();
-    
-    // rebuild the arc, if enabled
-    var bRebuildArc = true;
-    //console.log("\nRebuild arc/circle? " + bRebuildArc);
     if (bRebuildArc) 
     {
         var facetCount = args.facetCount;
         deanstein.GenerateStringLights.rebuildArcCircle(vertexIDArrayForRebuild, args);
 
-        // execute the get selection basics routine to capture the rebuilt curve
-        deanstein.GenerateStringLights.getSelectionBasics();
-        //console.log("Getting basic info on the rebuilt curve.")
+        // get the changed data and fill out the object ID array with the data  
+        var createdDataIDs = deanstein.GenerateStringLights.getIDsByCreatedChangedOrDeletedDataInHistory(nHistoryID, WSM.nEdgeType, "created");
 
-        // execute the get selection info routine to analyze the rebuilt curve
-        deanstein.GenerateStringLights.getSelectionInfo(nHistoryID, currentSelection);
-        //console.log("Updating matrices with new curve information");
+        // re-run the get info routine to populate the arrays with the new curve information
+        deanstein.GenerateStringLights.getInfoByIDs(nHistoryID, createdDataIDs);
+        //console.log("\nPopulating arrays with new selection info.");
+
     }
 
     // execute drawing new points along the arc or circle; returns an array of points for use in generating new lights
@@ -863,7 +948,7 @@ deanstein.GenerateStringLights.execute = function(args)
 
     // use the first Group ID to get the typical ID for all Groups
     var fixtureGroupID = fixtureGroupIDArray[0];
-    
+
     // define the group ID that will contain all pieces of the new string light assembly
     var stringLightContainerGroupID = WSM.APICreateGroup(nHistoryID, fixtureGroupID);
     // make a new history for the light fixture group
@@ -891,13 +976,32 @@ deanstein.GenerateStringLights.execute = function(args)
     }
 
     // find the curve that was just created
-    var changedCurveData = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(finalContainerHistoryID, 7);
-    //console.log("Changed curve data: " + JSON.stringify(changedCurveData));
-    var pathIDArray = changedCurveData["created"];
-    //console.log("PathIDArray: " + pathIDArray);
+    var newPathIDArray = deanstein.GenerateStringLights.getIDsByCreatedChangedOrDeletedDataInHistory(finalContainerHistoryID, WSM.nEdgeType, "created");
 
-    // get the objectHistoryIDArray for the edge IDs that make up the sweep path
-    var aPath = WSM.Utils.ObjectHistoryIDArray(pathIDArray);
+    // if lineNoBulge, use the path the user selected initially (should be a line)
+    if (operationType === "lineNoBulge")
+    {
+        // move the selected curve (should be a line) into the final container group
+        WSM.APICopyOrSketchAndTransformObjects(nHistoryID, finalContainerHistoryID, selectedObjectIDs, WSM.Geom.MakeRigidTransform(WSM.Geom.Point3d(0, 0, 0), WSM.Geom.Vector3d(1, 0, 0), WSM.Geom.Vector3d(0, 1, 0), WSM.Geom.Vector3d(0, 0, 1)), 1, false);
+
+        // find the IDs of the geoemetry just copied into this history
+        var selectedPathIDArray = deanstein.GenerateStringLights.getIDsByCreatedChangedOrDeletedDataInHistory(finalContainerHistoryID, WSM.nEdgeType, "created");
+
+        // get the objectHistoryIDArray for the edge IDs that make up the sweep path
+        var aPath = WSM.Utils.ObjectHistoryIDArray(selectedPathIDArray);
+
+        // delete the original arc path
+        for (var i = 0; i < newPathIDArray.length; i++)
+        {
+            WSM.APIDeleteObject(finalContainerHistoryID, newPathIDArray[i]);
+        }
+    }
+    // otherwise, use the IDs of the new curve that was just created
+    else
+    {
+        // get the objectHistoryIDArray for the edge IDs that make up the sweep path
+        var aPath = WSM.Utils.ObjectHistoryIDArray(newPathIDArray);
+    }
 
     // for each of the objects in aPath, correct the HistoryID to reflect the finalContainerHistoryID
     // TODO: consume the updated WSM.Utils.ObjectHistoryIDArray which will take a History argument, so we don't have to do this anymore
@@ -909,6 +1013,7 @@ deanstein.GenerateStringLights.execute = function(args)
             //correctedPath.push
         }
     }
+
     correctHistoryIDsInObjectHistoryIDArray();
     //console.log("Path: " + JSON.stringify(aPath));
 
@@ -972,9 +1077,10 @@ deanstein.GenerateStringLights.execute = function(args)
     FormIt.UndoManagement.EndState("Generate String Lights");
 
     // indicate the operation has finished
-    var message = "Successfully created string lights along the selected edge(s).";
+    var message = "Successfully created string lights along the selected path.";
     FormIt.UI.ShowNotification(message, FormIt.NotificationType.Information, 0);
     console.log("\n" + message);
+
 }
 
 // Submit runs from the HTML page.  This script gets loaded up in both FormIt's
