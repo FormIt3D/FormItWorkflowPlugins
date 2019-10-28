@@ -1,0 +1,28 @@
+<html>
+<head><link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+<title>Match Photo</title>
+<META NAME="Title" CONTENT="Match Photo">
+<META NAME="Author" CONTENT="Autodesk FormIt">
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"></script>
+<script type="text/javascript" src="MatchPhoto.js"></script>
+<script type="text/javascript">
+    FormItInterface.Initialize();
+</script>
+</head>
+<body>
+<h1>Match Photo</h1>
+
+<ul>
+    <li>Select a photo to show on-screen</li>
+    <li>Click "Match" to create a Scene</li>
+</ul>
+
+<input id="MatchPhotoButton" type=button value="Match Photo" onClick="MatchPhoto.Submit();">
+
+<script>
+        //FormIt.PluginUtils.HandleEnter("MoveAllSceneCamerasForm", "MoveAllSceneCamerasBtn");
+</script>
+    
+</body>
+</html>
