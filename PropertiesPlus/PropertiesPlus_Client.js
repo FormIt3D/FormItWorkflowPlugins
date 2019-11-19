@@ -10,6 +10,7 @@ var nHistoryID;
 var selectedObjectsIDArray;
 var selectedObjectsTypeArray;
 var selectedObjectsNameArray;
+var selectedObjectsLevelsBoolArray;
 var groupInstanceIDArray;
 var groupInstanceNameArray;
 
@@ -38,6 +39,7 @@ PropertiesPlus.GetSelectionInfo = function()
     selectedObjectsIDArray = [];
     selectedObjectsTypeArray = [];
     selectedObjectsNameArray = [];
+    selectedObjectsLevelsBoolArray = [];
     groupInstanceIDArray = [];
     groupInstanceNameArray = [];
 
@@ -92,6 +94,12 @@ PropertiesPlus.GetSelectionInfo = function()
         selectedObjectsNameArray.push(objectName);
         //console.log("Object name array: " + JSON.stringify(selectedObjectsNameArray));
 
+        // get the Levels setting for this object, then push the results into an array
+        var bUseLevels = objectProperties.bReportAreaByLevel;
+        selectedObjectsLevelsBoolArray.push(bUseLevels);
+
+        //var bUsesLevels = objectProperties.b
+
         // get only group instance info, if there are any, and push the results into arrays
         if (selectedObjectsTypeArray[j] == WSM.nInstanceType)
         {
@@ -103,7 +111,7 @@ PropertiesPlus.GetSelectionInfo = function()
     }
 
     // do this stuff only if there is a single Group selected
-    if ((selectedObjectsTypeArray.length == 1) && (selectedObjectsTypeArray[0] == 24))
+    if ((selectedObjectsTypeArray.length == 1) && (selectedObjectsTypeArray[0] == WSM.nGroupType))
     {
         var identicalGroupInstanceCount = 0;
         var referenceHistoryId = WSM.APIGetGroupReferencedHistoryReadOnly(nHistoryID, selectedObjectsIDArray[0]);
@@ -189,13 +197,13 @@ PropertiesPlus.RenameGroupInstances = function(args)
     console.log("Group instance ID Array: " + groupInstanceIDArray);
     if (groupInstanceIDArray.length == 1)
     {
-        WSM.APISetObjectProperties(nHistoryID, groupInstanceIDArray[0], args.singleGroupInstanceRename, false);
+        WSM.APISetObjectProperties(nHistoryID, groupInstanceIDArray[0], args.singleGroupInstanceRename, selectedObjectsLevelsBoolArray[0]);
     }
     else
     {
         for (var i = 0; i < groupInstanceIDArray.length; i++)
         {
-            WSM.APISetObjectProperties(nHistoryID, groupInstanceIDArray[i], args.multiGroupInstanceRename, false);
+            WSM.APISetObjectProperties(nHistoryID, groupInstanceIDArray[i], args.multiGroupInstanceRename, selectedObjectsLevelsBoolArray[i]);
         }
     }
 }
