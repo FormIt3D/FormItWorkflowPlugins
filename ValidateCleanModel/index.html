@@ -16,6 +16,8 @@
 
 <hr>
 
+<b><p>Validate</p></b> 
+
 <p>Use Validate to check for any geometric corruption that could result in modeling failures.</p>
 
 <div id="form">
@@ -25,15 +27,20 @@
 
 <hr>
 
+<b><p>Clean</p></b> 
+
 <p>Use Clean to try fixing issues found in Validate.</p>
 
 <p>Note that Clean may delete invalid geometry, and may change the appearance of the model.</p>
 
 <b><p>Tolerance</p></b> 
 
-<p>A tolerance value of 0 will fix invalid geometry found during validation.</p>
+<p>After clicking the button below, you'll see a popup dialog asking for a tolerance value.</p>
 
-<p>Higher values will delete and merge any edges in the model that are shorter than the provided tolerance.</p>
+<ul>
+    <li>A tolerance value of 0 will fix invalid geometry found during validation. </li>
+    <li>Higher values will delete and merge any edges in the model that are shorter than the provided tolerance.</li>
+</ul>
 
 <div id="form">
         <form name=b>
