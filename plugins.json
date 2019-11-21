@@ -1,6 +1,6 @@
 {
   "RepoName": "FormIt Workflow Plugins",
-  "RepoDescription": "Extend FormIt's functionality and enhance your workflows with powerful plugins from the Autodesk FormIt team.",
+  "RepoDescription": "Turbocharge your 3D modeling workflows with powerful plugins from the Autodesk FormIt team.",
   "Plugins": 
   [
   "RebuildCurve",
