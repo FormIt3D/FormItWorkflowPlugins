@@ -4,6 +4,7 @@
 <META NAME="Title" CONTENT="Properties Plus">
 <META NAME="Author" CONTENT="Autodesk FormIt">
 <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"></script>
 <script type="text/javascript" src="PropertiesPlus_Web.js"></script>
 <script type="text/javascript">
     FormItInterface.Initialize(function () {
@@ -21,7 +22,7 @@
         PropertiesPlus.CreateQuantificationSection();
         PropertiesPlus.CreateSingleGroupInstanceDetailsSection();
         PropertiesPlus.CreateMultiGroupInstanceDetailsSection();
-
+        FormIt.PluginUtils.HandleEnter("instanceNameContainer", "renameButton");
     }); // DOMContentLoaded
 </script>
 </head>
@@ -30,12 +31,6 @@
 <p>
     Select objects in the canvas to view and modify additional properties.<br>
 </p>
-
-<script>
-    // TODO: why isn't this working?
-    // FORMIT-9884
-    //FormIt.PluginUtils.HandleEnter("instanceNameContainer", "renameButton");
-</script>
-
 </body>
+
 </html>
