@@ -177,7 +177,7 @@ multiGroupInstanceNameInput.setAttribute("type", "text");
 
 var multiGroupInstanceRenameButton = document.createElement('input');
 multiGroupInstanceRenameButton.setAttribute("type", "button");
-multiGroupInstanceRenameButton.id = 'multiGrouprenameButton';
+multiGroupInstanceRenameButton.id = 'multiGroupInstanceNameButton';
 multiGroupInstanceRenameButton.value = "Rename All";
 multiGroupInstanceRenameButton.disabled = true;
 
