@@ -163,7 +163,7 @@ multiGroupInstanceDetailsHeaderDiv.className = 'header';
 multiGroupInstanceDetailsHeaderDiv.innerHTML = 'Multi Group Instance Details';
 
 var multiGroupInstanceNameContainer = document.createElement('form');
-multiGroupInstanceNameContainer.id = 'instanceNameContainer';
+multiGroupInstanceNameContainer.id = 'multiGroupInstanceNameContainer';
 multiGroupInstanceNameContainer.className = 'nameAndRenameContainer';
 
 var multiGroupInstanceNameDiv = document.createElement('span');
@@ -177,7 +177,7 @@ multiGroupInstanceNameInput.setAttribute("type", "text");
 
 var multiGroupInstanceRenameButton = document.createElement('input');
 multiGroupInstanceRenameButton.setAttribute("type", "button");
-multiGroupInstanceRenameButton.id = 'renameButton';
+multiGroupInstanceRenameButton.id = 'multiGrouprenameButton';
 multiGroupInstanceRenameButton.value = "Rename All";
 multiGroupInstanceRenameButton.disabled = true;
 
