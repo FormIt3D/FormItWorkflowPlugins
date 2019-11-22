@@ -114,11 +114,11 @@ singleGroupInstanceDetailsHeaderDiv.className = 'header';
 singleGroupInstanceDetailsHeaderDiv.innerHTML = 'Group Instance Details';
 
 var singleGroupInstanceNameContainer = document.createElement('form');
-singleGroupInstanceNameContainer.id = 'instanceNameContainer';
+singleGroupInstanceNameContainer.id = 'singleGroupInstanceNameContainer';
 singleGroupInstanceNameContainer.className = 'nameAndRenameContainer';
 
 var singleGroupInstanceNameDiv = document.createElement('span');
-singleGroupInstanceNameDiv.id = 'instanceNameDiv';
+singleGroupInstanceNameDiv.id = 'singleGroupInstanceNameDiv';
 singleGroupInstanceNameDiv.className = 'label';
 singleGroupInstanceNameDiv.innerHTML = 'Name: ';
 
@@ -129,7 +129,7 @@ singleGroupInstanceNameInput.setAttribute("type", "text");
 
 var singleGroupInstanceRenameButton = document.createElement('input');
 singleGroupInstanceRenameButton.setAttribute("type", "button");
-singleGroupInstanceRenameButton.id = 'renameButton';
+singleGroupInstanceRenameButton.id = 'singleGroupInstanceRenameButton';
 singleGroupInstanceRenameButton.value = "Rename";
 singleGroupInstanceRenameButton.disabled = true;
 
@@ -177,7 +177,7 @@ multiGroupInstanceNameInput.setAttribute("type", "text");
 
 var multiGroupInstanceRenameButton = document.createElement('input');
 multiGroupInstanceRenameButton.setAttribute("type", "button");
-multiGroupInstanceRenameButton.id = 'multiGroupInstanceNameButton';
+multiGroupInstanceRenameButton.id = 'multiGroupInstanceRenameButton';
 multiGroupInstanceRenameButton.value = "Rename All";
 multiGroupInstanceRenameButton.disabled = true;
 
