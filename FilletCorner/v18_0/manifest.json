@@ -6,5 +6,6 @@
         "PLUGINLOCATION/FilletCorner.js",
         "https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils18_0.js"
     ]
-    ,"Panel": "PLUGINLOCATION/index.html"
+    ,"Panel": "PLUGINLOCATION/index.html",
+    "PanelIcon": "PLUGINLOCATION/img/fillet_2d_corners@2x.png"
 }

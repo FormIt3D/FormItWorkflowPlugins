@@ -6,5 +6,6 @@
         "PLUGINLOCATION/MoveAllSceneCameras.js",
         "https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils18_0.js"
     ]
-    ,"Panel": "PLUGINLOCATION/index.html"
+    ,"Panel": "PLUGINLOCATION/index.html",
+    "PanelIcon": "PLUGINLOCATION/img/move_all_scene_cameras@2x.png"
 }
