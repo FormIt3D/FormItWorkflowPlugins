@@ -7,5 +7,6 @@
         "PLUGINLOCATION/../Utils.js",
         "https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"
     ]
-    ,"Panel": "PLUGINLOCATION/index.html"
+    ,"Panel": "PLUGINLOCATION/index.html",
+    "PanelIcon": "PLUGINLOCATION/img/generate_string_lights@2x.png"
 }

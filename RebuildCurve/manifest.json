@@ -6,5 +6,6 @@
         "PLUGINLOCATION/RebuildCurve.js",
         "PLUGINLOCATION/../Utils.js"
     ]
-    ,"Panel": "PLUGINLOCATION/index.html"
+    ,"Panel": "PLUGINLOCATION/index.html",
+    "PanelIcon": "PLUGINLOCATION/img/rebuild_explode_curve@2x.png"
 }
