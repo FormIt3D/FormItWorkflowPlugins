@@ -1,17 +1,9 @@
-
-//generic function to get the distance between two points [x,y,z]
+// get the distance between two points [x,y,z]
 function getDistanceBetweenTwoPoints(x0,y0,z0, x1,y1,z1)
 {
     var distance = Math.sqrt((Math.pow((x1-x0),2)) + (Math.pow((y1-y0),2)) + (Math.pow((z1-z0),2)));
     //console.log("Distance: " + distance);
     return distance;
-}
-
-// generic function to get the vector between two points [x,y,z]
-function getVectorBetweenTwoPoints(x0,y0,z0, x1,y1,z1)
-{
-    var vector = new Array(x1-x0, y1-y0, z1-z0);
-    return vector;
 }
 
 // get the midpoint between two points defined by an array [x,y,z]
@@ -27,7 +19,7 @@ function getMidPointBetweenTwoPoints(x0,y0,z0, x1,y1,z1)
     //console.log(midPoint);
 }
 
-// generic function to test each item in the array, compare it to its siblings for equality, and return a new array containing boolean values
+// test each item in the array, compare it to its siblings for equality, and return a new array containing the results
 function testForIdentical(array) 
 {
     var bArray = [];
@@ -46,7 +38,7 @@ function testForIdentical(array)
     return bArray;
 }
 
-// generic function that returns true only if all booleans evaluated are true
+// true only if all booleans evaluated are true
 function booleanReduce(array)
 {
     function isTrue(bool) 
@@ -71,7 +63,7 @@ function booleanReduce(array)
     }
 }
 
-// generic function that returns true only if ANY of the booleans evaluated in the array are true
+// true only if ANY of the booleans evaluated in the array are true
 function booleanAnyTrue(array)
 {
     for(var i = 0; i < array.length; i++)
@@ -114,7 +106,22 @@ function flattenArray(array)
     }, []);
 }
 
-// return the cross product of two vectors
+// get the vector between two points [x,y,z]
+function getVectorBetweenTwoPoints(x0,y0,z0, x1,y1,z1)
+{
+    var vector = new Array(x1-x0, y1-y0, z1-z0);
+    return vector;
+}
+
+// get the normalized vector between two points [x,y,z]
+function getNormalizedVectorBetweenTwoPoints(x0,y0,z0, x1,y1,z1)
+{
+    var magnitude = getDistanceBetweenTwoPoints(x0,y0,z0, x1,y1,z1)
+    var vector = new Array((x1-x0)/magnitude, (y1-y0)/magnitude, (z1-z0)/magnitude);
+    return vector;
+}
+
+// get the cross product of two vectors
 function crossProductVector(vector0, vector1)
 {
     var crossProductVectorX = (vector0[1]*vector1[2] - vector0[2]*vector1[1]);
@@ -124,14 +131,22 @@ function crossProductVector(vector0, vector1)
     return crossProductVector;
 }
 
-// return the magnitude of the given vector
+// get the magnitude of the vector
 function vectorMagnitude(vector)
 {
     var vectorMagnitude = Math.sqrt((vector[0] * vector[0]) + (vector[1] * vector[1]) + (vector[2] * vector[2]));
     return vectorMagnitude;
 }
 
-// return the dot product of two vectors
+// normalize a vector
+function normalizeVector(vector)
+{
+    var magnitude = vectorMagnitude(vector);
+    var normalizedVector = new Array(vector[0]/magnitude, vector[1]/magnitude, vector[2]/magnitude);
+    return normalizedVector;
+}
+
+// get the dot product of two vectors
 function dotProductVector(vector0, vector1)
 {
     var vector0Magnitude = vectorMagnitude(vector0);
@@ -139,3 +154,21 @@ function dotProductVector(vector0, vector1)
     var dotProduct = (vector0[0]/vector0Magnitude * vector1[0]/vector1Magnitude) + (vector0[1]/vector0Magnitude * vector1[1]/vector1Magnitude) + (vector0[2]/vector0Magnitude * vector1[2]/vector1Magnitude);
     return dotProduct;
 }
+
+// get the angle in radians between two 3D vectors
+function angleBetweenVectors(vector0, vector1)
+{
+    var normalizedVector0 = normalizeVector(vector0);
+    var normalizedVector1 = normalizeVector(vector1);
+    var dotProductVector = dotProductVector(normalizedVector0, normalizedVector1);
+    angle = Math.acos(dotProductVector)
+    return angle;
+}
+
+// get the angle in radians between two 2D vectors
+function angleBetween2DVectors(vector0, vector1)
+{
+    angle = Math.acos(dotProductVector(vector0, vector1));
+    return angle;
+}
+
