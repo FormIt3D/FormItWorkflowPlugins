@@ -4,6 +4,8 @@
     "PluginType": "Panel",
     "Scripts": [
         "PLUGINLOCATION/MatchPhoto.js",
+        "PLUGINLOCATION/../Utils.js",
+        "PLUGINLOCATION/../WSMUtils.js",
         "https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils18_0.js"
     ]
     ,"Panel": "PLUGINLOCATION/index.html"
