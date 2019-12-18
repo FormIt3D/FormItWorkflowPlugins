@@ -110,8 +110,8 @@ PropertiesPlus.GetSelectionInfo = function()
         }
     }
 
-    // do this stuff only if there is a single Group selected
-    if ((selectedObjectsTypeArray.length == 1) && (selectedObjectsTypeArray[0] == WSM.nGroupType))
+    // do this stuff only if there is a single Group Instance selected
+    if ((selectedObjectsTypeArray.length == 1) && (selectedObjectsTypeArray[0] === WSM.nInstanceType))
     {
         var identicalGroupInstanceCount = 0;
         var referenceHistoryId = WSM.APIGetGroupReferencedHistoryReadOnly(nHistoryID, selectedObjectsIDArray[0]);
