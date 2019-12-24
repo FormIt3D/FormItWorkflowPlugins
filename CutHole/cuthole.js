@@ -113,6 +113,9 @@ CutHoles.MakeCuttingObject = function()
 }
 FormIt.Commands.RegisterJSCommand("CutHoles.MakeCuttingObject");
 
+// CutHoles.CutHoles cruises through all the instances in the History that is being edited
+// looking for instances that cut holes and then subtracts the instance that cuts holes
+// from geometry in the History being edited.
 CutHoles.CutHoles = function()
 {
     //console.log("------------------------------------- CutHoles.CutHoles -------------------------------------");
@@ -179,7 +182,7 @@ CutHoles.ShowDialog = function()
 {
     var dialogParams = {
     "PluginName": "Cut Hole",
-    "DialogBox": "PLUGINLOCATION/index.html",
+    "DialogBox": "PLUGINLOCATION/cuthole.html",
     "DialogBoxWidth": 640,
     "DialogBoxHeight": 480,
     "DialogBoxType": "Modeless"};
@@ -190,5 +193,14 @@ FormIt.Commands.RegisterJSCommand("CutHoles.ShowDialog");
 
 CutHoles.DefineComponentGeometry = function()
 {
+    CutHoles.GlueToSurface();
     FormIt.Commands.DoCommand("Edit: Select All");
+    FormIt.Commands.DoCommand("Group: Group (Context Menu)");
 }
+FormIt.Commands.RegisterJSCommand("CutHoles.DefineComponentGeometry");
+
+CutHoles.AddContentLibraryDir = function()
+{
+    FormIt.Commands.DoCommand("Edit: Preferences: Content Library...");
+}
+

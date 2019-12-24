@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+<script type="text/javascript" src="cuthole_html_side.js"></script>
+<script type="text/javascript">
+  FormItInterface.Initialize();
+</script>
+</head>
+<body>
+
+<div class="tab">
+  <button class="tablinks" onclick="openTab(event, 'Design')">Design</button>
+  <button class="tablinks" onclick="openTab(event, 'Help')">Help</button>
+</div>
+
+<div id="Design" class="tabcontent">
+    <p>Start with an empty model.</p>
+    <p>Draw the geometry that represents the component, i.e. the window frame.</p>  
+    <p>NOTE: The insertion point will be the origin point.  The component will be align in the X/Y plane.
+    Look at existing CutHole components to learn how they are drawn.</p>  
+    <p>Once the geometry is drawn, click the button below to group the component geometry.
+      A shortcut can be assigned to this step.  The shortcut command is CutHoles.DefineComponentGeometry.
+    </p>
+    <input id="DefineComponentGeoemtry" type=button value="Define Component Geometry" onClick="CutHoles.DefineComponentGeometry();">
+    <p>Draw the cutting geometry and then select the geometry that will cut into the geometry that intersects the selection.
+      A shortcut can be assigned to this step.  The shortcut command is CutHoles.MakeCuttingObject.
+    </p>
+    <input id="DefineCuttingGeoemtry" type=button value="Define Cutting Geometry" onClick="CutHoles.MakeCuttingObject();">
+    <p>Now save this new model into any content library directory.  You will then be able to refresh the content library panel and have your new comonent show up.</p>
+    <input id="Add Content Library Directory" type=button value="Add Content Library Directory" onClick="CutHoles.AddContentLibraryDir();">
+    <p>The next step is to place CutHoles components on other geometry, like walls.
+        Note that the CutHoles components will not cut into other Groups, just geometry like Faces and Edges.
+        Once the new compoents are placed where they should cut a hole, click the Cut Holes toolbar button or the button below.
+        A shortcut can be assigned to this step.  The shortcut command is CutHoles.CutHoles.
+    </p>
+    <input id="CutHoles" type=button value="Cut Holes" onClick="CutHoles.CutHoles();">
+  </div>
+
+<div id="Help" class="tabcontent">
+  <h3>Help</h3>
+  <p>There are two parts to this plugin.  One part is for designing Hole Cutting Components.  This is the first tab in this dialog.</p>
+      <p> The other part is using the hole cutting components. The hole cutting components show up in the Content Library.</p>
+</div>
+
+<script>
+function openTab(evt, tabName) {
+  var i, tabcontent, tablinks;
+
+  // Turn on the selected tabcontent  
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  document.getElementById(tabName).style.display = "block";
+
+  // Highlight the selected tab
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  evt.currentTarget.className += " active";
+}
+</script>
+   
+</body>
+</html> 
