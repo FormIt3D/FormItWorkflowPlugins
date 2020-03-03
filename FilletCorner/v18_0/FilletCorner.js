@@ -228,8 +228,11 @@ function blendVertex(nHistoryID, nVertexID, radius, cleanup)
             // create centerPoint
             var centerPoint = WSM.Geom.Point3d(centerPointX,centerPointY,centerPointZ);
 
+            // FormIt v18 and newer has a global curve faceting setting - use that here
+            var nCurveFacets = FormIt.Model.GetCurveAccuracyOrCountCurrent();
+            
             // create new arc
-            WSM.APICreateCircleOrArcFromPoints(nHistoryID,newPoint1,newPoint2,centerPoint);
+            WSM.APICreateCircleOrArcFromPoints(nHistoryID, newPoint1, newPoint2, centerPoint, nCurveFacets);
             console.log("Successfully created a new arc with radius " + radius + " at vertexID " + nVertexID + ".");
 
             // delete the vertex if the option is checked
