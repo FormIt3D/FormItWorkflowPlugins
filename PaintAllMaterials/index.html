@@ -1,0 +1,27 @@
+<html>
+<head><link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+<title>Mesh + Unmesh Recursively</title>
+<META NAME="Title" CONTENT="Paint All Materials">
+<META NAME="Author" CONTENT="Autodesk FormIt">
+<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+<script type="text/javascript" src="PaintAllMaterials.js"></script>
+<script type="text/javascript">
+    FormItInterface.AddEventListener("DOMContentLoaded");
+</script>
+</head>
+<body>
+<h1>Paint All Materials</h1>
+
+<ul>
+    <li>Click "Paint All" to create a block and paint it with each Material in this file.</li>
+    <li>If the Material is already painted on geometry, it will be skipped.</li>
+</ul>
+
+<div id="form">
+    <form name=a>
+    <input type=button value="Paint All" onClick="FormItWorkflowPlugins.SubmitPaintAll();">
+</form>
+
+</div>
+</body>
+</html>

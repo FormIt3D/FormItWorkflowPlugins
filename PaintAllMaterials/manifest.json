@@ -1,0 +1,9 @@
+{
+    "PluginName": "Paint All Materials",
+    "PluginDescription": "Create a block and paint it with each unused Material in the file.",
+    "PluginType": "Panel",
+    "Scripts": [
+        "PLUGINLOCATION/PaintAllMaterials.js"
+    ]
+    ,"Panel": "PLUGINLOCATION/index.html"
+}
