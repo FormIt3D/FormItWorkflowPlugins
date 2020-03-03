@@ -52,6 +52,11 @@ FormItWorkflowPlugins.PaintAllMaterials = function()
     }
     
     FormIt.UndoManagement.EndState("Paint All Materials");
+
+    // indicate the operation has finished
+    var message = "Painted " + materialIDs.length + " Materials on geometry.";
+    FormIt.UI.ShowNotification(message, FormIt.NotificationType.Information, 0);
+    console.log("\n" + message);
 }
 
 // Submit runs from the HTML page.  This script gets loaded up in both FormIt's
