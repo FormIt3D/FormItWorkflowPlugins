@@ -131,11 +131,32 @@ function crossProductVector(vector0, vector1)
     return crossProductVector;
 }
 
-// get the magnitude of the vector
+// multiply a vector by a quaternion
+function multiplyVectorByQuaternion(vectorX, vectorY, vectorZ, quatX, quatY, quatZ, quatW)
+{
+    var ssvv = (quatW * quatW) - ((quatX * quatX) + (quatY * quatY) + (quatZ * quatZ));
+    var vr = ((quatX * vectorX) + (quatY * vectorY) + (quatZ * vectorZ)) * 2.;
+    var s = quatW * 2;
+    var tmpX = (ssvv * vectorX) + (vr * quatX) + (s * ((quatY * vectorZ) - (quatZ * vectorY)));
+    var tmpY = (ssvv * vectorY) + (vr * quatY) + (s * ((quatZ * vectorX) - (quatX * vectorZ)));
+    var tmpZ = (ssvv * vectorZ) + (vr * quatZ) + (s * ((quatX * vectorY) - (quatY * vectorX)));
+
+    vector = new Array(tmpX, tmpY, tmpZ);
+    return vector;
+}
+
+// get the magnitude of a vector
 function vectorMagnitude(vector)
 {
     var vectorMagnitude = Math.sqrt((vector[0] * vector[0]) + (vector[1] * vector[1]) + (vector[2] * vector[2]));
     return vectorMagnitude;
+}
+
+// scale a vector
+function scaleVector(vector, scalar)
+{
+    scaledVector = new Array(vector[0] * scalar, vector[1] * scalar, vector[2] * scalar);
+    return scaledVector;
 }
 
 // normalize a vector

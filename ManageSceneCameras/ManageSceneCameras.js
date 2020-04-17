@@ -8,27 +8,44 @@ var cameraContainerGroupAndLayerName = "Cameras";
 // put the Group of cameras in the Main History (0)
 var cameraContainerGroupHistoryID = 0;
 
-ManageSceneCameras.getScreenPointInWorldSpace = function(history, x, y)
+ManageSceneCameras.getScreenPointInWorldSpace = function(x, y, planeDistance)
 {
-    // distance from camera position to plane
-    var distance = 10;
-
-    // get a pickray at the provided screen point
+    // get a pickray at the provided screen point (normalized 0-1)
     var pickray = WSM.Utils.PickRayFromNormalizedScreenPoint(x, y);
     //console.log(JSON.stringify(pickray));
 
     pickrayPoint = pickray.pickrayLine.point;
     pickrayVector = pickray.pickrayLine.vector;
 
-    newPickrayPointX = pickrayPoint.x + pickrayVector.x * distance;
-    newPickrayPointY = pickrayPoint.y + pickrayVector.y * distance;
-    newPickrayPointZ = pickrayPoint.z + pickrayVector.z * distance;
+    newPickrayPointX = pickrayPoint.x + pickrayVector.x * planeDistance;
+    newPickrayPointY = pickrayPoint.y + pickrayVector.y * planeDistance;
+    newPickrayPointZ = pickrayPoint.z + pickrayVector.z * planeDistance;
     //console.log(newPickrayPointX + ',' + newPickrayPointY + ',' + newPickrayPointZ);
 
     var pickrayPoint3d = WSM.Geom.Point3d(newPickrayPointX, newPickrayPointY, newPickrayPointZ);
 
-    //var vertex = WSM.APICreateVertex(history, pickrayPoint3d);
     return pickrayPoint3d;
+}
+
+ManageSceneCameras.getViewportAspectRatioByPickray = function(distance)
+{
+    // get the lower left and upper right screen points
+    var lowerLeftPoint = ManageSceneCameras.getScreenPointInWorldSpace(0, 1, distance);
+    var lowerRightPoint = ManageSceneCameras.getScreenPointInWorldSpace(1, 1, distance);
+    var upperLeftPoint = ManageSceneCameras.getScreenPointInWorldSpace(0, 0, distance);
+
+    // calculate the viewport width and height
+    var viewportWidth = getDistanceBetweenTwoPoints(lowerRightPoint.x, lowerRightPoint.y, lowerRightPoint.z, lowerLeftPoint.x, lowerLeftPoint.y, lowerLeftPoint.z);
+    var viewportHeight = getDistanceBetweenTwoPoints(upperLeftPoint.x, upperLeftPoint.y, upperLeftPoint.z, lowerLeftPoint.x, lowerLeftPoint.y, lowerLeftPoint.z);
+
+    // determine the aspect ratio
+    var aspectRatio = viewportWidth/viewportHeight;
+
+    // TODO: replace this function with one that doesn't require a pickray
+    // the following API will be available in v20 - will be fewer steps to get the aspect ratio, and won't require pickray
+    //var viewportSize = FormIt.Cameras.GetViewportSize();
+    
+    return aspectRatio;
 }
 
 // gets an object in this history by name, optionally searching a smaller array of objects
@@ -136,11 +153,9 @@ ManageSceneCameras.getOrCreateLayerByName = function(nHistoryID, layerName)
     return layerID;
 }
 
-ManageSceneCameras.createSceneCameraGeometry = function(nHistoryID, scenes)
+ManageSceneCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRatio)
 {
     console.log("Building scene camera geometry...");
-    // current camera to return to
-    var currentCamera = FormIt.Cameras.GetCameraData();
 
     // create or find the Cameras layer, and get its ID
     var camerasLayerID = ManageSceneCameras.getOrCreateLayerByName(nHistoryID, cameraContainerGroupAndLayerName);
@@ -165,7 +180,7 @@ ManageSceneCameras.createSceneCameraGeometry = function(nHistoryID, scenes)
     // for each scene, get the camera data and set the current camera to match, then generate the camera geometry
     for (var i = 0; i < scenes.length; i++)
     {
-        var sceneCamera = scenes[i].camera;
+        var sceneCameraData = scenes[i].camera;
         //console.log("Camera: " + sceneCamera);
 
         var sceneName = scenes[i].name;
@@ -177,46 +192,92 @@ ManageSceneCameras.createSceneCameraGeometry = function(nHistoryID, scenes)
         // look for any Camera Groups matching this name, and delete it
         ManageSceneCameras.deleteObjectByName(cameraContainerGroupHistoryID, cameraObjects, sceneName);
 
-        // set the current camera, and run the function to create the geometry from the camera
-        FormIt.Cameras.SetCameraData(sceneCamera);
-        ManageSceneCameras.createCurrentCameraGeometry(cameraContainerGroupHistoryID, sceneName);
+        // create the geometry for this camera
+        ManageSceneCameras.createCameraGeometryFromData(sceneCameraData, cameraContainerGroupHistoryID, sceneName, aspectRatio);
 
         console.log("Built new camera: " + sceneName);
     }
-    
-    // return to the camera when the operation started
-    FormIt.Cameras.SetCameraData(currentCamera);
 }
 
-ManageSceneCameras.createCurrentCameraGeometry = function(nHistoryID, cameraInstanceName)
+// creates camera geometry from camera data
+ManageSceneCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, cameraInstanceName, aspectRatio)
 {
+    // distance from the point to the camera plane
+    var distance = 10;
+
     // cameras will need to be moved to the origin, then Grouped, then moved back (to get the LCS correct)
     var origin = WSM.Geom.Point3d(0, 0, 0);
 
-	// get info about the current camera
-    var cameraData = FormIt.Cameras.GetCameraData();
-    //console.log("Camera data: " + JSON.stringify(cameraData));
+    // get the FOV from the camera data
+    var FOV = cameraData.FOV;
+
+    // determine the normalized view width and height
+    if (aspectRatio <= 1.0) {
+        width = Math.tan(FOV);
+        height = width / aspectRatio;
+    } else {
+        height = Math.tan(FOV);
+        width = height * aspectRatio;
+    }
+
+    // multiply the width and height by distance
+    height *= distance;
+    width *= distance;
+
+    // construct the camera forward vector
+    var cameraForwardVector = multiplyVectorByQuaternion(0, 0, -1, cameraData.rotX, cameraData.rotY, cameraData.rotZ, cameraData.rotW);
+    // scale the vector by the distance
+    cameraForwardVector = scaleVector(cameraForwardVector, distance);
+    var cameraForwardVector3d = WSM.Geom.Vector3d(cameraForwardVector[0], cameraForwardVector[1], cameraForwardVector[2]);
+    //console.log(JSON.stringify(cameraForwardVector3d));
+
+    // construct the camera up vector
+    var cameraUpVector = multiplyVectorByQuaternion(0, 1, 0, cameraData.rotX, cameraData.rotY, cameraData.rotZ, cameraData.rotW);   
+    // scale the vector by the  height
+    cameraUpVector = scaleVector(cameraUpVector, height);
+    var cameraUpVector3d = WSM.Geom.Vector3d(cameraUpVector[0], cameraUpVector[1], cameraUpVector[2]);
+    //console.log(JSON.stringify(cameraUpVector3d));
+
+    // construct the camera right vector
+    var cameraRightVector = multiplyVectorByQuaternion(-1, 0, 0, cameraData.rotX, cameraData.rotY, cameraData.rotZ, cameraData.rotW);
+    // scale the vector by the  width
+    cameraRightVector = scaleVector(cameraRightVector, width);
+    var cameraRightVector3d = WSM.Geom.Vector3d(cameraRightVector[0], cameraRightVector[1], cameraRightVector[2]);
+    //console.log(JSON.stringify(cameraRightVector3d));
 
 	// get the current camera's position
-	var cameraPosX = cameraData.posX;
-	var cameraPosY = cameraData.posY;
-	var cameraPosZ = cameraData.posZ;
-    var cameraPosition = WSM.Geom.Point3d(cameraPosX, cameraPosY, cameraPosZ);
+    var cameraPosition = WSM.Geom.Point3d(cameraData.posX, cameraData.posY, cameraData.posZ);
     //console.log(JSON.stringify(cameraPosition));
 
-    // create the camera corner points
-    var point0 = ManageSceneCameras.getScreenPointInWorldSpace(nHistoryID, 0, 0);
-    var point1 = ManageSceneCameras.getScreenPointInWorldSpace(nHistoryID, 0, 1);
-    var point2 = ManageSceneCameras.getScreenPointInWorldSpace(nHistoryID, 1, 1);
-    var point3 = ManageSceneCameras.getScreenPointInWorldSpace(nHistoryID, 1, 0);
+    // construct the 4 corners of the camera
+
+    // lower left
+    var point0x = cameraPosition.x + cameraForwardVector3d.x - cameraRightVector3d.x - cameraUpVector3d.x;
+    var point0y = cameraPosition.y + cameraForwardVector3d.y - cameraRightVector3d.y - cameraUpVector3d.y;
+    var point0z = cameraPosition.z + cameraForwardVector3d.z - cameraRightVector3d.z - cameraUpVector3d.z;
+    var point0 = WSM.Geom.Point3d(point0x, point0y, point0z);
+
+    // upper left
+    var point1x = cameraPosition.x + cameraForwardVector3d.x - cameraRightVector3d.x + cameraUpVector3d.x;
+    var point1y = cameraPosition.y + cameraForwardVector3d.y - cameraRightVector3d.y + cameraUpVector3d.y;
+    var point1z = cameraPosition.z + cameraForwardVector3d.z - cameraRightVector3d.z + cameraUpVector3d.z;
+    var point1 = WSM.Geom.Point3d(point1x, point1y, point1z);
+
+    // upper right
+    var point2x = cameraPosition.x + cameraForwardVector3d.x + cameraRightVector3d.x + cameraUpVector3d.x;
+    var point2y = cameraPosition.y + cameraForwardVector3d.y + cameraRightVector3d.y + cameraUpVector3d.y;
+    var point2z = cameraPosition.z + cameraForwardVector3d.z + cameraRightVector3d.z + cameraUpVector3d.z;
+    var point2 = WSM.Geom.Point3d(point2x, point2y, point2z);
+
+    // lower right
+    var point3x = cameraPosition.x + cameraForwardVector3d.x + cameraRightVector3d.x - cameraUpVector3d.x;
+    var point3y = cameraPosition.y + cameraForwardVector3d.y + cameraRightVector3d.y - cameraUpVector3d.y;
+    var point3z = cameraPosition.z + cameraForwardVector3d.z + cameraRightVector3d.z - cameraUpVector3d.z;
+    var point3 = WSM.Geom.Point3d(point3x, point3y, point3z);
+
+    // all camera points
     var points = [point0, point1, point2, point3];
 
-    // create the screen centerpoint
-    var screenCenterpoint = ManageSceneCameras.getScreenPointInWorldSpace(nHistoryID, 0.5, 0.5);
-    //WSM.APICreateVertex(nHistoryID, screenCenterpoint);
-
-    // create the screen top point
-    var screenTopPoint = ManageSceneCameras.getScreenPointInWorldSpace(nHistoryID, 0.5, 0);
 
     // set up an array to capture all camera geometry objects
     var cameraObjects = [];
@@ -249,28 +310,9 @@ ManageSceneCameras.createCurrentCameraGeometry = function(nHistoryID, cameraInst
     // 
 
     // get the vector from the camera's position to the origin
-    var cameraToOriginVector = getVectorBetweenTwoPoints(cameraPosX, cameraPosY, cameraPosZ, 0, 0, 0);
+    var cameraToOriginVector = getVectorBetweenTwoPoints(cameraPosition.x, cameraPosition.y, cameraPosition.z, 0, 0, 0);
     // convert the vector to the resulting WSM point3d
     var translatedCameraPositionPoint3d = WSM.Geom.Point3d(cameraToOriginVector[0], cameraToOriginVector[1], cameraToOriginVector[2]);
-
-    // get the vector between the camera position and the screen centerpoint - this will be used for aligning the camera toward an axis
-    var cameraForwardVector = getNormalizedVectorBetweenTwoPoints(cameraPosX, cameraPosY, cameraPosZ, screenCenterpoint.x, screenCenterpoint.y, screenCenterpoint.z);
-    // get the equivalent vector 3d
-    var cameraForwardVector3d = convertVectorToWSMVector3d(cameraForwardVector);
-    //console.log("Camera vector 3D: " + JSON.stringify(cameraVector3d));
-
-    // get a vector toward the camera top - this is temporary
-    var cameraTopVector = getNormalizedVectorBetweenTwoPoints(cameraPosX, cameraPosY, cameraPosZ, screenTopPoint.x, screenTopPoint.y, screenTopPoint.z);
-
-    // calculate the right vector of the camera
-    var cameraRightVector = normalizeVector(crossProductVector(cameraForwardVector, cameraTopVector));
-    // get the equivalent vector 3d
-    var cameraRightVector3d = convertVectorToWSMVector3d(cameraRightVector);
-    
-    // calculate the up vector of the camera
-    var cameraUpVector = normalizeVector(crossProductVector(cameraRightVector, cameraForwardVector));
-    // get the equivalent vector3d
-    var cameraUpVector3d = convertVectorToWSMVector3d(cameraUpVector);
 
     // create a transform for moving the camera to the origin, keeping its current orientation
     var cameraMoveToOriginTransform = WSM.Geom.MakeRigidTransform(translatedCameraPositionPoint3d, WSM.Geom.Vector3d(1, 0, 0), WSM.Geom.Vector3d(0, 1, 0), WSM.Geom.Vector3d(0, 0, 1));
@@ -305,7 +347,7 @@ ManageSceneCameras.createCurrentCameraGeometry = function(nHistoryID, cameraInst
     var cameraViewPlaneFaceID = JSON.parse(WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(cameraGroupHistoryID, WSM.nFaceType).created);
     
     var cameraViewPlaneCentroidPoint3d = WSM.APIGetFaceCentroidPoint3dReadOnly(cameraGroupHistoryID, cameraViewPlaneFaceID);
-    console.log(cameraViewPlaneCentroidPoint3d);
+    //console.log(cameraViewPlaneCentroidPoint3d);
 
     // set the name of the camera group
     WSM.APISetRevitFamilyInformation(cameraGroupHistoryID, false, false, "", "Camera", "", "");
@@ -326,7 +368,7 @@ ManageSceneCameras.createCurrentCameraGeometry = function(nHistoryID, cameraInst
 
     // create a new Group for the camera viewplane
     var cameraViewPlaneGroupID = WSM.APICreateGroup(cameraGroupHistoryID, cameraViewPlaneFaceID);
-    console.log(faceObjects);
+    //console.log(faceObjects);
     // get the instanceID of the Group
     var cameraViewPlaneGroupInstanceID = JSON.parse(WSM.APIGetObjectsByTypeReadOnly(cameraGroupHistoryID, cameraViewPlaneGroupID, WSM.nInstanceType));
     // create a new history for the camera view plane
@@ -365,7 +407,18 @@ ManageSceneCameras.execute = function()
     var allScenes = FormIt.Scenes.GetScenes();
     //console.log(JSON.stringify(allScenes));
 
-    ManageSceneCameras.createSceneCameraGeometry(cameraContainerGroupHistoryID, allScenes);
+    // get the current camera aspect ratio to use for geometry
+    // the distance supplied here is arbitrary
+    var currentAspectRatio = ManageSceneCameras.getViewportAspectRatioByPickray(10);
+
+    // start an undo manager state - this should suspend WSM and other updates to make this faster
+    FormIt.UndoManagement.BeginState();
+
+    // create the camera geometry for all scenes
+    ManageSceneCameras.createSceneCameraGeometry(cameraContainerGroupHistoryID, allScenes, currentAspectRatio);
+
+    // end the undo manager state
+    FormIt.UndoManagement.EndState("Create camera geometry");
 }
 
 // Submit runs from the HTML page.  This script gets loaded up in both FormIt's
