@@ -119,7 +119,7 @@ PropertiesPlus.GetSelectionInfo = function()
 
         // determine how many total instances of this Group are in the model
         identicalGroupInstanceCount += WSM.APIGetAllAggregateTransf3dsReadOnly(referenceHistoryId, 0).paths.length;
-        console.log("Number of instances in the entire model: " + identicalGroupInstanceCount);
+        console.log("Number of instances in model: " + identicalGroupInstanceCount);
     }
 
     // determine if the instances are all of the same name
@@ -194,7 +194,6 @@ PropertiesPlus.CalculateVolume = function()
 
 PropertiesPlus.RenameGroupInstances = function(args)
 {
-    console.log("Group instance ID Array: " + groupInstanceIDArray);
     if (groupInstanceIDArray.length == 1)
     {
         WSM.APISetObjectProperties(nHistoryID, groupInstanceIDArray[0], args.singleGroupInstanceRename, selectedObjectsLevelsBoolArray[0]);

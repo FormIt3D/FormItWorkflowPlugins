@@ -1,10 +1,11 @@
 <html>
-<head><link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+<head><link rel="stylesheet" type="text/css" href="../../FormItExamplePlugins/SharedPluginFiles/FormItPluginStyling.css">
 <title>Properties Plus</title>
 <META NAME="Title" CONTENT="Properties Plus">
 <META NAME="Author" CONTENT="Autodesk FormIt">
 <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
 <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"></script>
+<script type="text/javascript" src="../../FormItExamplePlugins/SharedPluginFiles/FormItPluginUI.js"></script>
 <script type="text/javascript" src="PropertiesPlus_Web.js"></script>
 <script type="text/javascript">
     FormItInterface.Initialize(function () {
@@ -15,15 +16,14 @@
                 //FormItInterface.ConsoleLog("(Web Side) Message: " + JSON.stringify(jsonMessage));
 
                 // when the FormIt selection changes, automatically update the plugin UI
-                PropertiesPlus.UpdateUI();
+                PropertiesPlus.updateUI();
             });
 
-        // create the initial UI
-        PropertiesPlus.CreateQuantificationSection();
-        PropertiesPlus.CreateSingleGroupInstanceDetailsSection();
-        PropertiesPlus.CreateMultiGroupInstanceDetailsSection();
-        FormIt.PluginUtils.HandleEnter("singleGroupInstanceNameContainer", "singleGroupInstanceRenameButton");
-        FormIt.PluginUtils.HandleEnter("multiGroupInstanceNameContainer", "multiGroupInstanceRenameButton");
+        // initialize the UI
+        // this must be called from here, to ensure the HTML page is loaded
+        // before scripts try to access the window document
+        PropertiesPlus.initializeUI();
+
     }); // DOMContentLoaded
 </script>
 </head>

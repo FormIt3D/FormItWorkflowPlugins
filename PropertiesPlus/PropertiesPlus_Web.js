@@ -64,185 +64,170 @@ var isSingleGroupInstanceOnly = false;
 var isOneOrMoreGroupInstances = false;
 var isMultipleGroupInstances = false;
 
-// define the UI for the general selection container
-var selectionInfoContainerDiv = document.createElement('div');
-selectionInfoContainerDiv.id = 'selectionInfoContainer';
-selectionInfoContainerDiv.className = 'container';
+// objects that will be updated (contents or visibility) when the selection changes
+var objectCountDiv;
+var objectCountLabel; 
+var objectCountHorizontalRule;
+var vertexCountDiv;
+var vertexCountLabel;
+var edgeCountDiv;
+var edgeCountLabel;
+var faceCountDiv;
+var faceCountLabel;
+var bodyCountDiv;
+var bodyCountLabel;
+var groupInstanceCountDiv;
+var groupInstanceCountLabel;
+var identicalGroupInstanceCountDiv;
+var identicalGroupInstanceCountLabel;
+var singleGroupinstanceDetailsContainerDiv;
+var multiGroupInstanceDetailsContainerDiv;
 
-var selectionInfoHeaderDiv = document.createElement('div');
-selectionInfoHeaderDiv.id = 'selectionInfoHeaderDiv';
-selectionInfoHeaderDiv.className = 'header';
-selectionInfoHeaderDiv.innerHTML = 'Selection Information';
+// IDs for inputs whose value will be updated when selection changes
+var singleGroupInstanceNameInputId = 'singleGroupInstanceNameInput';
+var singleGroupInstancePosXInputId = 'singleGroupInstancePosXInputId';
+var singleGroupInstancePosYInputId = 'singleGroupInstancePosYInputId';
+var singleGroupInstancePosZInputId = 'singleGroupInstancePosZInputId';
+var multiGroupInstanceNameInputId = 'multiGroupInstanceNameInput';
 
-var objectCountDiv = document.createElement('div');
-objectCountDiv.className = 'list';
-var objectCountLabel = "Total objects: ";
-objectCountDiv.innerHTML = objectCountLabel + objectCount;
+// a flag to display work-in-progress featuresd
+var displayWIP = false;
 
-var horizontalRule1 = document.createElement('hr'); // horizontal rule
-horizontalRule1.className = 'hide';
-
-// these start hidden until the selection contains them
-var vertexCountDiv = document.createElement('div');
-var vertexCountLabel = "Vertices: ";
-vertexCountDiv.className = 'hide';
-
-var edgeCountDiv = document.createElement('div');
-var edgeCountLabel = "Edges: ";
-edgeCountDiv.className = 'hide';
-
-var faceCountDiv = document.createElement('div');
-var faceCountLabel = "Faces: ";
-faceCountDiv.className = 'hide';
-
-var bodyCountDiv = document.createElement('div');
-var bodyCountLabel = "Bodies: ";
-bodyCountDiv.className = 'hide';
-
-var groupInstanceCountDiv = document.createElement('div');
-var groupInstanceCountLabel = "Group instances: ";
-groupInstanceCountDiv.className = 'hide';
-
-// define the UI for the single group instance details container
-var singleGroupInstanceDetailsContainerDiv = document.createElement('div');
-singleGroupInstanceDetailsContainerDiv.id = 'singleGroupInfoContainer';
-singleGroupInstanceDetailsContainerDiv.className = 'hide';
-
-var singleGroupInstanceDetailsHeaderDiv = document.createElement('div');
-singleGroupInstanceDetailsHeaderDiv.id = 'groupInfoHeaderDiv';
-singleGroupInstanceDetailsHeaderDiv.className = 'header';
-singleGroupInstanceDetailsHeaderDiv.innerHTML = 'Group Instance Details';
-
-var singleGroupInstanceNameContainer = document.createElement('form');
-singleGroupInstanceNameContainer.id = 'singleGroupInstanceNameContainer';
-singleGroupInstanceNameContainer.className = 'nameAndRenameContainer';
-
-var singleGroupInstanceNameDiv = document.createElement('span');
-singleGroupInstanceNameDiv.id = 'singleGroupInstanceNameDiv';
-singleGroupInstanceNameDiv.className = 'label';
-singleGroupInstanceNameDiv.innerHTML = 'Name: ';
-
-var singleGroupInstanceNameInput = document.createElement('input');
-singleGroupInstanceNameInput.id = 'singleGroupInstanceNameInput';
-singleGroupInstanceNameInput.className = 'input';
-singleGroupInstanceNameInput.setAttribute("type", "text");
-
-var singleGroupInstanceRenameButton = document.createElement('input');
-singleGroupInstanceRenameButton.setAttribute("type", "button");
-singleGroupInstanceRenameButton.id = 'singleGroupInstanceRenameButton';
-singleGroupInstanceRenameButton.value = "Rename";
-singleGroupInstanceRenameButton.disabled = true;
-
-singleGroupInstanceNameInput.onkeyup = function()
+// rename a single selected Group instance, or multiple instances
+PropertiesPlus.submitGroupInstanceRename = function()
 {
-    if (singleGroupInstanceNameInput.value)
-    {
-        singleGroupInstanceRenameButton.disabled = false;
+    var args = {
+    "singleGroupInstanceRename": singleGroupInstanceNameInput.value,
+    "multiGroupInstanceRename": multiGroupInstanceNameInput.value
     }
-    else
-    {
-        singleGroupInstanceRenameButton.disabled = true;
-    }
+
+    //console.log("args");
+    // NOTE: window.FormItInterface.CallMethod will call the function
+    // defined above with the given args.  This is needed to communicate
+    // between the web JS engine process and the FormIt process.
+    window.FormItInterface.CallMethod("PropertiesPlus.RenameGroupInstances", args);
 }
 
-var spacerDiv2 = document.createElement('div'); // space
-spacerDiv2.className = 'spacer';
-
-var identicalGroupInstanceCountDiv = document.createElement('div');
-identicalGroupInstanceCountLabel = "Identical instances in the model: ";
-identicalGroupInstanceCountLabel.className = 'list';
-
-// define the UI for the multi group instance details container
-var multiGroupInstanceDetailsContainerDiv = document.createElement('div');
-multiGroupInstanceDetailsContainerDiv.id = 'multiGroupInfoContainer';
-multiGroupInstanceDetailsContainerDiv.className = 'hide';
-
-var multiGroupInstanceDetailsHeaderDiv = document.createElement('div');
-multiGroupInstanceDetailsHeaderDiv.id = 'groupInfoHeaderDiv';
-multiGroupInstanceDetailsHeaderDiv.className = 'header';
-multiGroupInstanceDetailsHeaderDiv.innerHTML = 'Multi Group Instance Details';
-
-var multiGroupInstanceNameContainer = document.createElement('form');
-multiGroupInstanceNameContainer.id = 'multiGroupInstanceNameContainer';
-multiGroupInstanceNameContainer.className = 'nameAndRenameContainer';
-
-var multiGroupInstanceNameDiv = document.createElement('span');
-multiGroupInstanceNameDiv.id = 'instanceNameDiv';
-multiGroupInstanceNameDiv.className = 'label';
-multiGroupInstanceNameDiv.innerHTML = 'Name: ';
-
-var multiGroupInstanceNameInput = document.createElement('input');
-multiGroupInstanceNameInput.className = 'input';
-multiGroupInstanceNameInput.setAttribute("type", "text");
-
-var multiGroupInstanceRenameButton = document.createElement('input');
-multiGroupInstanceRenameButton.setAttribute("type", "button");
-multiGroupInstanceRenameButton.id = 'multiGroupInstanceRenameButton';
-multiGroupInstanceRenameButton.value = "Rename All";
-multiGroupInstanceRenameButton.disabled = true;
-
-multiGroupInstanceNameInput.onkeyup = function()
+// all UI initialization
+// must be called from the HTML page
+PropertiesPlus.initializeUI = function()
 {
-    if (multiGroupInstanceNameInput.value)
-    {
-        multiGroupInstanceRenameButton.disabled = false;
-    }
-    else
-    {
-        multiGroupInstanceRenameButton.disabled = true;
-    }
-}
+    //
+    // create the selection count container - this is always visible
+    //
+    var selectionInfoContainerDiv = document.createElement('div');
+    selectionInfoContainerDiv.id = 'selectionInfoContainer';
+    selectionInfoContainerDiv.className = 'infoContainer';
 
+    var selectionInfoHeaderDiv = document.createElement('div');
+    selectionInfoHeaderDiv.id = 'selectionInfoHeaderDiv';
+    selectionInfoHeaderDiv.className = 'infoHeader';
+    selectionInfoHeaderDiv.innerHTML = 'Selection Count';
 
-// create the general selection information UI
-PropertiesPlus.CreateQuantificationSection = function() 
-{
-    // these start visible
+    objectCountDiv = document.createElement('div');
+    objectCountDiv.className = 'infoList';
+    objectCountLabel = "Total objects: ";
+    objectCountDiv.innerHTML = objectCountLabel + objectCount;
+
+    objectCountHorizontalRule = document.createElement('hr'); // horizontal line
+    objectCountHorizontalRule.className = 'hide';
+
     window.document.body.appendChild(selectionInfoContainerDiv);
     selectionInfoContainerDiv.appendChild(selectionInfoHeaderDiv);
     selectionInfoContainerDiv.appendChild(objectCountDiv);
+    
+    // create the specific object counts list - these are hidden until the selection contains them
+    selectionInfoContainerDiv.appendChild(objectCountHorizontalRule);
 
-    // these start hidden until needed
-    selectionInfoContainerDiv.appendChild(horizontalRule1); // horizontal rule
+    vertexCountDiv = document.createElement('div');
+    vertexCountLabel = "Vertices: ";
+    vertexCountDiv.className = 'hide';
     selectionInfoContainerDiv.appendChild(vertexCountDiv);
-    selectionInfoContainerDiv.appendChild(edgeCountDiv);
-    selectionInfoContainerDiv.appendChild(faceCountDiv);
-    selectionInfoContainerDiv.appendChild(bodyCountDiv);
-    selectionInfoContainerDiv.appendChild(groupInstanceCountDiv);
-}
 
-// create the single group instance UI
-PropertiesPlus.CreateSingleGroupInstanceDetailsSection = function() 
-{
+    edgeCountDiv = document.createElement('div');
+    edgeCountLabel = "Edges: ";
+    edgeCountDiv.className = 'hide';
+    selectionInfoContainerDiv.appendChild(edgeCountDiv);
+
+    faceCountDiv = document.createElement('div');
+    faceCountLabel = "Faces: ";
+    faceCountDiv.className = 'hide';
+    selectionInfoContainerDiv.appendChild(faceCountDiv);
+
+    bodyCountDiv = document.createElement('div');
+    bodyCountLabel = "Bodies: ";
+    bodyCountDiv.className = 'hide';
+    selectionInfoContainerDiv.appendChild(bodyCountDiv);
+
+    groupInstanceCountDiv = document.createElement('div');
+    groupInstanceCountLabel = "Group instances: ";
+    groupInstanceCountDiv.className = 'hide';
+    selectionInfoContainerDiv.appendChild(groupInstanceCountDiv);
+
+    identicalGroupInstanceCountDiv = document.createElement('div');
+    identicalGroupInstanceCountLabel = "Identical instances in model: ";
+    identicalGroupInstanceCountLabel.className = 'infoListIndented';
+    selectionInfoContainerDiv.appendChild(identicalGroupInstanceCountDiv);
+
+    //
+    // create the single group instance details container - starts hidden
+    //
+    singleGroupInstanceDetailsContainerDiv = document.createElement('div');
+    singleGroupInstanceDetailsContainerDiv.id = 'singleGroupInfoContainer';
+    singleGroupInstanceDetailsContainerDiv.className = 'hide';
+
+    var singleGroupInstanceDetailsHeaderDiv = document.createElement('div');
+    singleGroupInstanceDetailsHeaderDiv.id = 'groupInfoHeaderDiv';
+    singleGroupInstanceDetailsHeaderDiv.className = 'infoHeader';
+    singleGroupInstanceDetailsHeaderDiv.innerHTML = 'Group Instance Details';
+
     window.document.body.appendChild(singleGroupInstanceDetailsContainerDiv);
     singleGroupInstanceDetailsContainerDiv.appendChild(singleGroupInstanceDetailsHeaderDiv);
 
-    // name and rename
-    singleGroupInstanceDetailsContainerDiv.appendChild(singleGroupInstanceNameContainer);
-    singleGroupInstanceNameContainer.appendChild(singleGroupInstanceNameDiv);
-    singleGroupInstanceNameContainer.appendChild(singleGroupInstanceNameInput);
-    singleGroupInstanceNameContainer.appendChild(singleGroupInstanceRenameButton)
+    // rename module
+    var singleGroupInstanceNameContainer = FormIt.PluginUI.createTextInputModule(singleGroupInstanceDetailsContainerDiv, 'Name: ', 'singleGroupInstanceNameContainer', 'inputModuleContainer', singleGroupInstanceNameInputId, PropertiesPlus.submitGroupInstanceRename);
 
-    singleGroupInstanceDetailsContainerDiv.appendChild(spacerDiv2); // space
-    singleGroupInstanceDetailsContainerDiv.appendChild(identicalGroupInstanceCountDiv);
-}
+    // this is a work in progress
+    if (displayWIP)
+    {
+        // spacer
+        var spacerDiv2 = document.createElement('div');
+        spacerDiv2.className = 'horizontalSpacer';
 
-// create the multi group instance UI
-PropertiesPlus.CreateMultiGroupInstanceDetailsSection = function() 
-{
+        // position modules
+        var positionCoordinatesContainerDiv = FormIt.PluginUI.createHorizontalModuleContainer(singleGroupInstanceDetailsContainerDiv);
+
+        var positionCoordinatesXModule = FormIt.PluginUI.createTextInputModule(positionCoordinatesContainerDiv, 'Position X: ', 'positionCoordinatesX', 'inputModuleContainer', singleGroupInstancePosXInputId, PropertiesPlus.submitGroupInstanceRename);
+
+        var positionCoordinatesYModule = FormIt.PluginUI.createTextInputModule(positionCoordinatesContainerDiv, 'Position Y: ', 'positionCoordinatesY', 'inputModuleContainer', singleGroupInstancePosYInputId, PropertiesPlus.submitGroupInstanceRename);
+
+        var positionCoordinatesZModule = FormIt.PluginUI.createTextInputModule(positionCoordinatesContainerDiv, 'Position Z: ', 'positionCoordinatesZ', 'inputModuleContainer', singleGroupInstancePosZInputId, PropertiesPlus.submitGroupInstanceRename);
+    }
+
+
+    //
+    // create the multi-group details container - starts hidden
+    //
+    multiGroupInstanceDetailsContainerDiv = document.createElement('div');
+    multiGroupInstanceDetailsContainerDiv.id = 'multiGroupInfoContainer';
+    multiGroupInstanceDetailsContainerDiv.className = 'hide';
+
+    var multiGroupInstanceDetailsHeaderDiv = document.createElement('div');
+    multiGroupInstanceDetailsHeaderDiv.id = 'groupInfoHeaderDiv';
+    multiGroupInstanceDetailsHeaderDiv.className = 'infoHeader';
+    multiGroupInstanceDetailsHeaderDiv.innerHTML = 'Multi Group Instance Details';
+
     window.document.body.appendChild(multiGroupInstanceDetailsContainerDiv);
     multiGroupInstanceDetailsContainerDiv.appendChild(multiGroupInstanceDetailsHeaderDiv);
 
-    // name and rename
-    multiGroupInstanceDetailsContainerDiv.appendChild(multiGroupInstanceNameContainer);
-    multiGroupInstanceNameContainer.appendChild(multiGroupInstanceNameDiv);
-    multiGroupInstanceNameContainer.appendChild(multiGroupInstanceNameInput);
-    multiGroupInstanceNameContainer.appendChild(multiGroupInstanceRenameButton);
+    // rename module
+    var multiGroupInstanceNameContainer = FormIt.PluginUI.createTextInputModule(multiGroupInstanceDetailsContainerDiv, 'Name: ', 'multiGroupInstanceNameContainer', 'inputModuleContainer', multiGroupInstanceNameInputId, PropertiesPlus.submitGroupInstanceRename);
 }
 
 
+
 // update the values in the UI based on the current FormIt selection
-PropertiesPlus.UpdateQuantification = function(currentSelectionInfo)
+PropertiesPlus.updateQuantification = function(currentSelectionInfo)
 {
     currentSelectionInfo = JSON.parse(currentSelectionInfo);
 
@@ -368,89 +353,120 @@ PropertiesPlus.UpdateQuantification = function(currentSelectionInfo)
     // if multiple items, enable HTML
     if (isMultipleObjects)
     {
-        horizontalRule1.className = 'show';
+        objectCountHorizontalRule.className = 'show';
     }
 
     // if any vertices are selected, enable HTML and update it
     if (isOneOrMoreVertices)
     {
-        vertexCountDiv.className = 'list';
+        vertexCountDiv.className = 'infoList';
         vertexCount = currentSelectionInfo.vertexCount;
         vertexCountDiv.innerHTML = vertexCountLabel + vertexCount;
+    }
+    else 
+    {
+        vertexCountDiv.className = 'hide';  
     }
 
     // if any edges are selected, enable HTML and update it
     if (isOneOrMoreEdges)
     {
-        edgeCountDiv.className = 'list';
+        edgeCountDiv.className = 'infoList';
         edgeCount = currentSelectionInfo.edgeCount;
         edgeCountDiv.innerHTML = edgeCountLabel + edgeCount;
+    }
+    else
+    {
+        edgeCountDiv.className = 'hide'; 
     }
 
     // if any faces are selected, enable HTML and update it
     if (isOneOrMoreFaces)
     {
-        faceCountDiv.className = 'list';
+        faceCountDiv.className = 'infoList';
         faceCount = currentSelectionInfo.faceCount;
         faceCountDiv.innerHTML = faceCountLabel + faceCount;
+    }
+    else
+    {
+        faceCountDiv.className = 'hide';
     }
 
     // if any bodies are selected, enable HTML and update it
     if (isOneOrMoreBodies)
     {
-        bodyCountDiv.className = 'list';
+        bodyCountDiv.className = 'infoList';
         bodyCount = currentSelectionInfo.bodyCount;
         bodyCountDiv.innerHTML = bodyCountLabel + bodyCount;
+    }
+    else
+    {
+        bodyCountDiv.className = 'hide';
     }
 
     // if any instances are selected, enable HTML and update it
     if (isOneOrMoreGroupInstances)
     {
-        groupInstanceCountDiv.className = 'list';
+        groupInstanceCountDiv.className = 'infoList';
         groupInstanceCount = currentSelectionInfo.groupInstanceCount;
         groupInstanceCountDiv.innerHTML = groupInstanceCountLabel + groupInstanceCount;
+    }
+    else
+    {
+        groupInstanceCountDiv.className = 'hide';
     }
 
     // if a single instance is selected, enable HTML and update it
     if (isSingleGroupInstanceOnly)
     {
-        singleGroupInstanceDetailsContainerDiv.className = 'container';
-        identicalGroupInstanceCountDiv.className = 'show';
+        singleGroupInstanceDetailsContainerDiv.className = 'infoContainer';
+        identicalGroupInstanceCountDiv.className = 'infoListIndented';
         identicalGroupInstanceCount = currentSelectionInfo.identicalGroupInstanceCount;
         identicalGroupInstanceCountDiv.innerHTML = identicalGroupInstanceCountLabel + identicalGroupInstanceCount;
 
         var name = currentSelectionInfo.selectedObjectsNameArray[0];
-        singleGroupInstanceNameInput.setAttribute("placeholder", name);
+        var singleGroupInstanceNameInput = document.getElementById(singleGroupInstanceNameInputId);
+        singleGroupInstanceNameInput.value = name;
+    }
+    else
+    {
+        singleGroupInstanceDetailsContainerDiv.className = 'hide';
     }
 
     // if multiple group instances are selected, enable HTML and update it
     if (isMultipleGroupInstances)
     {
-        multiGroupInstanceDetailsContainerDiv.className = 'container';
+        multiGroupInstanceDetailsContainerDiv.className = 'infoContainer';
 
         // if all of the instance names are consistent, display the common name as placeholder text
         if (currentSelectionInfo.isConsistentGroupInstanceNames == true)
         {
             var name = currentSelectionInfo.groupInstanceNameArray[0];
-            multiGroupInstanceNameInput.setAttribute("placeholder", name);
+            multiGroupInstanceNameInput.value = name;
         }
         // otherwise indicate that the names vary
         else 
         {
             var name = "*varies*";
             multiGroupInstanceNameInput.setAttribute("placeholder", name);
+            multiGroupInstanceNameInput.value = '';
         }
+    }
+    else
+    {
+        multiGroupInstanceDetailsContainerDiv.className = 'hide'; 
     }
     
     // hide elements that shouldn't display with no selection
     if (objectCount === 0)
     {
-        horizontalRule1.className = 'hide';
+        objectCountHorizontalRule.className = 'hide';
         vertexCountDiv.className = 'hide';
         edgeCountDiv.className = 'hide';
         faceCountDiv.className = 'hide';
         bodyCountDiv.className = 'hide';
         groupInstanceCountDiv.className = 'hide';
+        identicalGroupInstanceCountDiv.className = 'hide';
         singleGroupInstanceDetailsContainerDiv.className = 'hide';
         multiGroupInstanceDetailsContainerDiv.className = 'hide';
     }
@@ -459,6 +475,7 @@ PropertiesPlus.UpdateQuantification = function(currentSelectionInfo)
     if (objectCount > 1)
     {
         singleGroupInstanceDetailsContainerDiv.className = 'hide'; 
+        identicalGroupInstanceCountDiv.className = 'hide';
     }
     
     // hide elements that shouldn't display with just 1 object in the selection
@@ -470,7 +487,7 @@ PropertiesPlus.UpdateQuantification = function(currentSelectionInfo)
 
 // UpdateUI runs from the HTML page.  This script gets loaded up in both FormIt's
 // JS engine and also in the embedded web JS engine inside the panel.
-PropertiesPlus.UpdateUI = function()
+PropertiesPlus.updateUI = function()
 {
     var args = {
     //"calcVolume": document.a.calcVolume.checked
@@ -484,33 +501,6 @@ PropertiesPlus.UpdateUI = function()
     FormItInterface.CallMethod("PropertiesPlus.GetSelectionInfo", args, function(result)
     {
         //FormItInterface.ConsoleLog("Result " + result);
-        PropertiesPlus.UpdateQuantification(result);
+        PropertiesPlus.updateQuantification(result);
     });
 }
-
-PropertiesPlus.SubmitGroupInstanceRename = function()
-{
-    var args = {
-    "singleGroupInstanceRename": singleGroupInstanceNameInput.value,
-    "multiGroupInstanceRename": multiGroupInstanceNameInput.value
-    }
-
-    //console.log("PropertiesPlus.UpdateUI");
-    //console.log("args");
-    // NOTE: window.FormItInterface.CallMethod will call the function
-    // defined above with the given args.  This is needed to communicate
-    // between the web JS engine process and the FormIt process.
-    window.FormItInterface.CallMethod("PropertiesPlus.RenameGroupInstances", args);
-
-    // clear the entered value and update the UI again
-    singleGroupInstanceNameInput.value = '';
-    singleGroupInstanceRenameButton.disabled = true;
-
-    multiGroupInstanceNameInput.value = '';
-    multiGroupInstanceRenameButton.disabled = true;
-
-    PropertiesPlus.UpdateUI();
-}
-
-singleGroupInstanceRenameButton.onclick = PropertiesPlus.SubmitGroupInstanceRename;
-multiGroupInstanceRenameButton.onclick = PropertiesPlus.SubmitGroupInstanceRename;
