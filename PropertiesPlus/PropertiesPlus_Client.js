@@ -52,8 +52,6 @@ PropertiesPlus.GetSelectionInfo = function()
     groupInstanceCount = 0;
     identicalGroupInstanceCount = 0;
     meshCount = 0;
-    lineMeshCount = 0;
-    pointMeshCount = 0;
 
     // clear booleans
     isConsistentGroupInstanceNames = false;
@@ -150,6 +148,13 @@ PropertiesPlus.GetSelectionInfo = function()
             bodyCount ++;
         }
 
+        if (selectedObjectsTypeArray[i] === WSM.nMeshType || 
+            selectedObjectsTypeArray[i] === WSM.nLineMeshType ||
+            selectedObjectsTypeArray[i] === WSM.nPointMeshType)
+        {
+            meshCount ++;
+        }
+
         if (selectedObjectsTypeArray[i] === WSM.nInstanceType)
         {
             groupInstanceCount ++;
@@ -168,6 +173,7 @@ PropertiesPlus.GetSelectionInfo = function()
         "edgeCount" : edgeCount,
         "faceCount" : faceCount,
         "bodyCount" : bodyCount,
+        "meshCount" : meshCount,
         "groupInstanceCount" : groupInstanceCount,
         "groupInstanceNameArray" : groupInstanceNameArray,
         "identicalGroupInstanceCount" : identicalGroupInstanceCount,

@@ -52,14 +52,13 @@ var groupCount = 0;
 var groupInstanceCount = 0;
 var identicalGroupInstanceCount = 0;
 var meshCount = 0;
-var lineMeshCount = 0;
-var pointMeshCount = 0;
 
 var isMultipleObjects = false;
 var isOneOrMoreVertices = false;
 var isOneOrMoreEdges = false;
 var isOneOrMoreFaces = false;
 var isOneOrMoreBodies = false;
+var isOneOrMoreMeshes = false;
 var isSingleGroupInstanceOnly = false;
 var isOneOrMoreGroupInstances = false;
 var isMultipleGroupInstances = false;
@@ -78,6 +77,8 @@ var bodyCountDiv;
 var bodyCountLabel;
 var groupInstanceCountDiv;
 var groupInstanceCountLabel;
+var meshCountDiv;
+var meshCountLabel;
 var identicalGroupInstanceCountDiv;
 var identicalGroupInstanceCountLabel;
 var singleGroupinstanceDetailsContainerDiv;
@@ -90,7 +91,7 @@ var singleGroupInstancePosYInputId = 'singleGroupInstancePosYInputId';
 var singleGroupInstancePosZInputId = 'singleGroupInstancePosZInputId';
 var multiGroupInstanceNameInputId = 'multiGroupInstanceNameInput';
 
-// a flag to display work-in-progress featuresd
+// a flag to display work-in-progress features
 var displayWIP = false;
 
 // rename a single selected Group instance, or multiple instances
@@ -158,6 +159,11 @@ PropertiesPlus.initializeUI = function()
     bodyCountLabel = "Bodies: ";
     bodyCountDiv.className = 'hide';
     selectionInfoContainerDiv.appendChild(bodyCountDiv);
+
+    meshCountDiv = document.createElement('div');
+    meshCountLabel = "Meshes: ";
+    meshCountDiv.className = 'hide';
+    selectionInfoContainerDiv.appendChild(meshCountDiv);
 
     groupInstanceCountDiv = document.createElement('div');
     groupInstanceCountLabel = "Group instances: ";
@@ -309,6 +315,23 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
         }
     }
 
+    // if one or more meshes (WSM object #32), lineMeshes (WSM object #33), or pointMeshes (WSM object #34) are selected, set a flag
+    for (var i = 0; i < objectCount; i++)
+    {
+        if (currentSelectionInfo.selectedObjectsTypeArray[i] == 32 || 
+            currentSelectionInfo.selectedObjectsTypeArray[i] == 33 ||
+            currentSelectionInfo.selectedObjectsTypeArray[i] == 34)
+        {
+            //console.log("At least one mesh is selected.");
+            isOneOrMoreMeshes = true;
+            break;
+        }
+        else
+        {
+            isOneOrMoreMeshes = false;
+        }
+    }
+
     // if there's just one object selected, and it's a Group instance (WSM object #24), set a flag
     if ((currentSelectionInfo.selectedObjectsTypeArray.length == 1) && (currentSelectionInfo.selectedObjectsTypeArray[0] == 24))
     {
@@ -404,6 +427,18 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
         bodyCountDiv.className = 'hide';
     }
 
+    // if any meshes are selected, enable HTML and update it
+    if (isOneOrMoreMeshes)
+    {
+        meshCountDiv.className = 'infoList';
+        meshCount = currentSelectionInfo.meshCount;
+        meshCountDiv.innerHTML = meshCountLabel + meshCount;
+    }
+    else
+    {
+        meshCountDiv.className = 'hide';
+    }
+
     // if any instances are selected, enable HTML and update it
     if (isOneOrMoreGroupInstances)
     {
@@ -465,6 +500,7 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
         edgeCountDiv.className = 'hide';
         faceCountDiv.className = 'hide';
         bodyCountDiv.className = 'hide';
+        meshCountDiv.className = 'hide';
         groupInstanceCountDiv.className = 'hide';
         identicalGroupInstanceCountDiv.className = 'hide';
         singleGroupInstanceDetailsContainerDiv.className = 'hide';
