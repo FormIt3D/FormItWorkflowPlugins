@@ -81,18 +81,35 @@ var meshCountDiv;
 var meshCountLabel;
 var identicalGroupInstanceCountDiv;
 var identicalGroupInstanceCountLabel;
-var singleGroupinstanceDetailsContainerDiv;
+
+var singleGroupDetailsContainerDiv;
+var singleGroupInstanceDetailsContainerDiv;
 var multiGroupInstanceDetailsContainerDiv;
 
 // IDs for inputs whose value will be updated when selection changes
-var singleGroupInstanceNameInputId = 'singleGroupInstanceNameInput';
-var singleGroupInstancePosXInputId = 'singleGroupInstancePosXInputId';
-var singleGroupInstancePosYInputId = 'singleGroupInstancePosYInputId';
-var singleGroupInstancePosZInputId = 'singleGroupInstancePosZInputId';
-var multiGroupInstanceNameInputId = 'multiGroupInstanceNameInput';
+var singleGroupNameInputID = 'singleGroupNameInput';
+var singleGroupInstanceNameInputID = 'singleGroupInstanceNameInput';
+var singleGroupInstancePosXInputID = 'singleGroupInstancePosXInput';
+var singleGroupInstancePosYInputID = 'singleGroupInstancePosYInput';
+var singleGroupInstancePosZInputID = 'singleGroupInstancePosZInput';
+var multiGroupInstanceNameInputID = 'multiGroupInstanceNameInput';
 
 // a flag to display work-in-progress features
 var displayWIP = false;
+
+// rename a Group family
+PropertiesPlus.submitGroupRename = function()
+{
+    var args = {
+    "singleGroupRename": singleGroupNameInput.value
+    }
+
+    //console.log("args");
+    // NOTE: window.FormItInterface.CallMethod will call the function
+    // defined above with the given args.  This is needed to communicate
+    // between the web JS engine process and the FormIt process.
+    window.FormItInterface.CallMethod("PropertiesPlus.renameGroup", args);
+}
 
 // rename a single selected Group instance, or multiple instances
 PropertiesPlus.submitGroupInstanceRename = function()
@@ -106,7 +123,7 @@ PropertiesPlus.submitGroupInstanceRename = function()
     // NOTE: window.FormItInterface.CallMethod will call the function
     // defined above with the given args.  This is needed to communicate
     // between the web JS engine process and the FormIt process.
-    window.FormItInterface.CallMethod("PropertiesPlus.RenameGroupInstances", args);
+    window.FormItInterface.CallMethod("PropertiesPlus.renameGroupInstances", args);
 }
 
 // all UI initialization
@@ -176,6 +193,24 @@ PropertiesPlus.initializeUI = function()
     selectionInfoContainerDiv.appendChild(identicalGroupInstanceCountDiv);
 
     //
+    // create the single group details container - starts hidden
+    //
+    singleGroupDetailsContainerDiv = document.createElement('div');
+    singleGroupDetailsContainerDiv.id = 'singleGroupInfoContainer';
+    singleGroupDetailsContainerDiv.className = 'hide';
+
+    var singleGroupDetailsHeaderDiv = document.createElement('div');
+    singleGroupDetailsHeaderDiv.id = 'groupInfoHeaderDiv';
+    singleGroupDetailsHeaderDiv.className = 'infoHeader';
+    singleGroupDetailsHeaderDiv.innerHTML = 'Group Details';
+
+    window.document.body.appendChild(singleGroupDetailsContainerDiv);
+    singleGroupDetailsContainerDiv.appendChild(singleGroupDetailsHeaderDiv);
+
+    // rename module
+    var singleGroupNameContainer = FormIt.PluginUI.createTextInputModule(singleGroupDetailsContainerDiv, 'Name: ', 'singleGroupNameContainer', 'inputModuleContainer', singleGroupNameInputID, PropertiesPlus.submitGroupRename);
+
+    //
     // create the single group instance details container - starts hidden
     //
     singleGroupInstanceDetailsContainerDiv = document.createElement('div');
@@ -191,7 +226,7 @@ PropertiesPlus.initializeUI = function()
     singleGroupInstanceDetailsContainerDiv.appendChild(singleGroupInstanceDetailsHeaderDiv);
 
     // rename module
-    var singleGroupInstanceNameContainer = FormIt.PluginUI.createTextInputModule(singleGroupInstanceDetailsContainerDiv, 'Name: ', 'singleGroupInstanceNameContainer', 'inputModuleContainer', singleGroupInstanceNameInputId, PropertiesPlus.submitGroupInstanceRename);
+    var singleGroupInstanceNameContainer = FormIt.PluginUI.createTextInputModule(singleGroupInstanceDetailsContainerDiv, 'Name: ', 'singleGroupInstanceNameContainer', 'inputModuleContainer', singleGroupInstanceNameInputID, PropertiesPlus.submitGroupInstanceRename);
 
     // this is a work in progress
     if (displayWIP)
@@ -203,11 +238,11 @@ PropertiesPlus.initializeUI = function()
         // position modules
         var positionCoordinatesContainerDiv = FormIt.PluginUI.createHorizontalModuleContainer(singleGroupInstanceDetailsContainerDiv);
 
-        var positionCoordinatesXModule = FormIt.PluginUI.createTextInputModule(positionCoordinatesContainerDiv, 'Position X: ', 'positionCoordinatesX', 'inputModuleContainer', singleGroupInstancePosXInputId, PropertiesPlus.submitGroupInstanceRename);
+        var positionCoordinatesXModule = FormIt.PluginUI.createTextInputModule(positionCoordinatesContainerDiv, 'Position X: ', 'positionCoordinatesX', 'inputModuleContainer', singleGroupInstancePosXInputID, PropertiesPlus.submitGroupInstanceRename);
 
-        var positionCoordinatesYModule = FormIt.PluginUI.createTextInputModule(positionCoordinatesContainerDiv, 'Position Y: ', 'positionCoordinatesY', 'inputModuleContainer', singleGroupInstancePosYInputId, PropertiesPlus.submitGroupInstanceRename);
+        var positionCoordinatesYModule = FormIt.PluginUI.createTextInputModule(positionCoordinatesContainerDiv, 'Position Y: ', 'positionCoordinatesY', 'inputModuleContainer', singleGroupInstancePosYInputID, PropertiesPlus.submitGroupInstanceRename);
 
-        var positionCoordinatesZModule = FormIt.PluginUI.createTextInputModule(positionCoordinatesContainerDiv, 'Position Z: ', 'positionCoordinatesZ', 'inputModuleContainer', singleGroupInstancePosZInputId, PropertiesPlus.submitGroupInstanceRename);
+        var positionCoordinatesZModule = FormIt.PluginUI.createTextInputModule(positionCoordinatesContainerDiv, 'Position Z: ', 'positionCoordinatesZ', 'inputModuleContainer', singleGroupInstancePosZInputID, PropertiesPlus.submitGroupInstanceRename);
     }
 
 
@@ -227,7 +262,7 @@ PropertiesPlus.initializeUI = function()
     multiGroupInstanceDetailsContainerDiv.appendChild(multiGroupInstanceDetailsHeaderDiv);
 
     // rename module
-    var multiGroupInstanceNameContainer = FormIt.PluginUI.createTextInputModule(multiGroupInstanceDetailsContainerDiv, 'Name: ', 'multiGroupInstanceNameContainer', 'inputModuleContainer', multiGroupInstanceNameInputId, PropertiesPlus.submitGroupInstanceRename);
+    var multiGroupInstanceNameContainer = FormIt.PluginUI.createTextInputModule(multiGroupInstanceDetailsContainerDiv, 'Name: ', 'multiGroupInstanceNameContainer', 'inputModuleContainer', multiGroupInstanceNameInputID, PropertiesPlus.submitGroupInstanceRename);
 }
 
 
@@ -454,17 +489,25 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
     // if a single instance is selected, enable HTML and update it
     if (isSingleGroupInstanceOnly)
     {
-        singleGroupInstanceDetailsContainerDiv.className = 'infoContainer';
         identicalGroupInstanceCountDiv.className = 'infoListIndented';
         identicalGroupInstanceCount = currentSelectionInfo.identicalGroupInstanceCount;
         identicalGroupInstanceCountDiv.innerHTML = identicalGroupInstanceCountLabel + identicalGroupInstanceCount;
 
-        var name = currentSelectionInfo.selectedObjectsNameArray[0];
-        var singleGroupInstanceNameInput = document.getElementById(singleGroupInstanceNameInputId);
-        singleGroupInstanceNameInput.value = name;
+        singleGroupDetailsContainerDiv.className = 'infoContainer';
+
+        singleGroupInstanceDetailsContainerDiv.className = 'infoContainer';
+
+        var groupInstanceName = currentSelectionInfo.selectedObjectsNameArray[0];
+        var singleGroupInstanceNameInput = document.getElementById(singleGroupInstanceNameInputID);
+        singleGroupInstanceNameInput.value = groupInstanceName;
+
+        var groupName = currentSelectionInfo.selectedObjectsGroupFamilyNameArray[0];
+        var singleGroupNameInput = document.getElementById(singleGroupNameInputID);
+        singleGroupNameInput.value = groupName;
     }
     else
     {
+        singleGroupDetailsContainerDiv.className = 'hide';
         singleGroupInstanceDetailsContainerDiv.className = 'hide';
     }
 
@@ -476,14 +519,14 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
         // if all of the instance names are consistent, display the common name as placeholder text
         if (currentSelectionInfo.isConsistentGroupInstanceNames == true)
         {
-            var name = currentSelectionInfo.groupInstanceNameArray[0];
-            multiGroupInstanceNameInput.value = name;
+            var groupInstanceName = currentSelectionInfo.groupInstanceNameArray[0];
+            multiGroupInstanceNameInput.value = groupInstanceName;
         }
         // otherwise indicate that the names vary
         else 
         {
-            var name = "*varies*";
-            multiGroupInstanceNameInput.setAttribute("placeholder", name);
+            var groupInstanceName = "*varies*";
+            multiGroupInstanceNameInput.setAttribute("placeholder", groupInstanceName);
             multiGroupInstanceNameInput.value = '';
         }
     }
