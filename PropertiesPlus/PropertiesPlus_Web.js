@@ -59,7 +59,7 @@ var isOneOrMoreEdges = false;
 var isOneOrMoreFaces = false;
 var isOneOrMoreBodies = false;
 var isOneOrMoreMeshes = false;
-var isSingleGroupInstanceOnly = false;
+var isSingleGroupInstance = false;
 var isOneOrMoreGroupInstances = false;
 var isMultipleGroupInstances = false;
 
@@ -183,7 +183,7 @@ PropertiesPlus.initializeUI = function()
     selectionInfoContainerDiv.appendChild(meshCountDiv);
 
     groupInstanceCountDiv = document.createElement('div');
-    groupInstanceCountLabel = "Group instances: ";
+    groupInstanceCountLabel = "Group Instances: ";
     groupInstanceCountDiv.className = 'hide';
     selectionInfoContainerDiv.appendChild(groupInstanceCountDiv);
 
@@ -202,7 +202,7 @@ PropertiesPlus.initializeUI = function()
     var singleGroupDetailsHeaderDiv = document.createElement('div');
     singleGroupDetailsHeaderDiv.id = 'groupInfoHeaderDiv';
     singleGroupDetailsHeaderDiv.className = 'infoHeader';
-    singleGroupDetailsHeaderDiv.innerHTML = 'Group Details';
+    singleGroupDetailsHeaderDiv.innerHTML = 'Group Family Details';
 
     window.document.body.appendChild(singleGroupDetailsContainerDiv);
     singleGroupDetailsContainerDiv.appendChild(singleGroupDetailsHeaderDiv);
@@ -367,15 +367,15 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
         }
     }
 
-    // if there's just one object selected, and it's a Group instance (WSM object #24), set a flag
-    if ((currentSelectionInfo.selectedObjectsTypeArray.length == 1) && (currentSelectionInfo.selectedObjectsTypeArray[0] == 24))
+    // if there's just one Group Instance selected, set a flag
+    if (currentSelectionInfo.groupInstanceIDArray.length == 1)
     {
         //console.log("Only a single instance selected.");
-        isSingleGroupInstanceOnly = true;
+        isSingleGroupInstance = true;
     }
     else 
     {
-        isSingleGroupInstanceOnly = false;
+        isSingleGroupInstance = false;
     }
 
     // if one or more Group instances (WSM object #24) are selected, set a flag
@@ -487,7 +487,7 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
     }
 
     // if a single instance is selected, enable HTML and update it
-    if (isSingleGroupInstanceOnly)
+    if (isSingleGroupInstance)
     {
         identicalGroupInstanceCountDiv.className = 'infoListIndented';
         identicalGroupInstanceCount = currentSelectionInfo.identicalGroupInstanceCount;
@@ -507,6 +507,8 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
     }
     else
     {
+        identicalGroupInstanceCountDiv.className = 'hide';
+
         singleGroupDetailsContainerDiv.className = 'hide';
         singleGroupInstanceDetailsContainerDiv.className = 'hide';
     }
@@ -548,13 +550,6 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
         identicalGroupInstanceCountDiv.className = 'hide';
         singleGroupInstanceDetailsContainerDiv.className = 'hide';
         multiGroupInstanceDetailsContainerDiv.className = 'hide';
-    }
-
-    // hide elements that shouldn't display with more than one object in the selection
-    if (objectCount > 1)
-    {
-        singleGroupInstanceDetailsContainerDiv.className = 'hide'; 
-        identicalGroupInstanceCountDiv.className = 'hide';
     }
     
     // hide elements that shouldn't display with just 1 object in the selection

@@ -129,11 +129,10 @@ PropertiesPlus.GetSelectionInfo = function()
         }
     }
 
-    // do this stuff only if there is a single Group Instance selected
-    if ((selectedObjectsTypeArray.length == 1) && (selectedObjectsTypeArray[0] === WSM.nInstanceType))
+    // do this only if there is a single Group instance selected
+    if (groupInstanceIDArray.length == 1)
     {
-        var identicalGroupInstanceCount = 0;
-        var referenceHistoryID = WSM.APIGetGroupReferencedHistoryReadOnly(nHistoryID, selectedObjectsIDArray[0]);
+        var referenceHistoryID = WSM.APIGetGroupReferencedHistoryReadOnly(nHistoryID, groupInstanceIDArray[0]);
         //console.log("Reference history for this Group: " + referenceHistoryID);
 
         // determine how many total instances of this Group are in the model
@@ -198,6 +197,7 @@ PropertiesPlus.GetSelectionInfo = function()
         "bodyCount" : bodyCount,
         "meshCount" : meshCount,
         "groupInstanceCount" : groupInstanceCount,
+        "groupInstanceIDArray" : groupInstanceIDArray,
         "groupInstanceNameArray" : groupInstanceNameArray,
         "identicalGroupInstanceCount" : identicalGroupInstanceCount,
         "isConsistentGroupInstanceNames" : isConsistentGroupInstanceNames
