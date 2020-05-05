@@ -14,20 +14,21 @@ var selectedObjectsLevelsBoolArray;
 var selectedObjectsGroupFamilyIDArray;
 var selectedObjectsGroupFamilyHistoryIDArray;
 var selectedObjectsGroupFamilyNameArray;
-var groupInstanceIDArray;
-var groupInstanceNameArray;
+var selectedObjectsGroupInstanceIDArray;
+var selectedObjectsGroupInstanceNameArray;
 
 // instantiate counts
 var vertexCount;
 var edgeCount;
 var faceCount;
 var bodyCount;
-var groupCount;
+var groupFamilyCount;
 var groupInstanceCount;
 var identicalGroupInstanceCount;
 var meshCount;
 
 // instantiate booleans
+var isConsistentGroupFamilyNames;
 var isConsistentGroupInstanceNames;
 
 // updates variables and arrays about the items in the selection set
@@ -44,20 +45,21 @@ PropertiesPlus.GetSelectionInfo = function()
     selectedObjectsGroupFamilyIDArray = [];
     selectedObjectsGroupFamilyHistoryIDArray = [];
     selectedObjectsGroupFamilyNameArray = [];
-    groupInstanceIDArray = [];
-    groupInstanceNameArray = [];
+    selectedObjectsGroupInstanceIDArray = [];
+    selectedObjectsGroupInstanceNameArray = [];
 
     // clear counts
     vertexCount = 0;
     edgeCount = 0;
     faceCount = 0;
     bodyCount = 0;
-    groupCount = 0;
+    groupFamilyCount = 0;
     groupInstanceCount = 0;
     identicalGroupInstanceCount = 0;
     meshCount = 0;
 
     // clear booleans
+    isConsistentGroupFamilyNames = false;
     isConsistentGroupInstanceNames = false;
 
     // get current history
@@ -115,6 +117,8 @@ PropertiesPlus.GetSelectionInfo = function()
 
             // get the Group family name
             var groupFamilyName = WSM.APIGetRevitFamilyInformationReadOnly(groupFamilyHistoryID).familyReference;
+            // TODO: this returns an empty string for Dynamo Groups, but they have a name
+            //console.log(JSON.stringify(WSM.APIGetRevitFamilyInformationReadOnly(groupFamilyHistoryID)));
             // if the Group name is empty, that means it hasn't been customized
             // so use the default Group naming convention: "Group " + "historyID"
             if (groupFamilyName == '')
@@ -124,15 +128,15 @@ PropertiesPlus.GetSelectionInfo = function()
             selectedObjectsGroupFamilyNameArray.push(groupFamilyName);
 
             // push the Group instance name and ID into arrays
-            groupInstanceNameArray.push(objectName);
-            groupInstanceIDArray.push(nObjectID);
+            selectedObjectsGroupInstanceNameArray.push(objectName);
+            selectedObjectsGroupInstanceIDArray.push(nObjectID);
         }
     }
 
     // do this only if there is a single Group instance selected
-    if (groupInstanceIDArray.length == 1)
+    if (selectedObjectsGroupInstanceIDArray.length == 1)
     {
-        var referenceHistoryID = WSM.APIGetGroupReferencedHistoryReadOnly(nHistoryID, groupInstanceIDArray[0]);
+        var referenceHistoryID = WSM.APIGetGroupReferencedHistoryReadOnly(nHistoryID, selectedObjectsGroupInstanceIDArray[0]);
         //console.log("Reference history for this Group: " + referenceHistoryID);
 
         // determine how many total instances of this Group are in the model
@@ -140,9 +144,13 @@ PropertiesPlus.GetSelectionInfo = function()
         console.log("Number of instances in model: " + identicalGroupInstanceCount);
     }
 
+    // determine if the instances come from the same Group Family
+    var groupFamilyNameComparisonResultsArray = testForIdentical(selectedObjectsGroupFamilyNameArray);
+    isConsistentGroupFamilyNames = booleanReduce(groupFamilyNameComparisonResultsArray);
+
     // determine if the instances are all of the same name
-    var nameComparisonResultsArray = testForIdentical(groupInstanceNameArray);
-    isConsistentGroupInstanceNames = booleanReduce(nameComparisonResultsArray);
+    var groupInstanceNameComparisonResultsArray = testForIdentical(selectedObjectsGroupInstanceNameArray);
+    isConsistentGroupInstanceNames = booleanReduce(groupInstanceNameComparisonResultsArray);
     //console.log("Are group instance names consistent? " + isConsistentGroupInstanceNames);
 
     // fill out arrays for object types in the selection
@@ -191,20 +199,21 @@ PropertiesPlus.GetSelectionInfo = function()
         "selectedObjectsNameArray" : selectedObjectsNameArray,
         "selectedObjectsGroupFamilyIDArray" : selectedObjectsGroupFamilyIDArray,
         "selectedObjectsGroupFamilyNameArray" : selectedObjectsGroupFamilyNameArray,
+        "selectedObjectsGroupInstanceIDArray" : selectedObjectsGroupInstanceIDArray,
+        "selectedObjectsGroupInstanceNameArray" : selectedObjectsGroupInstanceNameArray,
         "vertexCount" : vertexCount,
         "edgeCount" : edgeCount,
         "faceCount" : faceCount,
         "bodyCount" : bodyCount,
         "meshCount" : meshCount,
         "groupInstanceCount" : groupInstanceCount,
-        "groupInstanceIDArray" : groupInstanceIDArray,
-        "groupInstanceNameArray" : groupInstanceNameArray,
         "identicalGroupInstanceCount" : identicalGroupInstanceCount,
+        "isConsistentGroupFamilyNames" : isConsistentGroupFamilyNames,
         "isConsistentGroupInstanceNames" : isConsistentGroupInstanceNames
     };
 }
 
-PropertiesPlus.CalculateVolume = function()
+PropertiesPlus.calculateVolume = function()
 {
     var totalVolume = [];
 
@@ -221,34 +230,33 @@ PropertiesPlus.CalculateVolume = function()
     }
 }
 
-PropertiesPlus.renameGroup = function(args)
+PropertiesPlus.renameGroupFamilies = function(args)
 {
-    if (groupInstanceIDArray.length == 1)
+    if (selectedObjectsGroupFamilyHistoryIDArray.length == 1)
     {
-        // TODO: restore Group category on rename
-        WSM.APISetRevitFamilyInformation(selectedObjectsGroupFamilyHistoryIDArray[0], false, false, "", args.singleGroupRename, "", "");
+        WSM.APISetRevitFamilyInformation(selectedObjectsGroupFamilyHistoryIDArray[0], false, false, "", args.singleGroupFamilyRename, "", "");
     }
     else
     {
-        for (var i = 0; i < groupInstanceIDArray.length; i++)
+        for (var i = 0; i < selectedObjectsGroupFamilyIDArray.length; i++)
         {
-            // TODO: support multiple Group family rename
-            //WSM.APISetObjectProperties(nHistoryID, groupInstanceIDArray[i], args.multiGroupInstanceRename, selectedObjectsLevelsBoolArray[i]);
+            // TODO: restore Group category on rename
+            WSM.APISetRevitFamilyInformation(selectedObjectsGroupFamilyHistoryIDArray[i], false, false, "", args.multiGroupFamilyRename, "", "");
         }
     }
 }
 
 PropertiesPlus.renameGroupInstances = function(args)
 {
-    if (groupInstanceIDArray.length == 1)
+    if (selectedObjectsGroupInstanceIDArray.length == 1)
     {
-        WSM.APISetObjectProperties(nHistoryID, groupInstanceIDArray[0], args.singleGroupInstanceRename, selectedObjectsLevelsBoolArray[0]);
+        WSM.APISetObjectProperties(nHistoryID, selectedObjectsGroupInstanceIDArray[0], args.singleGroupInstanceRename, selectedObjectsLevelsBoolArray[0]);
     }
     else
     {
-        for (var i = 0; i < groupInstanceIDArray.length; i++)
+        for (var i = 0; i < selectedObjectsGroupInstanceIDArray.length; i++)
         {
-            WSM.APISetObjectProperties(nHistoryID, groupInstanceIDArray[i], args.multiGroupInstanceRename, selectedObjectsLevelsBoolArray[i]);
+            WSM.APISetObjectProperties(nHistoryID, selectedObjectsGroupInstanceIDArray[i], args.multiGroupInstanceRename, selectedObjectsLevelsBoolArray[i]);
         }
     }
 }

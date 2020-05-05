@@ -48,12 +48,12 @@ var vertexCount = 0;
 var edgeCount = 0;
 var faceCount = 0;
 var bodyCount = 0;
-var groupCount = 0;
+var groupFamilyCount = 0;
 var groupInstanceCount = 0;
 var identicalGroupInstanceCount = 0;
 var meshCount = 0;
 
-var isMultipleObjects = false;
+var isAnythingSelected = false;
 var isOneOrMoreVertices = false;
 var isOneOrMoreEdges = false;
 var isOneOrMoreFaces = false;
@@ -75,40 +75,36 @@ var faceCountDiv;
 var faceCountLabel;
 var bodyCountDiv;
 var bodyCountLabel;
-var groupInstanceCountDiv;
-var groupInstanceCountLabel;
 var meshCountDiv;
 var meshCountLabel;
-var identicalGroupInstanceCountDiv;
-var identicalGroupInstanceCountLabel;
+var groupInstanceCountDiv;
+var groupInstanceCountLabel;
 
-var singleGroupDetailsContainerDiv;
+var singleGroupFamilyDetailsContainerDiv;
 var singleGroupInstanceDetailsContainerDiv;
 var multiGroupInstanceDetailsContainerDiv;
 
 // IDs for inputs whose value will be updated when selection changes
-var singleGroupNameInputID = 'singleGroupNameInput';
+var singleGroupFamilyNameInputID = 'singleGroupFamilyNameInput';
 var singleGroupInstanceNameInputID = 'singleGroupInstanceNameInput';
 var singleGroupInstancePosXInputID = 'singleGroupInstancePosXInput';
 var singleGroupInstancePosYInputID = 'singleGroupInstancePosYInput';
 var singleGroupInstancePosZInputID = 'singleGroupInstancePosZInput';
+var multiGroupFamilyNameInputID = 'multiGroupFamilyNameInput';
 var multiGroupInstanceNameInputID = 'multiGroupInstanceNameInput';
 
 // a flag to display work-in-progress features
 var displayWIP = false;
 
 // rename a Group family
-PropertiesPlus.submitGroupRename = function()
+PropertiesPlus.submitGroupFamilyRename = function()
 {
     var args = {
-    "singleGroupRename": singleGroupNameInput.value
+    "singleGroupFamilyRename": singleGroupFamilyNameInput.value,
+    "multiGroupFamilyRename": multiGroupFamilyNameInput.value
     }
 
-    //console.log("args");
-    // NOTE: window.FormItInterface.CallMethod will call the function
-    // defined above with the given args.  This is needed to communicate
-    // between the web JS engine process and the FormIt process.
-    window.FormItInterface.CallMethod("PropertiesPlus.renameGroup", args);
+    window.FormItInterface.CallMethod("PropertiesPlus.renameGroupFamilies", args);
 }
 
 // rename a single selected Group instance, or multiple instances
@@ -119,10 +115,6 @@ PropertiesPlus.submitGroupInstanceRename = function()
     "multiGroupInstanceRename": multiGroupInstanceNameInput.value
     }
 
-    //console.log("args");
-    // NOTE: window.FormItInterface.CallMethod will call the function
-    // defined above with the given args.  This is needed to communicate
-    // between the web JS engine process and the FormIt process.
     window.FormItInterface.CallMethod("PropertiesPlus.renameGroupInstances", args);
 }
 
@@ -183,32 +175,45 @@ PropertiesPlus.initializeUI = function()
     selectionInfoContainerDiv.appendChild(meshCountDiv);
 
     groupInstanceCountDiv = document.createElement('div');
-    groupInstanceCountLabel = "Group Instances: ";
+    groupInstanceCountLabel = 
     groupInstanceCountDiv.className = 'hide';
     selectionInfoContainerDiv.appendChild(groupInstanceCountDiv);
 
-    identicalGroupInstanceCountDiv = document.createElement('div');
-    identicalGroupInstanceCountLabel = "Identical instances in model: ";
-    identicalGroupInstanceCountLabel.className = 'infoListIndented';
-    selectionInfoContainerDiv.appendChild(identicalGroupInstanceCountDiv);
-
     //
-    // create the single group details container - starts hidden
+    // create the single group family details container - starts hidden
     //
-    singleGroupDetailsContainerDiv = document.createElement('div');
-    singleGroupDetailsContainerDiv.id = 'singleGroupInfoContainer';
-    singleGroupDetailsContainerDiv.className = 'hide';
+    singleGroupFamilyDetailsContainerDiv = document.createElement('div');
+    singleGroupFamilyDetailsContainerDiv.id = 'singleGroupInfoContainer';
+    singleGroupFamilyDetailsContainerDiv.className = 'hide';
 
-    var singleGroupDetailsHeaderDiv = document.createElement('div');
-    singleGroupDetailsHeaderDiv.id = 'groupInfoHeaderDiv';
-    singleGroupDetailsHeaderDiv.className = 'infoHeader';
-    singleGroupDetailsHeaderDiv.innerHTML = 'Group Family Details';
+    var singleGroupFamilyDetailsHeaderDiv = document.createElement('div');
+    singleGroupFamilyDetailsHeaderDiv.id = 'groupInfoHeaderDiv';
+    singleGroupFamilyDetailsHeaderDiv.className = 'infoHeader';
+    singleGroupFamilyDetailsHeaderDiv.innerHTML = 'Group Family';
 
-    window.document.body.appendChild(singleGroupDetailsContainerDiv);
-    singleGroupDetailsContainerDiv.appendChild(singleGroupDetailsHeaderDiv);
+    window.document.body.appendChild(singleGroupFamilyDetailsContainerDiv);
+    singleGroupFamilyDetailsContainerDiv.appendChild(singleGroupFamilyDetailsHeaderDiv);
 
     // rename module
-    var singleGroupNameContainer = FormIt.PluginUI.createTextInputModule(singleGroupDetailsContainerDiv, 'Name: ', 'singleGroupNameContainer', 'inputModuleContainer', singleGroupNameInputID, PropertiesPlus.submitGroupRename);
+    var singleGroupNameContainer = FormIt.PluginUI.createTextInputModule(singleGroupFamilyDetailsContainerDiv, 'Name: ', 'singleGroupNameContainer', 'inputModuleContainer', singleGroupFamilyNameInputID, PropertiesPlus.submitGroupFamilyRename);
+
+    //
+    // create the multi group family details container - starts hidden
+    //
+    multiGroupFamilyDetailsContainerDiv = document.createElement('div');
+    multiGroupFamilyDetailsContainerDiv.id = 'multiGroupInfoContainer';
+    multiGroupFamilyDetailsContainerDiv.className = 'hide';
+
+    var multiGroupFamilyDetailsHeaderDiv = document.createElement('div');
+    multiGroupFamilyDetailsHeaderDiv.id = 'groupInfoHeaderDiv';
+    multiGroupFamilyDetailsHeaderDiv.className = 'infoHeader';
+    multiGroupFamilyDetailsHeaderDiv.innerHTML = 'Multiple Group Families';
+
+    window.document.body.appendChild(multiGroupFamilyDetailsContainerDiv);
+    multiGroupFamilyDetailsContainerDiv.appendChild(multiGroupFamilyDetailsHeaderDiv);
+
+    // rename module
+    var multiGroupFamilyNameContainer = FormIt.PluginUI.createTextInputModule(multiGroupFamilyDetailsContainerDiv, 'Name: ', 'multiGroupFamilyNameContainer', 'inputModuleContainer', multiGroupFamilyNameInputID, PropertiesPlus.submitGroupFamilyRename);
 
     //
     // create the single group instance details container - starts hidden
@@ -220,7 +225,7 @@ PropertiesPlus.initializeUI = function()
     var singleGroupInstanceDetailsHeaderDiv = document.createElement('div');
     singleGroupInstanceDetailsHeaderDiv.id = 'groupInfoHeaderDiv';
     singleGroupInstanceDetailsHeaderDiv.className = 'infoHeader';
-    singleGroupInstanceDetailsHeaderDiv.innerHTML = 'Group Instance Details';
+    singleGroupInstanceDetailsHeaderDiv.innerHTML = 'Group Instance';
 
     window.document.body.appendChild(singleGroupInstanceDetailsContainerDiv);
     singleGroupInstanceDetailsContainerDiv.appendChild(singleGroupInstanceDetailsHeaderDiv);
@@ -245,9 +250,8 @@ PropertiesPlus.initializeUI = function()
         var positionCoordinatesZModule = FormIt.PluginUI.createTextInputModule(positionCoordinatesContainerDiv, 'Position Z: ', 'positionCoordinatesZ', 'inputModuleContainer', singleGroupInstancePosZInputID, PropertiesPlus.submitGroupInstanceRename);
     }
 
-
     //
-    // create the multi-group details container - starts hidden
+    // create the multi group instance details container - starts hidden
     //
     multiGroupInstanceDetailsContainerDiv = document.createElement('div');
     multiGroupInstanceDetailsContainerDiv.id = 'multiGroupInfoContainer';
@@ -256,7 +260,7 @@ PropertiesPlus.initializeUI = function()
     var multiGroupInstanceDetailsHeaderDiv = document.createElement('div');
     multiGroupInstanceDetailsHeaderDiv.id = 'groupInfoHeaderDiv';
     multiGroupInstanceDetailsHeaderDiv.className = 'infoHeader';
-    multiGroupInstanceDetailsHeaderDiv.innerHTML = 'Multi Group Instance Details';
+    multiGroupInstanceDetailsHeaderDiv.innerHTML = 'Multiple Group Instances';
 
     window.document.body.appendChild(multiGroupInstanceDetailsContainerDiv);
     multiGroupInstanceDetailsContainerDiv.appendChild(multiGroupInstanceDetailsHeaderDiv);
@@ -280,14 +284,14 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
     // set flags based on selection
     //
 
-    // if mulitple objects are selected, set a flag
+    // if multiple objects are selected, set a flag
     if (objectCount > 0)
     {
-        isMultipleObjects = true;
+        isAnythingSelected = true;
     }
     else
     {
-        isMultipleObjects = false;
+        isAnythingSelected = false;
     }
 
     // if one or more vertices (WSM object #8) are selected, set a flag
@@ -368,7 +372,7 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
     }
 
     // if there's just one Group Instance selected, set a flag
-    if (currentSelectionInfo.groupInstanceIDArray.length == 1)
+    if (currentSelectionInfo.selectedObjectsGroupInstanceIDArray.length == 1)
     {
         //console.log("Only a single instance selected.");
         isSingleGroupInstance = true;
@@ -409,7 +413,7 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
     //
 
     // if multiple items, enable HTML
-    if (isMultipleObjects)
+    if (isAnythingSelected)
     {
         objectCountHorizontalRule.className = 'show';
     }
@@ -479,7 +483,6 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
     {
         groupInstanceCountDiv.className = 'infoList';
         groupInstanceCount = currentSelectionInfo.groupInstanceCount;
-        groupInstanceCountDiv.innerHTML = groupInstanceCountLabel + groupInstanceCount;
     }
     else
     {
@@ -489,39 +492,77 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
     // if a single instance is selected, enable HTML and update it
     if (isSingleGroupInstance)
     {
-        identicalGroupInstanceCountDiv.className = 'infoListIndented';
-        identicalGroupInstanceCount = currentSelectionInfo.identicalGroupInstanceCount;
-        identicalGroupInstanceCountDiv.innerHTML = identicalGroupInstanceCountLabel + identicalGroupInstanceCount;
+        // update the group instance count to also show how many instances are in the model
+        groupInstanceCountDiv.className = 'infoList';
+        groupInstanceCountDiv.innerHTML = "Groups: " + groupInstanceCount + " Instance (" + currentSelectionInfo.identicalGroupInstanceCount + " in model)";
 
-        singleGroupDetailsContainerDiv.className = 'infoContainer';
-
+        // enable the group family and instance info containers
+        singleGroupFamilyDetailsContainerDiv.className = 'infoContainer';
         singleGroupInstanceDetailsContainerDiv.className = 'infoContainer';
 
         var groupInstanceName = currentSelectionInfo.selectedObjectsNameArray[0];
         var singleGroupInstanceNameInput = document.getElementById(singleGroupInstanceNameInputID);
         singleGroupInstanceNameInput.value = groupInstanceName;
 
-        var groupName = currentSelectionInfo.selectedObjectsGroupFamilyNameArray[0];
-        var singleGroupNameInput = document.getElementById(singleGroupNameInputID);
-        singleGroupNameInput.value = groupName;
+        var groupFamilyName = currentSelectionInfo.selectedObjectsGroupFamilyNameArray[0];
+        var singleGroupFamilyNameInput = document.getElementById(singleGroupFamilyNameInputID);
+        singleGroupFamilyNameInput.value = groupFamilyName;
     }
     else
     {
-        identicalGroupInstanceCountDiv.className = 'hide';
-
-        singleGroupDetailsContainerDiv.className = 'hide';
+        singleGroupFamilyDetailsContainerDiv.className = 'hide';
         singleGroupInstanceDetailsContainerDiv.className = 'hide';
     }
 
     // if multiple group instances are selected, enable HTML and update it
     if (isMultipleGroupInstances)
     {
+        // update the group instance count to also show how many families the instances belong to
+        var uniqueGroupCount = eliminateDuplicatesInArray(currentSelectionInfo.selectedObjectsGroupFamilyIDArray).length;
+        // change the wording slightly if there is more than one family
+        var familyString;
+        if (uniqueGroupCount == 1)
+        {
+            var familyString = " Family)";
+        }
+        else
+        {
+            var familyString = " Families)";
+        }
+        groupInstanceCountDiv.className = 'infoList';
+        groupInstanceCountDiv.innerHTML = "Groups: " + groupInstanceCount + " Instances (" + uniqueGroupCount + familyString;
+
+        // if the instances come from the same Group family, display the single Group family container and show the name
+        if (currentSelectionInfo.isConsistentGroupFamilyNames)
+        {
+            // hide the multi Group family container, and display the single Group family details container
+            multiGroupFamilyDetailsContainerDiv.className = 'hide';
+            singleGroupFamilyDetailsContainerDiv.className = 'infoContainer';
+
+            // update the name input with the current name
+            var groupFamilyName = currentSelectionInfo.selectedObjectsGroupFamilyNameArray[0];
+            var singleGroupFamilyNameInput = document.getElementById(singleGroupFamilyNameInputID);
+            singleGroupFamilyNameInput.value = groupFamilyName;
+        }
+        // otherwise, these instances come from different families, so display the multi Group family container
+        else
+        {
+            // hide the single Group family container, and display the multi Group family details container
+            singleGroupFamilyDetailsContainerDiv.className = 'hide';
+            multiGroupFamilyDetailsContainerDiv.className = 'infoContainer';
+
+            var groupFamilyName = "*varies*";
+            var multiGroupFamilyNameInput = document.getElementById(multiGroupFamilyNameInputID);
+            multiGroupFamilyNameInput.setAttribute("placeholder", groupFamilyName);
+            multiGroupFamilyNameInput.value = '';
+        }
+
         multiGroupInstanceDetailsContainerDiv.className = 'infoContainer';
 
         // if all of the instance names are consistent, display the common name as placeholder text
         if (currentSelectionInfo.isConsistentGroupInstanceNames == true)
         {
-            var groupInstanceName = currentSelectionInfo.groupInstanceNameArray[0];
+            var groupInstanceName = currentSelectionInfo.selectedObjectsGroupInstanceNameArray[0];
             multiGroupInstanceNameInput.value = groupInstanceName;
         }
         // otherwise indicate that the names vary
@@ -533,7 +574,9 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
         }
     }
     else
-    {
+    {       
+        // hide the multi details containers
+        multiGroupFamilyDetailsContainerDiv.className = 'hide';
         multiGroupInstanceDetailsContainerDiv.className = 'hide'; 
     }
     
@@ -547,7 +590,6 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
         bodyCountDiv.className = 'hide';
         meshCountDiv.className = 'hide';
         groupInstanceCountDiv.className = 'hide';
-        identicalGroupInstanceCountDiv.className = 'hide';
         singleGroupInstanceDetailsContainerDiv.className = 'hide';
         multiGroupInstanceDetailsContainerDiv.className = 'hide';
     }

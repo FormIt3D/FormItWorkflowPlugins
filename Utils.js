@@ -76,7 +76,7 @@ function booleanAnyTrue(array)
     }
 }
 
-// search through an array, and return an array of only unique values
+// search through an array, and return an array of only unique values (values that only appear once)
 function getUniqueValuesInArray(array)
 {
     var uniqueArray = [];
@@ -95,6 +95,17 @@ function getUniqueValuesInArray(array)
     }
     //console.log("Array of unique values: " + uniqueArray);
     return uniqueArray;
+}
+
+// search through an array and return an array of every distinct value (eliminating all duplicates)
+function eliminateDuplicatesInArray(array)
+{
+    function onlyUnique(value, index, self) { 
+        return self.indexOf(value) === index;
+    }
+    var onlyUniqueArray = array.filter(onlyUnique);
+
+    return onlyUniqueArray;
 }
 
 // flatten a multi-dimensional array into a 1D array
