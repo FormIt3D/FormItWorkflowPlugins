@@ -122,6 +122,13 @@ PropertiesPlus.submitGroupInstanceRename = function()
 // must be called from the HTML page
 PropertiesPlus.initializeUI = function()
 {
+    // create an overall container for all objects that comprise the "content" of the plugin
+    // everything between the header and footer
+    var contentContainer = document.createElement('div');
+    contentContainer.id = 'contentContainer';
+    contentContainer.className = 'contentContainer'
+    window.document.body.appendChild(contentContainer);
+
     //
     // create the selection count container - this is always visible
     //
@@ -142,7 +149,7 @@ PropertiesPlus.initializeUI = function()
     objectCountHorizontalRule = document.createElement('hr'); // horizontal line
     objectCountHorizontalRule.className = 'hide';
 
-    window.document.body.appendChild(selectionInfoContainerDiv);
+    contentContainer.appendChild(selectionInfoContainerDiv);
     selectionInfoContainerDiv.appendChild(selectionInfoHeaderDiv);
     selectionInfoContainerDiv.appendChild(objectCountDiv);
     
@@ -191,7 +198,7 @@ PropertiesPlus.initializeUI = function()
     singleGroupFamilyDetailsHeaderDiv.className = 'infoHeader';
     singleGroupFamilyDetailsHeaderDiv.innerHTML = 'Group Family';
 
-    window.document.body.appendChild(singleGroupFamilyDetailsContainerDiv);
+    contentContainer.appendChild(singleGroupFamilyDetailsContainerDiv);
     singleGroupFamilyDetailsContainerDiv.appendChild(singleGroupFamilyDetailsHeaderDiv);
 
     // rename module
@@ -209,7 +216,7 @@ PropertiesPlus.initializeUI = function()
     multiGroupFamilyDetailsHeaderDiv.className = 'infoHeader';
     multiGroupFamilyDetailsHeaderDiv.innerHTML = 'Multiple Group Families';
 
-    window.document.body.appendChild(multiGroupFamilyDetailsContainerDiv);
+    contentContainer.appendChild(multiGroupFamilyDetailsContainerDiv);
     multiGroupFamilyDetailsContainerDiv.appendChild(multiGroupFamilyDetailsHeaderDiv);
 
     // rename module
@@ -227,7 +234,7 @@ PropertiesPlus.initializeUI = function()
     singleGroupInstanceDetailsHeaderDiv.className = 'infoHeader';
     singleGroupInstanceDetailsHeaderDiv.innerHTML = 'Group Instance';
 
-    window.document.body.appendChild(singleGroupInstanceDetailsContainerDiv);
+    contentContainer.appendChild(singleGroupInstanceDetailsContainerDiv);
     singleGroupInstanceDetailsContainerDiv.appendChild(singleGroupInstanceDetailsHeaderDiv);
 
     // rename module
@@ -262,11 +269,16 @@ PropertiesPlus.initializeUI = function()
     multiGroupInstanceDetailsHeaderDiv.className = 'infoHeader';
     multiGroupInstanceDetailsHeaderDiv.innerHTML = 'Multiple Group Instances';
 
-    window.document.body.appendChild(multiGroupInstanceDetailsContainerDiv);
+    contentContainer.appendChild(multiGroupInstanceDetailsContainerDiv);
     multiGroupInstanceDetailsContainerDiv.appendChild(multiGroupInstanceDetailsHeaderDiv);
 
     // rename module
     var multiGroupInstanceNameContainer = FormIt.PluginUI.createTextInputModule(multiGroupInstanceDetailsContainerDiv, 'Name: ', 'multiGroupInstanceNameContainer', 'inputModuleContainer', multiGroupInstanceNameInputID, PropertiesPlus.submitGroupInstanceRename);
+
+    //
+    // create the footer
+    //
+    FormIt.PluginUI.createFooter();
 }
 
 
