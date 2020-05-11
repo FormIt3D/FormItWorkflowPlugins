@@ -529,11 +529,11 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
     // if multiple group instances are selected, enable HTML and update it
     if (isMultipleGroupInstances)
     {
-        // update the group instance count to also show how many families the instances belong to
-        var uniqueGroupCount = eliminateDuplicatesInArray(currentSelectionInfo.selectedObjectsGroupFamilyIDArray).length;
+        // update the group instance count to also show how many unique families the instances belong to
+        var uniqueGroupFamilyCount = eliminateDuplicatesInArray(currentSelectionInfo.selectedObjectsGroupFamilyHistoryIDArray).length;
         // change the wording slightly if there is more than one family
         var familyString;
-        if (uniqueGroupCount == 1)
+        if (uniqueGroupFamilyCount == 1)
         {
             var familyString = " Family)";
         }
@@ -542,7 +542,7 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
             var familyString = " Families)";
         }
         groupInstanceCountDiv.className = 'infoList';
-        groupInstanceCountDiv.innerHTML = "Groups: " + groupInstanceCount + " Instances (" + uniqueGroupCount + familyString;
+        groupInstanceCountDiv.innerHTML = "Groups: " + groupInstanceCount + " Instances (" + uniqueGroupFamilyCount + familyString;
 
         // if the instances come from the same Group family, display the single Group family container and show the name
         if (currentSelectionInfo.isConsistentGroupFamilyNames)

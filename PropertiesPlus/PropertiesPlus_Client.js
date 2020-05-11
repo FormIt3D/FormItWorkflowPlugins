@@ -197,6 +197,7 @@ PropertiesPlus.GetSelectionInfo = function()
         "selectedObjectsIDArray" : selectedObjectsIDArray,
         "selectedObjectsTypeArray" : selectedObjectsTypeArray,
         "selectedObjectsNameArray" : selectedObjectsNameArray,
+        "selectedObjectsGroupFamilyHistoryIDArray" : selectedObjectsGroupFamilyHistoryIDArray,
         "selectedObjectsGroupFamilyIDArray" : selectedObjectsGroupFamilyIDArray,
         "selectedObjectsGroupFamilyNameArray" : selectedObjectsGroupFamilyNameArray,
         "selectedObjectsGroupInstanceIDArray" : selectedObjectsGroupInstanceIDArray,
