@@ -28,6 +28,7 @@ var identicalGroupInstanceCount;
 var meshCount;
 
 // instantiate booleans
+var isConsistentGroupFamilyHistoryIDs;
 var isConsistentGroupFamilyNames;
 var isConsistentGroupInstanceNames;
 
@@ -59,6 +60,7 @@ PropertiesPlus.GetSelectionInfo = function()
     meshCount = 0;
 
     // clear booleans
+    isConsistentGroupFamilyHistoryIDs = false;
     isConsistentGroupFamilyNames = false;
     isConsistentGroupInstanceNames = false;
 
@@ -144,11 +146,15 @@ PropertiesPlus.GetSelectionInfo = function()
         console.log("Number of instances in model: " + identicalGroupInstanceCount);
     }
 
-    // determine if the instances come from the same Group Family
+    // determine if the instances come from the same group family
+    var groupFamilyHistoryIDComparisonResultsArray = testForIdentical(selectedObjectsGroupFamilyHistoryIDArray);
+    isConsistentGroupFamilyHistoryIDs = booleanReduce(groupFamilyHistoryIDComparisonResultsArray)
+
+    // determine if the group families are all of the same name
     var groupFamilyNameComparisonResultsArray = testForIdentical(selectedObjectsGroupFamilyNameArray);
     isConsistentGroupFamilyNames = booleanReduce(groupFamilyNameComparisonResultsArray);
 
-    // determine if the instances are all of the same name
+    // determine if the group instances are all of the same name
     var groupInstanceNameComparisonResultsArray = testForIdentical(selectedObjectsGroupInstanceNameArray);
     isConsistentGroupInstanceNames = booleanReduce(groupInstanceNameComparisonResultsArray);
     //console.log("Are group instance names consistent? " + isConsistentGroupInstanceNames);
@@ -208,9 +214,10 @@ PropertiesPlus.GetSelectionInfo = function()
         "bodyCount" : bodyCount,
         "meshCount" : meshCount,
         "groupInstanceCount" : groupInstanceCount,
-        "identicalGroupInstanceCount" : identicalGroupInstanceCount,
+        "isConsistentGroupFamilyHistoryIDs" : isConsistentGroupFamilyHistoryIDs,
         "isConsistentGroupFamilyNames" : isConsistentGroupFamilyNames,
-        "isConsistentGroupInstanceNames" : isConsistentGroupInstanceNames
+        "isConsistentGroupInstanceNames" : isConsistentGroupInstanceNames,
+        "identicalGroupInstanceCount" : identicalGroupInstanceCount,
     };
 }
 
@@ -233,7 +240,7 @@ PropertiesPlus.calculateVolume = function()
 
 PropertiesPlus.renameGroupFamilies = function(args)
 {
-    if (selectedObjectsGroupFamilyHistoryIDArray.length == 1)
+    if (selectedObjectsGroupFamilyHistoryIDArray.length === 1 || eliminateDuplicatesInArray(selectedObjectsGroupFamilyHistoryIDArray).length === 1)
     {
         WSM.APISetRevitFamilyInformation(selectedObjectsGroupFamilyHistoryIDArray[0], false, false, "", args.singleGroupFamilyRename, "", "");
     }

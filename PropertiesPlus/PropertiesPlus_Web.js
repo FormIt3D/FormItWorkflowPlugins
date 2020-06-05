@@ -202,7 +202,8 @@ PropertiesPlus.initializeUI = function()
     singleGroupFamilyDetailsContainerDiv.appendChild(singleGroupFamilyDetailsHeaderDiv);
 
     // rename module
-    var singleGroupNameContainer = FormIt.PluginUI.createTextInputModule(singleGroupFamilyDetailsContainerDiv, 'Name: ', 'singleGroupNameContainer', 'inputModuleContainer', singleGroupFamilyNameInputID, PropertiesPlus.submitGroupFamilyRename);
+    var singleGroupNameContainer = new FormIt.PluginUI.TextInputModule('Name: ', 'singleGroupNameContainer', 'inputModuleContainer', singleGroupFamilyNameInputID, PropertiesPlus.submitGroupFamilyRename);
+    singleGroupFamilyDetailsContainerDiv.appendChild(singleGroupNameContainer.container);
 
     //
     // create the multi group family details container - starts hidden
@@ -220,7 +221,8 @@ PropertiesPlus.initializeUI = function()
     multiGroupFamilyDetailsContainerDiv.appendChild(multiGroupFamilyDetailsHeaderDiv);
 
     // rename module
-    var multiGroupFamilyNameContainer = FormIt.PluginUI.createTextInputModule(multiGroupFamilyDetailsContainerDiv, 'Name: ', 'multiGroupFamilyNameContainer', 'inputModuleContainer', multiGroupFamilyNameInputID, PropertiesPlus.submitGroupFamilyRename);
+    var multiGroupFamilyNameContainer = new FormIt.PluginUI.TextInputModule('Name: ', 'multiGroupFamilyNameContainer', 'inputModuleContainer', multiGroupFamilyNameInputID, PropertiesPlus.submitGroupFamilyRename);
+    multiGroupFamilyDetailsContainerDiv.appendChild(multiGroupFamilyNameContainer.container);
 
     //
     // create the single group instance details container - starts hidden
@@ -238,7 +240,8 @@ PropertiesPlus.initializeUI = function()
     singleGroupInstanceDetailsContainerDiv.appendChild(singleGroupInstanceDetailsHeaderDiv);
 
     // rename module
-    var singleGroupInstanceNameContainer = FormIt.PluginUI.createTextInputModule(singleGroupInstanceDetailsContainerDiv, 'Name: ', 'singleGroupInstanceNameContainer', 'inputModuleContainer', singleGroupInstanceNameInputID, PropertiesPlus.submitGroupInstanceRename);
+    var singleGroupInstanceNameContainer = new FormIt.PluginUI.TextInputModule('Name: ', 'singleGroupInstanceNameContainer', 'inputModuleContainer', singleGroupInstanceNameInputID, PropertiesPlus.submitGroupInstanceRename);
+    singleGroupInstanceDetailsContainerDiv.appendChild(singleGroupInstanceNameContainer.container);
 
     // this is a work in progress
     if (displayWIP)
@@ -250,11 +253,14 @@ PropertiesPlus.initializeUI = function()
         // position modules
         var positionCoordinatesContainerDiv = FormIt.PluginUI.createHorizontalModuleContainer(singleGroupInstanceDetailsContainerDiv);
 
-        var positionCoordinatesXModule = FormIt.PluginUI.createTextInputModule(positionCoordinatesContainerDiv, 'Position X: ', 'positionCoordinatesX', 'inputModuleContainer', singleGroupInstancePosXInputID, PropertiesPlus.submitGroupInstanceRename);
+        var positionCoordinatesXModule = new FormIt.PluginUI.TextInputModule('Position X: ', 'positionCoordinatesX', 'inputModuleContainer', singleGroupInstancePosXInputID, PropertiesPlus.submitGroupInstanceRename);
+        positionCoordinatesContainerDiv.appendChild(positionCoordinatesXModule.container);
 
-        var positionCoordinatesYModule = FormIt.PluginUI.createTextInputModule(positionCoordinatesContainerDiv, 'Position Y: ', 'positionCoordinatesY', 'inputModuleContainer', singleGroupInstancePosYInputID, PropertiesPlus.submitGroupInstanceRename);
+        var positionCoordinatesYModule = new FormIt.PluginUI.TextInputModule('Position Y: ', 'positionCoordinatesY', 'inputModuleContainer', singleGroupInstancePosYInputID, PropertiesPlus.submitGroupInstanceRename);
+        positionCoordinatesContainerDiv.appendChild(positionCoordinatesYModule.container);
 
-        var positionCoordinatesZModule = FormIt.PluginUI.createTextInputModule(positionCoordinatesContainerDiv, 'Position Z: ', 'positionCoordinatesZ', 'inputModuleContainer', singleGroupInstancePosZInputID, PropertiesPlus.submitGroupInstanceRename);
+        var positionCoordinatesZModule = new FormIt.PluginUI.TextInputModule(positionCoordinatesContainerDiv, 'Position Z: ', 'positionCoordinatesZ', 'inputModuleContainer', singleGroupInstancePosZInputID, PropertiesPlus.submitGroupInstanceRename);
+        positionCoordinatesContainerDiv.append(positionCoordinatesZModule.container);
     }
 
     //
@@ -273,7 +279,8 @@ PropertiesPlus.initializeUI = function()
     multiGroupInstanceDetailsContainerDiv.appendChild(multiGroupInstanceDetailsHeaderDiv);
 
     // rename module
-    var multiGroupInstanceNameContainer = FormIt.PluginUI.createTextInputModule(multiGroupInstanceDetailsContainerDiv, 'Name: ', 'multiGroupInstanceNameContainer', 'inputModuleContainer', multiGroupInstanceNameInputID, PropertiesPlus.submitGroupInstanceRename);
+    var multiGroupInstanceNameContainer = new FormIt.PluginUI.TextInputModule('Name: ', 'multiGroupInstanceNameContainer', 'inputModuleContainer', multiGroupInstanceNameInputID, PropertiesPlus.submitGroupInstanceRename);
+    multiGroupInstanceDetailsContainerDiv.appendChild(multiGroupInstanceNameContainer.container);
 
     //
     // create the footer
@@ -545,7 +552,7 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
         groupInstanceCountDiv.innerHTML = "Groups: " + groupInstanceCount + " Instances (" + uniqueGroupFamilyCount + familyString;
 
         // if the instances come from the same Group family, display the single Group family container and show the name
-        if (currentSelectionInfo.isConsistentGroupFamilyNames)
+        if (currentSelectionInfo.isConsistentGroupFamilyHistoryIDs)
         {
             // hide the multi Group family container, and display the single Group family details container
             multiGroupFamilyDetailsContainerDiv.className = 'hide';
@@ -563,16 +570,27 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
             singleGroupFamilyDetailsContainerDiv.className = 'hide';
             multiGroupFamilyDetailsContainerDiv.className = 'infoContainer';
 
-            var groupFamilyName = "*varies*";
             var multiGroupFamilyNameInput = document.getElementById(multiGroupFamilyNameInputID);
-            multiGroupFamilyNameInput.setAttribute("placeholder", groupFamilyName);
-            multiGroupFamilyNameInput.value = '';
+
+            // if all of the group family names are consistent, display the common name as placeholder text
+            if (currentSelectionInfo.isConsistentGroupFamilyNames === true)
+            {
+                var groupFamilyName = currentSelectionInfo.selectedObjectsGroupFamilyNameArray[0];
+                multiGroupFamilyNameInput.value = groupFamilyName;
+            }
+            // otherwise indicate that the names vary
+            else 
+            {
+                var groupFamilyName = "*varies*";
+                multiGroupFamilyNameInput.setAttribute("placeholder", groupFamilyName);
+                multiGroupFamilyNameInput.value = '';
+            }
         }
 
         multiGroupInstanceDetailsContainerDiv.className = 'infoContainer';
 
         // if all of the instance names are consistent, display the common name as placeholder text
-        if (currentSelectionInfo.isConsistentGroupInstanceNames == true)
+        if (currentSelectionInfo.isConsistentGroupInstanceNames === true)
         {
             var groupInstanceName = currentSelectionInfo.selectedObjectsGroupInstanceNameArray[0];
             multiGroupInstanceNameInput.value = groupInstanceName;
