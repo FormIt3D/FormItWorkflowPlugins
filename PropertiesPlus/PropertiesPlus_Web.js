@@ -41,7 +41,7 @@ if (typeof PropertiesPlus == 'undefined')
 "WSM.nPointMeshType = 34;"
 "WSM.nNumObjectTypes = 35;"
 
-// instantiate the items we want to count
+// instantiate the items we want to quantify
 var objectCount = 0;
 
 var vertexCount = 0;
@@ -123,11 +123,15 @@ PropertiesPlus.submitGroupInstanceRename = function()
 PropertiesPlus.initializeUI = function()
 {
     // create an overall container for all objects that comprise the "content" of the plugin
-    // everything between the header and footer
+    // everything above the footer
     var contentContainer = document.createElement('div');
     contentContainer.id = 'contentContainer';
     contentContainer.className = 'contentContainer'
     window.document.body.appendChild(contentContainer);
+
+    // create the overall header
+    var headerContainer = new FormIt.PluginUI.HeaderModule('Properties Plus', 'Select geometry to view and modify additional properties.', 'headerContainer');
+    contentContainer.appendChild(headerContainer.element);
 
     //
     // create the selection count container - this is always visible
@@ -203,7 +207,7 @@ PropertiesPlus.initializeUI = function()
 
     // rename module
     var singleGroupNameContainer = new FormIt.PluginUI.TextInputModule('Name: ', 'singleGroupNameContainer', 'inputModuleContainer', singleGroupFamilyNameInputID, PropertiesPlus.submitGroupFamilyRename);
-    singleGroupFamilyDetailsContainerDiv.appendChild(singleGroupNameContainer.container);
+    singleGroupFamilyDetailsContainerDiv.appendChild(singleGroupNameContainer.element);
 
     //
     // create the multi group family details container - starts hidden
@@ -222,7 +226,7 @@ PropertiesPlus.initializeUI = function()
 
     // rename module
     var multiGroupFamilyNameContainer = new FormIt.PluginUI.TextInputModule('Name: ', 'multiGroupFamilyNameContainer', 'inputModuleContainer', multiGroupFamilyNameInputID, PropertiesPlus.submitGroupFamilyRename);
-    multiGroupFamilyDetailsContainerDiv.appendChild(multiGroupFamilyNameContainer.container);
+    multiGroupFamilyDetailsContainerDiv.appendChild(multiGroupFamilyNameContainer.element);
 
     //
     // create the single group instance details container - starts hidden
@@ -241,7 +245,7 @@ PropertiesPlus.initializeUI = function()
 
     // rename module
     var singleGroupInstanceNameContainer = new FormIt.PluginUI.TextInputModule('Name: ', 'singleGroupInstanceNameContainer', 'inputModuleContainer', singleGroupInstanceNameInputID, PropertiesPlus.submitGroupInstanceRename);
-    singleGroupInstanceDetailsContainerDiv.appendChild(singleGroupInstanceNameContainer.container);
+    singleGroupInstanceDetailsContainerDiv.appendChild(singleGroupInstanceNameContainer.element);
 
     // this is a work in progress
     if (displayWIP)
@@ -254,13 +258,13 @@ PropertiesPlus.initializeUI = function()
         var positionCoordinatesContainerDiv = FormIt.PluginUI.createHorizontalModuleContainer(singleGroupInstanceDetailsContainerDiv);
 
         var positionCoordinatesXModule = new FormIt.PluginUI.TextInputModule('Position X: ', 'positionCoordinatesX', 'inputModuleContainer', singleGroupInstancePosXInputID, PropertiesPlus.submitGroupInstanceRename);
-        positionCoordinatesContainerDiv.appendChild(positionCoordinatesXModule.container);
+        positionCoordinatesContainerDiv.appendChild(positionCoordinatesXModule.element);
 
         var positionCoordinatesYModule = new FormIt.PluginUI.TextInputModule('Position Y: ', 'positionCoordinatesY', 'inputModuleContainer', singleGroupInstancePosYInputID, PropertiesPlus.submitGroupInstanceRename);
-        positionCoordinatesContainerDiv.appendChild(positionCoordinatesYModule.container);
+        positionCoordinatesContainerDiv.appendChild(positionCoordinatesYModule.element);
 
         var positionCoordinatesZModule = new FormIt.PluginUI.TextInputModule(positionCoordinatesContainerDiv, 'Position Z: ', 'positionCoordinatesZ', 'inputModuleContainer', singleGroupInstancePosZInputID, PropertiesPlus.submitGroupInstanceRename);
-        positionCoordinatesContainerDiv.append(positionCoordinatesZModule.container);
+        positionCoordinatesContainerDiv.append(positionCoordinatesZModule.element);
     }
 
     //
@@ -280,15 +284,14 @@ PropertiesPlus.initializeUI = function()
 
     // rename module
     var multiGroupInstanceNameContainer = new FormIt.PluginUI.TextInputModule('Name: ', 'multiGroupInstanceNameContainer', 'inputModuleContainer', multiGroupInstanceNameInputID, PropertiesPlus.submitGroupInstanceRename);
-    multiGroupInstanceDetailsContainerDiv.appendChild(multiGroupInstanceNameContainer.container);
+    multiGroupInstanceDetailsContainerDiv.appendChild(multiGroupInstanceNameContainer.element);
 
     //
     // create the footer
     //
-    FormIt.PluginUI.createFooter();
+    var footerModule = new FormIt.PluginUI.FooterModule;
+    window.document.body.appendChild(footerModule.element)
 }
-
-
 
 // update the values in the UI based on the current FormIt selection
 PropertiesPlus.updateQuantification = function(currentSelectionInfo)

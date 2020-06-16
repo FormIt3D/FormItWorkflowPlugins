@@ -1,16 +1,18 @@
 <html>
-<head><link rel="stylesheet" type="text/css" href="../../FormItExamplePlugins/SharedPluginFiles/FormItPluginStyling.css">
-<title>Properties Plus</title>
-<META NAME="Title" CONTENT="Properties Plus">
-<META NAME="Author" CONTENT="Autodesk FormIt">
-<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
-<script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"></script>
-<script type="text/javascript" src="../../FormItExamplePlugins/SharedPluginFiles/FormItPluginUI.js"></script>
-<script type="text/javascript" src="../Utils.js"></script>
-<script type="text/javascript" src="PropertiesPlus_Web.js"></script>
-<script type="text/javascript">
-    FormItInterface.Initialize(function () {
-        FormItInterface.SubscribeMessage("FormIt.Message.kSelectionsChanged", function(msg)
+<head>
+    <link rel="stylesheet" type="text/css" href="../../FormItExamplePlugins/SharedPluginFiles/FormItPluginStyling.css">
+    <title>Properties Plus</title>
+    <META NAME="Title" CONTENT="Properties Plus">
+    <META NAME="Author" CONTENT="Autodesk FormIt">
+    <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+    <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"></script>
+    <script type="text/javascript" src="../../FormItExamplePlugins/SharedPluginFiles/FormItPluginUI.js"></script>
+    <script type="text/javascript" src="../Utils.js"></script>
+    <script type="text/javascript" src="PropertiesPlus_Web.js"></script>
+    <script type="text/javascript">
+        FormItInterface.Initialize(function () {
+
+            FormItInterface.SubscribeMessage("FormIt.Message.kSelectionsChanged", function(msg)
             {
                 var jsonMessage = JSON.parse(msg);
                 // This callback will be invoked whenever the signal is emitted on the C++/QML side.
@@ -20,21 +22,17 @@
                 PropertiesPlus.updateUI();
             });
 
-        // initialize the UI
-        // this must be called from here, to ensure the HTML page is loaded
-        // before scripts try to access the window document
-        PropertiesPlus.initializeUI();
+            // initialize the UI
+            // this must be called from here, to ensure the HTML page is loaded
+            // before scripts try to access the window document
+            PropertiesPlus.initializeUI();
+            PropertiesPlus.updateUI();
+            
 
-    }); // DOMContentLoaded
-</script>
+        }); // DOMContentLoaded
+    </script>
 </head>
 <body>
-    <div class='headerContainer'>
-        <h1>Properties Plus</h1> 
-        <p>
-            Select geometry to view and modify additional properties.<br>
-        </p>
-    </div> 
 </body>
 
 </html>
