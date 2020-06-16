@@ -1,0 +1,37 @@
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../FormItExamplePlugins/SharedPluginFiles/FormItPluginStyling.css">
+    <title>Match Photo</title>
+    <META NAME="Title" CONTENT="Manage Cameras">
+    <META NAME="Author" CONTENT="Autodesk FormIt">
+    <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/FormItInterface.js"></script>
+    <script type="text/javascript" src="https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils.js"></script>
+    <script type="text/javascript" src="../../FormItExamplePlugins/SharedPluginFiles/FormItPluginUI.js"></script>
+    <script type="text/javascript" src="../Utils.js"></script>
+    <script type="text/javascript" src="ManageCameras_Web.js"></script>
+    <script type="text/javascript">
+        FormItInterface.Initialize(function () {
+
+            // subscribe to the message sent when a camera operation ends
+            FormItInterface.SubscribeMessage("FormIt.Message.kCameraOperationEnded", function(msg)
+            {
+                var jsonMessage = JSON.parse(msg);
+                // This callback will be invoked whenever the signal is emitted on the C++/QML side.
+                //FormItInterface.ConsoleLog("(Web Side) Message: " + JSON.stringify(jsonMessage));
+
+                // when a camera operation is complete
+                ManageCameras.updateUIWithCameraInfo();
+            });
+
+            // initialize the UI
+            // this must be called from here, to ensure the HTML page is loaded
+            // before scripts try to access the window document
+            ManageCameras.initializeUI();
+            ManageCameras.updateUIWithCameraInfo();
+
+        }); // DOMContentLoaded
+    </script>
+</head>
+<body> 
+</body>
+</html>

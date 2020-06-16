@@ -1,14 +1,53 @@
-if (typeof ManageSceneCameras == 'undefined')
+if (typeof ManageCameras == 'undefined')
 {
-    ManageSceneCameras = {};
+    ManageCameras = {};
 }
+
+// the current camera data
+var currentCameraDataParsed;
 
 // define the name of the Group that will contain all cameras
 var cameraContainerGroupAndLayerName = "Cameras";
 // put the Group of cameras in the Main History (0)
 var cameraContainerGroupHistoryID = 0;
 
-ManageSceneCameras.getScreenPointInWorldSpace = function(x, y, planeDistance)
+// updates variables about the camera
+ManageCameras.getCurrentCameraData = function()
+{
+    currentCameraDataParsed = FormIt.Cameras.GetCameraData();
+    cameraHeight = FormIt.PluginUtils.currentUnits(currentCameraDataParsed.posZ);
+    //cameraHeightFormatted = FormIt.LinearValueToString(cameraHeight);
+
+    // return the data we need in a json for the web-side to read from
+    return {
+        "currentCameraData" : FormIt.Cameras.GetCameraData(),
+        "currentCameraHeight" : FormIt.StringConversion.LinearValueToString(cameraHeight)
+    }
+}
+
+// updates variables about the camera
+ManageCameras.setCurrentCameraData = function(args)
+{
+    var newCameraHeight = 0;
+
+    // if the input value is a number, use it as-is
+    if (Number(args.newCameraHeightStr) != 'NaN')
+    {
+        newCameraHeight = Number(args.newCameraHeightStr);
+    }
+    // otherwise, convert the string to a number
+    else
+    {
+        newCameraHeight = FormIt.StringConversion.StringToLinearValue(args.newCameraHeightStr)
+    }
+    console.log("New camera height: " + args.newCameraHeightStr);
+    var newCameraData = args.currentCameraData;
+    newCameraData.posZ = newCameraHeight;
+
+    FormIt.Cameras.SetCameraData(newCameraData);
+}
+
+ManageCameras.getScreenPointInWorldSpace = function(x, y, planeDistance)
 {
     // get a pickray at the provided screen point (normalized 0-1)
     var pickray = WSM.Utils.PickRayFromNormalizedScreenPoint(x, y);
@@ -27,12 +66,12 @@ ManageSceneCameras.getScreenPointInWorldSpace = function(x, y, planeDistance)
     return pickrayPoint3d;
 }
 
-ManageSceneCameras.getViewportAspectRatioByPickray = function(distance)
+ManageCameras.getViewportAspectRatioByPickray = function(distance)
 {
     // get the lower left and upper right screen points
-    var lowerLeftPoint = ManageSceneCameras.getScreenPointInWorldSpace(0, 1, distance);
-    var lowerRightPoint = ManageSceneCameras.getScreenPointInWorldSpace(1, 1, distance);
-    var upperLeftPoint = ManageSceneCameras.getScreenPointInWorldSpace(0, 0, distance);
+    var lowerLeftPoint = ManageCameras.getScreenPointInWorldSpace(0, 1, distance);
+    var lowerRightPoint = ManageCameras.getScreenPointInWorldSpace(1, 1, distance);
+    var upperLeftPoint = ManageCameras.getScreenPointInWorldSpace(0, 0, distance);
 
     // calculate the viewport width and height
     var viewportWidth = getDistanceBetweenTwoPoints(lowerRightPoint.x, lowerRightPoint.y, lowerRightPoint.z, lowerLeftPoint.x, lowerLeftPoint.y, lowerLeftPoint.z);
@@ -49,7 +88,7 @@ ManageSceneCameras.getViewportAspectRatioByPickray = function(distance)
 }
 
 // gets an object in this history by name, optionally searching a smaller array of objects
-ManageSceneCameras.getObjectOnLayerByName = function(nHistoryID, keyName, layerID)
+ManageCameras.getObjectOnLayerByName = function(nHistoryID, keyName, layerID)
 {    
     // get all the objects on the provided Layer
     var layerObjects = FormIt.Layers.GetAllObjectsOnLayers(layerID);
@@ -81,7 +120,7 @@ ManageSceneCameras.getObjectOnLayerByName = function(nHistoryID, keyName, layerI
 }
 
 // look for a Group with this name, in this history and if found, delete it
-ManageSceneCameras.deleteObjectByName = function(nHistoryID, objectsArray, keyName)
+ManageCameras.deleteObjectByName = function(nHistoryID, objectsArray, keyName)
 {
     for (var i = 0; i < objectsArray.length; i++)
     {
@@ -106,10 +145,10 @@ ManageSceneCameras.deleteObjectByName = function(nHistoryID, objectsArray, keyNa
 }
 
 // create a Group by name, if it doesn't exist already, and return its ID
-ManageSceneCameras.getOrCreateGroupOnLayerByName = function(nHistoryID, groupName, layer)
+ManageCameras.getOrCreateGroupOnLayerByName = function(nHistoryID, groupName, layer)
 {
     // first, check if this Group exists
-    var groupID = ManageSceneCameras.getObjectOnLayerByName(nHistoryID, groupName, layer);
+    var groupID = ManageCameras.getObjectOnLayerByName(nHistoryID, groupName, layer);
 
     // if this Group doesn't exist, create it
     if (!groupID)
@@ -122,7 +161,7 @@ ManageSceneCameras.getOrCreateGroupOnLayerByName = function(nHistoryID, groupNam
 }
 
 // create a layer by name, if it doesn't exist already, and return its ID
-ManageSceneCameras.getOrCreateLayerByName = function(nHistoryID, layerName)
+ManageCameras.getOrCreateLayerByName = function(nHistoryID, layerName)
 {
     // if the named layer doesn't exist, create it
     if (!FormIt.Layers.LayerExists(layerName))
@@ -153,15 +192,15 @@ ManageSceneCameras.getOrCreateLayerByName = function(nHistoryID, layerName)
     return layerID;
 }
 
-ManageSceneCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRatio)
+ManageCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRatio)
 {
     console.log("Building scene camera geometry...");
 
     // create or find the Cameras layer, and get its ID
-    var camerasLayerID = ManageSceneCameras.getOrCreateLayerByName(nHistoryID, cameraContainerGroupAndLayerName);
+    var camerasLayerID = ManageCameras.getOrCreateLayerByName(nHistoryID, cameraContainerGroupAndLayerName);
 
     // find or create the Cameras container Group on the Cameras Layer, and get its ID
-    var cameraContainerGroupID = ManageSceneCameras.getOrCreateGroupOnLayerByName(nHistoryID, cameraContainerGroupAndLayerName, camerasLayerID);
+    var cameraContainerGroupID = ManageCameras.getOrCreateGroupOnLayerByName(nHistoryID, cameraContainerGroupAndLayerName, camerasLayerID);
     // get the instance ID of the Group
     var cameraContainerGroupInstanceID = JSON.parse(WSM.APIGetObjectsByTypeReadOnly(nHistoryID, cameraContainerGroupID, WSM.nInstanceType));
     // create a new history for the cameras
@@ -190,17 +229,17 @@ ManageSceneCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspe
         var cameraObjects = WSM.APIGetAllObjectsByTypeReadOnly(cameraContainerGroupHistoryID, WSM.nInstanceType);
         
         // look for any Camera Groups matching this name, and delete it
-        ManageSceneCameras.deleteObjectByName(cameraContainerGroupHistoryID, cameraObjects, sceneName);
+        ManageCameras.deleteObjectByName(cameraContainerGroupHistoryID, cameraObjects, sceneName);
 
         // create the geometry for this camera
-        ManageSceneCameras.createCameraGeometryFromData(sceneCameraData, cameraContainerGroupHistoryID, sceneName, aspectRatio);
+        ManageCameras.createCameraGeometryFromData(sceneCameraData, cameraContainerGroupHistoryID, sceneName, aspectRatio);
 
         console.log("Built new camera: " + sceneName);
     }
 }
 
 // creates camera geometry from camera data
-ManageSceneCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, cameraInstanceName, aspectRatio)
+ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, cameraInstanceName, aspectRatio)
 {
     // distance from the point to the camera plane
     var distance = 10;
@@ -394,7 +433,8 @@ ManageSceneCameras.createCameraGeometryFromData = function(cameraData, nHistoryI
 
 }
 
-ManageSceneCameras.execute = function()
+// this is called by the submit function from the panel - all steps to execute the generation of camera geometry
+ManageCameras.executeGenerateCameraGeometry = function()
 {
     console.clear();
     console.log("Manage Scene Cameras plugin\n");
@@ -409,29 +449,14 @@ ManageSceneCameras.execute = function()
 
     // get the current camera aspect ratio to use for geometry
     // the distance supplied here is arbitrary
-    var currentAspectRatio = ManageSceneCameras.getViewportAspectRatioByPickray(10);
+    var currentAspectRatio = ManageCameras.getViewportAspectRatioByPickray(10);
 
     // start an undo manager state - this should suspend WSM and other updates to make this faster
     FormIt.UndoManagement.BeginState();
 
     // create the camera geometry for all scenes
-    ManageSceneCameras.createSceneCameraGeometry(cameraContainerGroupHistoryID, allScenes, currentAspectRatio);
+    ManageCameras.createSceneCameraGeometry(cameraContainerGroupHistoryID, allScenes, currentAspectRatio);
 
     // end the undo manager state
     FormIt.UndoManagement.EndState("Create camera geometry");
-}
-
-// Submit runs from the HTML page.  This script gets loaded up in both FormIt's
-// JS engine and also in the embedded web JS engine inside the panel.
-ManageSceneCameras.Submit = function()
-{
-    var args = {
-    //"MoveX": parseFloat(document.a.X.value),
-    //"MoveY": parseFloat(document.a.Y.value)
-    }
-    //console.log("args");
-    // NOTE: window.FormItInterface.CallMethod will call the MoveCameras function
-    // defined above with the given args.  This is needed to communicate
-    // between the web JS enging process and the FormIt process.
-    window.FormItInterface.CallMethod("ManageSceneCameras.execute", args);
 }
