@@ -22,7 +22,7 @@ ManageCameras.setCameraHeightAboveLevelFromInput = function()
 
     });
      
-    ManageCameras.updateUIWithCameraInfo();
+    ManageCameras.updateUI();
 }
 
 // update the FormIt camera height from the input value
@@ -38,7 +38,7 @@ ManageCameras.setCameraHeightAboveGroundFromInput = function()
 
     });
      
-    ManageCameras.updateUIWithCameraInfo();
+    ManageCameras.updateUI();
 }
 
 ManageCameras.updateUI = function()
@@ -127,9 +127,9 @@ ManageCameras.initializeUI = function()
     contentContainer.appendChild(document.createElement('p'));
 
     // 
-    // create the create gamera geometry section
+    // create the generate cameras from scenes section
     //
-    var generateSceneCamerasSubheader = new FormIt.PluginUI.HeaderModule('Create Scene Cameras', 'Generate camera geometry for every Scene in the project.', 'headerContainer');
+    var generateSceneCamerasSubheader = new FormIt.PluginUI.HeaderModule('Create Cameras from Scenes', 'Generate camera geometry for every Scene in the project.', 'headerContainer');
     contentContainer.appendChild(generateSceneCamerasSubheader.element);
 
     var detailsUL = contentContainer.appendChild(document.createElement('ul'));
@@ -148,6 +148,17 @@ ManageCameras.initializeUI = function()
         window.FormItInterface.CallMethod("ManageCameras.executeGenerateCameraGeometry", args);
     });
     contentContainer.appendChild(generateSceneCamerasButton.element);
+
+    // separator and space
+    contentContainer.appendChild(document.createElement('p'));
+    contentContainer.appendChild(document.createElement('hr'));
+    contentContainer.appendChild(document.createElement('p'));
+
+    //
+    // create the update scene cameras from geometry section
+    //
+    var updateScenesFromCamerasSubheader = new FormIt.PluginUI.HeaderModule('Update Scenes from Cameras', 'Coming soon!', 'headerContainer');
+    contentContainer.appendChild(updateScenesFromCamerasSubheader.element);
 
     //
     // create the footer
