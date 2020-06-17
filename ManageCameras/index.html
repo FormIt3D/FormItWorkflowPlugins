@@ -16,18 +16,31 @@
             FormItInterface.SubscribeMessage("FormIt.Message.kCameraOperationEnded", function(msg)
             {
                 var jsonMessage = JSON.parse(msg);
-                // This callback will be invoked whenever the signal is emitted on the C++/QML side.
-                //FormItInterface.ConsoleLog("(Web Side) Message: " + JSON.stringify(jsonMessage));
 
-                // when a camera operation is complete
-                ManageCameras.updateUIWithCameraInfo();
+                ManageCameras.updateUI();
+            });
+
+            // subscribe to the message sent when Levels are changed
+            FormItInterface.SubscribeMessage("FormIt.Message.kLevelManagerChanged", function(msg)
+            {
+                var jsonMessage = JSON.parse(msg);
+
+                ManageCameras.updateUI();
+            });
+
+            // subscribe to the message sent when units are changed
+            FormItInterface.SubscribeMessage("FormIt.Message.kUnitTypeChanged", function(msg)
+            {
+                var jsonMessage = JSON.parse(msg);
+
+                ManageCameras.updateUI();
             });
 
             // initialize the UI
             // this must be called from here, to ensure the HTML page is loaded
             // before scripts try to access the window document
             ManageCameras.initializeUI();
-            ManageCameras.updateUIWithCameraInfo();
+            ManageCameras.updateUI();
 
         }); // DOMContentLoaded
     </script>

@@ -3,20 +3,21 @@ if (typeof ManageCameras == 'undefined')
     ManageCameras = {};
 }
 
-// instantiate the items we want to quantify
-var cameraHeight = 0;
-
 // IDs for inputs whose value will be updated when the camera changes
-var cameraHeightInputID = 'cameraHeightInputID';
+var cameraHeightFromLevelInputID = 'cameraHeightFromNearestLevel';
+var cameraHeightFromGroundInputID = 'cameraHeightFromGround';
+var cameraHeightFromLeveLabelOriginalContents = '';
 
-// update the FormIt camera height from the input value
-ManageCameras.setCurrentCameraHeightFromInput = function()
+// update the FormIt camera height from the "above level" input
+ManageCameras.setCameraHeightAboveLevelFromInput = function()
 {
-    var newCameraHeightStr = document.getElementById(cameraHeightInputID).value;
+    var newCameraHeightFromLevelStr = document.getElementById(cameraHeightFromLevelInputID).value;
 
     var args = { "currentCameraData" : ManageCameras.currentCameraData,
-                "newCameraHeightStr" : newCameraHeightStr };
-    window.FormItInterface.CallMethod("ManageCameras.setCurrentCameraData", args, function(result)
+                    "closestLevelElevationStr" : ManageCameras.closestLevelElevationStr,
+                    "newCameraHeightFromLevelStr" : newCameraHeightFromLevelStr };
+
+    window.FormItInterface.CallMethod("ManageCameras.setCameraHeightFromLevel", args, function(result)
     {
 
     });
@@ -24,7 +25,23 @@ ManageCameras.setCurrentCameraHeightFromInput = function()
     ManageCameras.updateUIWithCameraInfo();
 }
 
-ManageCameras.updateUIWithCameraInfo = function()
+// update the FormIt camera height from the input value
+ManageCameras.setCameraHeightAboveGroundFromInput = function()
+{ 
+    var newCameraHeightFromGroundStr = document.getElementById(cameraHeightFromGroundInputID).value;
+
+    var args = { "currentCameraData" : ManageCameras.currentCameraData,
+                    "newCameraHeightFromGroundStr" : newCameraHeightFromGroundStr };
+
+    window.FormItInterface.CallMethod("ManageCameras.setCameraHeightFromGround", args, function(result)
+    {
+
+    });
+     
+    ManageCameras.updateUIWithCameraInfo();
+}
+
+ManageCameras.updateUI = function()
 {
     var args = { };
     window.FormItInterface.CallMethod("ManageCameras.getCurrentCameraData", args, function(result)
@@ -32,12 +49,44 @@ ManageCameras.updateUIWithCameraInfo = function()
         // parse the results
         result = JSON.parse(result);
         ManageCameras.currentCameraData = result.currentCameraData;
-        console.log(JSON.stringify(ManageCameras.currentCameraData));
+        ManageCameras.currentLevelsData = result.currentLevelsData;
+        ManageCameras.closestLevelName = result.closestLevelName;
+        ManageCameras.closestLevelElevationStr = result.closestLevelElevationStr;
 
-        // get the camera height and set it as the input value
-        cameraHeight = result.currentCameraHeight;
-        var cameraHeightInput = document.getElementById(cameraHeightInputID);
-        cameraHeightInput.value = cameraHeight;
+        // get the camera height from the ground, and set it as the input value
+        var cameraHeightFromGroundStr = result.cameraHeightAboveGroundStr;
+        var cameraHeightFromGroundInput = document.getElementById(cameraHeightFromGroundInputID);
+        cameraHeightFromGroundInput.value = cameraHeightFromGroundStr;
+
+        // if there are levels, and if we're above at least one level,
+        // show the "camera height above level" module
+        if (ManageCameras.currentLevelsData != '' && ManageCameras.closestLevelName != undefined)
+        {
+            // get the camera height above the nearest level and set it as the input avlue
+            var cameraHeightFromLevelInput = document.getElementById(cameraHeightFromLevelInputID);
+            var cameraHeightFromLevelModule = cameraHeightFromLevelInput.parentElement;
+            var cameraHeightFromLevelLabel = cameraHeightFromLevelModule.querySelector('.inputLabel');
+
+            cameraHeightFromLevelModule.className = 'inputModuleContainer';
+            cameraHeightFromLevelInput.value = result.cameraHeightAboveLevelStr;
+            if (cameraHeightFromLeveLabelOriginalContents == '')
+            {
+                cameraHeightFromLeveLabelOriginalContents = cameraHeightFromLevelLabel.innerHTML;
+                cameraHeightFromLevelLabel.innerHTML += " (" + result.closestLevelName + "):";
+            }
+            else 
+            {
+                cameraHeightFromLevelLabel.innerHTML = cameraHeightFromLeveLabelOriginalContents + " (" + result.closestLevelName + "):";
+            }
+        }
+        // otherwise, hide the "camera height above level" module - it doesn't apply
+        else
+        {
+            var cameraHeightFromLevelInput = document.getElementById(cameraHeightFromLevelInputID);
+            var cameraHeightFromLevelModule = cameraHeightFromLevelInput.parentElement;
+
+            cameraHeightFromLevelModule.className = 'hide';
+        }
     });
 }
 
@@ -66,15 +115,18 @@ ManageCameras.initializeUI = function()
     var cameraDetailsSubheader = new FormIt.PluginUI.HeaderModule('Main Camera', '', 'headerContainer');
     contentContainer.appendChild(cameraDetailsSubheader.element);
 
-    var cameraHeightInputModule = new FormIt.PluginUI.TextInputModule('Camera Height: ', 'cameraHeightInputModule', 'inputModuleContainer', cameraHeightInputID, ManageCameras.setCurrentCameraHeightFromInput);
-    contentContainer.appendChild(cameraHeightInputModule.element);
+    var cameraHeightAboveLevelModule = new FormIt.PluginUI.TextInputModule('Height Above Level ', 'cameraHeightFromLevelModule', 'inputModuleContainer', cameraHeightFromLevelInputID, ManageCameras.setCameraHeightAboveLevelFromInput);
+    contentContainer.appendChild(cameraHeightAboveLevelModule.element);
+
+    var cameraHeightAboveGroundModule = new FormIt.PluginUI.TextInputModule('Height Above Ground: ', 'cameraHeightFromGroundModule', 'inputModuleContainer', cameraHeightFromGroundInputID, ManageCameras.setCameraHeightAboveGroundFromInput);
+    contentContainer.appendChild(cameraHeightAboveGroundModule.element);
 
     // separator and space
     contentContainer.appendChild(document.createElement('p'));
     contentContainer.appendChild(document.createElement('hr'));
     contentContainer.appendChild(document.createElement('p'));
 
-    //
+    // 
     // create the create gamera geometry section
     //
     var generateSceneCamerasSubheader = new FormIt.PluginUI.HeaderModule('Create Scene Cameras', 'Generate camera geometry for every Scene in the project.', 'headerContainer');

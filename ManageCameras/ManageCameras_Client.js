@@ -3,9 +3,6 @@ if (typeof ManageCameras == 'undefined')
     ManageCameras = {};
 }
 
-// the current camera data
-var currentCameraDataParsed;
-
 // define the name of the Group that will contain all cameras
 var cameraContainerGroupAndLayerName = "Cameras";
 // put the Group of cameras in the Main History (0)
@@ -14,35 +11,101 @@ var cameraContainerGroupHistoryID = 0;
 // updates variables about the camera
 ManageCameras.getCurrentCameraData = function()
 {
-    currentCameraDataParsed = FormIt.Cameras.GetCameraData();
-    cameraHeight = FormIt.PluginUtils.currentUnits(currentCameraDataParsed.posZ);
-    //cameraHeightFormatted = FormIt.LinearValueToString(cameraHeight);
+    var currentCameraData = FormIt.Cameras.GetCameraData();
+    var currentCameraHeightAboveGround = FormIt.PluginUtils.currentUnits(currentCameraData.posZ);
+
+    var currentLevelsData = FormIt.Levels.GetLevelsData (0, true);
+    var closestLevelName;
+    var closestLevelElevation = 0;
+
+    // get the closest level below the camera
+    for (var i = 0; i < currentLevelsData.length; i++)
+    {
+        // only proceed if this level is shorter than the current camera height
+        if (currentLevelsData[i].Elevation < currentCameraHeightAboveGround)
+        {
+            // if we're not at the last Level
+            if (i + 1 < currentLevelsData.Length)
+            {
+                // check if this Level is the closest below the Camera height
+                if (currentCameraHeightAboveGround - currentLevelsData[i].Elevation < (currentLevelsData[i + 1].Elevation - currentLevelsData[i].Elevation))
+                {
+                    closestLevelName = currentLevelsData[i].Name;
+                    closestLevelElevation = currentLevelsData[i].Elevation;
+
+                }
+            }
+            // if we're at the end of the Levels list, this is the highest Level, and thus the closest
+            else
+            {
+                closestLevelName = currentLevelsData[i].Name;
+                closestLevelElevation = currentLevelsData[i].Elevation;
+            }
+        }
+    }
 
     // return the data we need in a json for the web-side to read from
     return {
         "currentCameraData" : FormIt.Cameras.GetCameraData(),
-        "currentCameraHeight" : FormIt.StringConversion.LinearValueToString(cameraHeight)
+        "cameraHeightAboveGroundStr" : FormIt.StringConversion.LinearValueToString(currentCameraHeightAboveGround),
+        "currentLevelsData" : currentLevelsData,
+        "closestLevelName" : closestLevelName,
+        "closestLevelElevationStr" : FormIt.StringConversion.LinearValueToString(closestLevelElevation),
+        "cameraHeightAboveLevelStr" : FormIt.StringConversion.LinearValueToString(currentCameraHeightAboveGround - closestLevelElevation)
     }
 }
 
 // updates variables about the camera
-ManageCameras.setCurrentCameraData = function(args)
+ManageCameras.setCameraHeightFromLevel = function(args)
 {
-    var newCameraHeight = 0;
+    var newCameraHeightFromLevel = 0;
+    var closestLevelElevation = 0;
 
     // if the input value is a number, use it as-is
-    if (Number(args.newCameraHeightStr) != 'NaN')
+    if (!isNaN(Number(args.newCameraHeightFromLevelStr)))
     {
-        newCameraHeight = Number(args.newCameraHeightStr);
+        newCameraHeightFromLevel = Number(args.newCameraHeightFromLevelStr);
     }
     // otherwise, convert the string to a number
     else
     {
-        newCameraHeight = FormIt.StringConversion.StringToLinearValue(args.newCameraHeightStr)
+        newCameraHeightFromLevel = FormIt.StringConversion.StringToLinearValue(args.newCameraHeightFromLevelStr).second;
     }
-    console.log("New camera height: " + args.newCameraHeightStr);
+
+    // if the input value is a number, use it as-is
+    if (!isNaN(Number(args.closestLevelElevationStr)))
+    {
+        closestLevelElevation = Number(args.closestLevelElevationStr);
+    }
+    // otherwise, convert the string to a number
+    else
+    {
+        closestLevelElevation = FormIt.StringConversion.StringToLinearValue(args.closestLevelElevationStr).second;
+    }
+
     var newCameraData = args.currentCameraData;
-    newCameraData.posZ = newCameraHeight;
+    newCameraData.posZ = closestLevelElevation + newCameraHeightFromLevel;
+
+    FormIt.Cameras.SetCameraData(newCameraData);
+}
+
+ManageCameras.setCameraHeightFromGround = function(args)
+{
+    var newCameraHeightFromGround = 0;
+
+    // if the input value is a number, use it as-is
+    if (!isNaN(Number(args.newCameraHeightFromGroundStr)))
+    {
+        newCameraHeightFromGround = Number(args.newCameraHeightFromGroundStr);
+    }
+    // otherwise, convert the string to a number
+    else
+    {
+        newCameraHeightFromGround = FormIt.StringConversion.StringToLinearValue(args.newCameraHeightFromGroundStr).second;
+    }
+
+    var newCameraData = args.currentCameraData;
+    newCameraData.posZ = newCameraHeightFromGround;
 
     FormIt.Cameras.SetCameraData(newCameraData);
 }
