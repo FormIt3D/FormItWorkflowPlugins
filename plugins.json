@@ -6,7 +6,7 @@
   "RebuildCurve",
   "FilletCorner",
   "FlipAlong",
-  "MoveAllSceneCameras",
+  "ManageCameras",
   "ExtractMaterialTextures",
   "GenerateVertex",
   "ValidateCleanModel",
