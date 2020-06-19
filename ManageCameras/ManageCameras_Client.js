@@ -155,7 +155,8 @@ ManageCameras.getObjectOnLayerByName = function(nHistoryID, keyName, layerID)
 {    
     // get all the objects on the provided Layer
     var layerObjects = FormIt.Layers.GetAllObjectsOnLayers(layerID);
-    //console.log("Objects on Cameras Layer: " + JSON.stringify(cameraLayerObjects));
+
+    // TODO: find out why this API ^^^ returns something different when editing a Group, vs. Main Sketch
 
     for (var i = 0; i < layerObjects.length; i++)
     {
@@ -260,14 +261,14 @@ ManageCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRat
     console.log("Building scene camera geometry...");
 
     // create or find the Cameras layer, and get its ID
-    var camerasLayerID = ManageCameras.getOrCreateLayerByName(nHistoryID, cameraContainerGroupAndLayerName);
+    var camerasLayerID = ManageCameras.getOrCreateLayerByName(cameraContainerGroupHistoryID, cameraContainerGroupAndLayerName);
 
     // find or create the Cameras container Group on the Cameras Layer, and get its ID
     var cameraContainerGroupID = ManageCameras.getOrCreateGroupOnLayerByName(nHistoryID, cameraContainerGroupAndLayerName, camerasLayerID);
     // get the instance ID of the Group
     var cameraContainerGroupInstanceID = JSON.parse(WSM.APIGetObjectsByTypeReadOnly(nHistoryID, cameraContainerGroupID, WSM.nInstanceType));
     // create a new history for the cameras
-    var cameraContainerGroupHistoryID =  WSM.APIGetGroupReferencedHistoryReadOnly(nHistoryID, cameraContainerGroupID);
+    var cameraContainerGroupRefHistoryID =  WSM.APIGetGroupReferencedHistoryReadOnly(nHistoryID, cameraContainerGroupID);
 
     // put the camera container group on the cameras layer
     FormIt.Layers.AssignLayerToObjects(camerasLayerID, cameraContainerGroupInstanceID);
@@ -275,7 +276,7 @@ ManageCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRat
     // set the name of the camera container group
     WSM.APISetObjectProperties(nHistoryID, cameraContainerGroupInstanceID, cameraContainerGroupAndLayerName, false);
     // set the name of the camera container group instance
-    WSM.APISetRevitFamilyInformation(cameraContainerGroupHistoryID, false, false, "", cameraContainerGroupAndLayerName, "", "");
+    WSM.APISetRevitFamilyInformation(cameraContainerGroupRefHistoryID, false, false, "", cameraContainerGroupAndLayerName, "", "");
 
     // TODO: add an option to delete all cameras not tracked by a Scene
 
@@ -289,13 +290,13 @@ ManageCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRat
         //console.log("Scene name: " + sceneName);
 
         // get all the camera objects in the container
-        var cameraObjects = WSM.APIGetAllObjectsByTypeReadOnly(cameraContainerGroupHistoryID, WSM.nInstanceType);
+        var cameraObjects = WSM.APIGetAllObjectsByTypeReadOnly(cameraContainerGroupRefHistoryID, WSM.nInstanceType);
         
         // look for any Camera Groups matching this name, and delete it
-        ManageCameras.deleteObjectByName(cameraContainerGroupHistoryID, cameraObjects, sceneName);
+        ManageCameras.deleteObjectByName(cameraContainerGroupRefHistoryID, cameraObjects, sceneName);
 
         // create the geometry for this camera
-        ManageCameras.createCameraGeometryFromData(sceneCameraData, cameraContainerGroupHistoryID, sceneName, aspectRatio);
+        ManageCameras.createCameraGeometryFromData(sceneCameraData, cameraContainerGroupRefHistoryID, sceneName, aspectRatio);
 
         console.log("Built new camera: " + sceneName);
     }
@@ -305,7 +306,7 @@ ManageCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRat
 ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, cameraInstanceName, aspectRatio)
 {
     // distance from the point to the camera plane
-    var distance = 10;
+    var cameraDepth = 5;
 
     // cameras will need to be moved to the origin, then Grouped, then moved back (to get the LCS correct)
     var origin = WSM.Geom.Point3d(0, 0, 0);
@@ -323,13 +324,13 @@ ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, ca
     }
 
     // multiply the width and height by distance
-    height *= distance;
-    width *= distance;
+    height *= cameraDepth;
+    width *= cameraDepth;
 
     // construct the camera forward vector
     var cameraForwardVector = multiplyVectorByQuaternion(0, 0, -1, cameraData.rotX, cameraData.rotY, cameraData.rotZ, cameraData.rotW);
     // scale the vector by the distance
-    cameraForwardVector = scaleVector(cameraForwardVector, distance);
+    cameraForwardVector = scaleVector(cameraForwardVector, cameraDepth);
     var cameraForwardVector3d = WSM.Geom.Vector3d(cameraForwardVector[0], cameraForwardVector[1], cameraForwardVector[2]);
     //console.log(JSON.stringify(cameraForwardVector3d));
 
@@ -380,30 +381,41 @@ ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, ca
     // all camera points
     var points = [point0, point1, point2, point3];
 
+    // the end points of the camera frustum lines
+    var frustumLineEndoints0 = [cameraPosition, point0];
+    var frustumLineEndpoints1 = [cameraPosition, point1];
+    var frustumLineEndpoints2 = [cameraPosition, point2];
+    var frustumLineEndpoints3 = [cameraPosition, point3];
 
     // set up an array to capture all camera geometry objects
-    var cameraObjects = [];
+    var cameraObjectIDs = [];
 
     // create a vertex at the camera position
-    WSM.APICreateVertex(nHistoryID, cameraPosition);
+    var cameraPosVertexObjectID = WSM.APICreateVertex(nHistoryID, cameraPosition);
 
-    // get the vertices and push them into the objects array
-    var vertexObjects = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(nHistoryID, WSM.nVertexType).created;
-    //console.log("Vertex objects: " + vertexObjects);
-    for (var i = 0; i < vertexObjects.length; i++)
-    {
-        cameraObjects.push(vertexObjects[i]);
-    }
+    var frustumLinesObjectIDs = [];
+    // create lines from the camera position to the camera corners
+    var frustumLine0 = WSM.APICreatePolyline(nHistoryID, frustumLineEndoints0, false);
+    frustumLinesObjectIDs.push(WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(nHistoryID, WSM.nEdgeType).created);
+    var frustumLine1 = WSM.APICreatePolyline(nHistoryID, frustumLineEndpoints1, false);
+    frustumLinesObjectIDs.push(WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(nHistoryID, WSM.nEdgeType).created);
+    var frustumLine2 = WSM.APICreatePolyline(nHistoryID, frustumLineEndpoints2, false);
+    frustumLinesObjectIDs.push(WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(nHistoryID, WSM.nEdgeType).created);
+    var frustumLine3 = WSM.APICreatePolyline(nHistoryID, frustumLineEndpoints3, false);
+    frustumLinesObjectIDs.push(WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(nHistoryID, WSM.nEdgeType).created);
 
     // connect the points with a rectangle - this will create a rectangular surface in front of the camera
-    var polyline = WSM.APICreatePolyline(nHistoryID, points, true);
+    WSM.APICreatePolyline(nHistoryID, points, true);
 
     // get the faces and push it into the array
-    var faceObjects = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(nHistoryID, WSM.nFaceType).created;
-    for (var i = 0; i < faceObjects.length; i++)
-    {
-        cameraObjects.push(faceObjects[i]);
-    }
+    var faceObjectID = WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(nHistoryID, WSM.nFaceType).created;
+
+    // add the camera position vertex and the frustum lines to the camera geometry array
+    //cameraObjectIDs.push(cameraPosVertexObjectID);
+    cameraObjectIDs.push(frustumLinesObjectIDs);
+    cameraObjectIDs.push(faceObjectID);
+
+    cameraObjectIDs = flattenArray(cameraObjectIDs);
 
     //
     // we want to put the camera in a Group, and set the LCS to align with the camera geometry
@@ -428,27 +440,31 @@ ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, ca
     var cameraRotateToAxisTransformInverted = WSM.Geom.InvertTransform(cameraRotateToAxisTransform);
 
     // first, only move the camera to the origin (no rotation)
-    WSM.APITransformObjects(nHistoryID, cameraObjects, cameraMoveToOriginTransform);
+    WSM.APITransformObjects(nHistoryID, cameraObjectIDs, cameraMoveToOriginTransform);
 
     // now rotate the camera to face the axis
-    WSM.APITransformObjects(nHistoryID, cameraObjects, cameraRotateToAxisTransformInverted);
+    WSM.APITransformObjects(nHistoryID, cameraObjectIDs, cameraRotateToAxisTransformInverted);
 
     // 
     // now that the camera is at the origin, and aligned correctly, we can Group it
     //
 
     // create a new Group for this Scene's Camera
-    var cameraGroupID = WSM.APICreateGroup(nHistoryID, cameraObjects);
+    var cameraGroupID = WSM.APICreateGroup(nHistoryID, cameraObjectIDs);
     // get the instance ID of the Group
     var cameraGroupInstanceID = JSON.parse(WSM.APIGetObjectsByTypeReadOnly(nHistoryID, cameraGroupID, WSM.nInstanceType));
     // create a new history for the camera
     var cameraGroupHistoryID =  WSM.APIGetGroupReferencedHistoryReadOnly(nHistoryID, cameraGroupID);
 
+    //
+    // put the camera plane in its own Group, with the origin at the centroid
+    //
+
     // get the face - this is the camera plane
     // this assumes there's only 1 face represented from the camera geometry
-    var cameraViewPlaneFaceID = JSON.parse(WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(cameraGroupHistoryID, WSM.nFaceType).created);
+    var newContextCameraViewPlaneFaceID = JSON.parse(WSM.APIGetCreatedChangedAndDeletedInActiveDeltaReadOnly(cameraGroupHistoryID, WSM.nFaceType).created);
     
-    var cameraViewPlaneCentroidPoint3d = WSM.APIGetFaceCentroidPoint3dReadOnly(cameraGroupHistoryID, cameraViewPlaneFaceID);
+    var cameraViewPlaneCentroidPoint3d = WSM.APIGetFaceCentroidPoint3dReadOnly(cameraGroupHistoryID, newContextCameraViewPlaneFaceID);
     //console.log(cameraViewPlaneCentroidPoint3d);
 
     // set the name of the camera group
@@ -466,11 +482,11 @@ ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, ca
     var cameraViewPlaneReturnToPosTransform = WSM.Geom.MakeRigidTransform(cameraViewPlaneCentroidPoint3d, WSM.Geom.Vector3d(1, 0, 0), WSM.Geom.Vector3d(0, 1, 0), WSM.Geom.Vector3d(0, 0, 1));
 
     // move the camera plane to the origin
-    WSM.APITransformObjects(cameraGroupHistoryID, cameraViewPlaneFaceID, cameraPlaneMoveToOriginTransform);
+    WSM.APITransformObjects(cameraGroupHistoryID, newContextCameraViewPlaneFaceID, cameraPlaneMoveToOriginTransform);
 
     // create a new Group for the camera viewplane
-    var cameraViewPlaneGroupID = WSM.APICreateGroup(cameraGroupHistoryID, cameraViewPlaneFaceID);
-    //console.log(faceObjects);
+    var cameraViewPlaneGroupID = WSM.APICreateGroup(cameraGroupHistoryID, newContextCameraViewPlaneFaceID);
+
     // get the instanceID of the Group
     var cameraViewPlaneGroupInstanceID = JSON.parse(WSM.APIGetObjectsByTypeReadOnly(cameraGroupHistoryID, cameraViewPlaneGroupID, WSM.nInstanceType));
     // create a new history for the camera view plane
@@ -485,6 +501,30 @@ ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, ca
     WSM.APITransformObjects(cameraGroupHistoryID, cameraViewPlaneGroupID, cameraViewPlaneReturnToPosTransform);
 
     //
+    // move the frustum lines into their own group
+    // 
+
+    var newContextFrustumLinesObjectIDs = WSM.APIGetAllObjectsByTypeReadOnly(cameraGroupHistoryID, WSM.nEdgeType);
+
+    // move the camera frustum lines to the origin
+    WSM.APITransformObjects(cameraGroupHistoryID, newContextFrustumLinesObjectIDs, cameraPlaneMoveToOriginTransform);
+
+    // create a new Group for the camera frustum lines
+    var cameraFrustumLinesGroupID = WSM.APICreateGroup(cameraGroupHistoryID, newContextFrustumLinesObjectIDs);
+    // get the instanceID of the Group
+    var cameraFrustumLinesGroupInstanceID = JSON.parse(WSM.APIGetObjectsByTypeReadOnly(cameraGroupHistoryID, cameraFrustumLinesGroupID, WSM.nInstanceType));
+    // create a new history for the camera view plane
+    var cameraFrustumLinesGroupHistoryID = WSM.APIGetGroupReferencedHistoryReadOnly(cameraGroupHistoryID, cameraFrustumLinesGroupID);
+
+    // set the name of the view plane group
+    WSM.APISetRevitFamilyInformation(cameraFrustumLinesGroupHistoryID, false, false, "", "FrustumLines", "", "");
+    // set the name of the view plane instance
+    WSM.APISetObjectProperties(cameraFrustumLinesGroupHistoryID, cameraFrustumLinesGroupInstanceID, "Frustum Lines", false);
+
+    // move the frustum lines instance back to where it belongs
+    WSM.APITransformObjects(cameraGroupHistoryID, cameraFrustumLinesGroupID, cameraViewPlaneReturnToPosTransform);
+
+    //
     // now move the Group Instance back to the camera's original position
     //
 
@@ -494,6 +534,13 @@ ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, ca
     // move and rotate the camera back
     WSM.APITransformObjects(nHistoryID, cameraGroupInstanceID, cameraReturnToCameraPosTransform);
 
+    //
+    // move the camera position vertex into the camera Group
+    //
+
+    WSM.APICopyOrSketchAndTransformObjects(nHistoryID, cameraGroupHistoryID, cameraPosVertexObjectID, cameraMoveToOriginTransform, 1);
+    WSM.APIDeleteObject(nHistoryID, cameraPosVertexObjectID);
+
 }
 
 // this is called by the submit function from the panel - all steps to execute the generation of camera geometry
@@ -501,10 +548,6 @@ ManageCameras.executeGenerateCameraGeometry = function()
 {
     console.clear();
     console.log("Manage Scene Cameras plugin\n");
-
-    // get current history
-    nHistoryID = FormIt.GroupEdit.GetEditingHistoryID();
-    //console.log("Current history: " + JSON.stringify(nHistoryID));
 
     // get all the scenes
     var allScenes = FormIt.Scenes.GetScenes();
