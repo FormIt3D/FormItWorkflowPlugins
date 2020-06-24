@@ -580,6 +580,7 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
             {
                 var groupFamilyName = currentSelectionInfo.selectedObjectsGroupFamilyNameArray[0];
                 multiGroupFamilyNameInput.value = groupFamilyName;
+                multiGroupFamilyNameInput.setAttribute("placeholder", '');
             }
             // otherwise indicate that the names vary
             else 
@@ -597,6 +598,7 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
         {
             var groupInstanceName = currentSelectionInfo.selectedObjectsGroupInstanceNameArray[0];
             multiGroupInstanceNameInput.value = groupInstanceName;
+            multiGroupInstanceNameInput.setAttribute("placeholder", '');
         }
         // otherwise indicate that the names vary
         else 
