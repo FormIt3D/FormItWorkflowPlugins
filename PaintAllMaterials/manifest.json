@@ -3,7 +3,8 @@
     "PluginDescription": "Create a block and paint it with each unused Material in the file.",
     "PluginType": "Panel",
     "Scripts": [
-        "PLUGINLOCATION/PaintAllMaterials.js"
+        "PLUGINLOCATION/PaintAllMaterials.js",
+        "PLUGINLOCATION/../../../FormItExamplePlugins/SharedPluginFiles/PluginUtils18_0.js"
     ]
     ,"Panel": "PLUGINLOCATION/index.html"
 }

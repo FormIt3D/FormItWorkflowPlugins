@@ -6,7 +6,7 @@
         "PLUGINLOCATION/ManageCameras_Web.js",
         "PLUGINLOCATION/ManageCameras_Client.js",
         "PLUGINLOCATION/../Utils.js",
-        "https://formit3d.github.io/FormItExamplePlugins/SharedPluginFiles/PluginUtils18_0.js"
+        "PLUGINLOCATION/../../../FormItExamplePlugins/SharedPluginFiles/PluginUtils18_0.js"
     ]
     ,"Panel": "PLUGINLOCATION/index.html",
     "PanelIcon": "PLUGINLOCATION/img/manage_cameras@2x.png"

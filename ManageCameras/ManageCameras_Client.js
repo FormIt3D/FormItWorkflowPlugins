@@ -12,7 +12,7 @@ var cameraContainerGroupHistoryID = 0;
 ManageCameras.getCurrentCameraData = function()
 {
     var currentCameraData = FormIt.Cameras.GetCameraData();
-    var currentCameraHeightAboveGround = FormIt.PluginUtils.currentUnits(currentCameraData.posZ);
+    var currentCameraHeightAboveGround = currentCameraData.posZ;
 
     var currentLevelsData = FormIt.Levels.GetLevelsData (0, true);
     var closestLevelName;
@@ -64,7 +64,7 @@ ManageCameras.setCameraHeightFromLevel = function(args)
     // if the input value is a number, use it as-is
     if (!isNaN(Number(args.newCameraHeightFromLevelStr)))
     {
-        newCameraHeightFromLevel = Number(args.newCameraHeightFromLevelStr);
+        newCameraHeightFromLevel = FormIt.PluginUtils.currentUnits(Number(args.newCameraHeightFromLevelStr));
     }
     // otherwise, convert the string to a number
     else
@@ -75,7 +75,7 @@ ManageCameras.setCameraHeightFromLevel = function(args)
     // if the input value is a number, use it as-is
     if (!isNaN(Number(args.closestLevelElevationStr)))
     {
-        closestLevelElevation = Number(args.closestLevelElevationStr);
+        closestLevelElevation = FormIt.PluginUtils.currentUnits(Number(args.closestLevelElevationStr));
     }
     // otherwise, convert the string to a number
     else
@@ -96,7 +96,7 @@ ManageCameras.setCameraHeightFromGround = function(args)
     // if the input value is a number, use it as-is
     if (!isNaN(Number(args.newCameraHeightFromGroundStr)))
     {
-        newCameraHeightFromGround = Number(args.newCameraHeightFromGroundStr);
+        newCameraHeightFromGround = FormIt.PluginUtils.currentUnits(Number(args.newCameraHeightFromGroundStr));
     }
     // otherwise, convert the string to a number
     else
