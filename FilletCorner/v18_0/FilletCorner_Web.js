@@ -71,7 +71,6 @@ FilletCorner.updateUI = function()
     var currentValue = document.getElementById(filletRadiusInputID).value;
     FormIt.PluginUI.convertValueToDimensionString(currentValue, function(result)
     {
-        console.log(result);
         var radiusInput = document.getElementById(filletRadiusInputID);
         radiusInput.value = JSON.parse(result);
     });
