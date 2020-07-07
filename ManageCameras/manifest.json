@@ -3,7 +3,6 @@
     "PluginDescription": "Provides a variety of operations related to Cameras, including modifying the current Camera and generating Cameras from Scenes.",
     "PluginType": "Panel",
     "Scripts": [
-        "PLUGINLOCATION/ManageCameras_Web.js",
         "PLUGINLOCATION/ManageCameras_Client.js",
         "PLUGINLOCATION/../Utils.js",
         "PLUGINLOCATION/../../../FormItExamplePlugins/SharedPluginFiles/PluginUtils18_0.js"

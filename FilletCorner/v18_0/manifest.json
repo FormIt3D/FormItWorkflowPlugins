@@ -3,7 +3,7 @@
     "PluginDescription": "Fillet 2-dimensional corners with a given radius and an option to delete the original vertex.",
     "PluginType": "Panel",
     "Scripts": [
-        "PLUGINLOCATION/FilletCorner.js",
+        "PLUGINLOCATION/FilletCorner_Client.js",
         "PLUGINLOCATION/../../../FormItExamplePlugins/SharedPluginFiles/PluginUtils18_0.js"
     ]
     ,"Panel": "PLUGINLOCATION/index.html",

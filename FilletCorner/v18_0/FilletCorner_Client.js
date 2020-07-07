@@ -1,12 +1,12 @@
-if (typeof deanstein == 'undefined')
+if (typeof FilletCorner == 'undefined')
 {
-    deanstein = {};
+    FilletCorner = {};
 }
 
-deanstein.FilletCorner = function(args)
+FilletCorner.executeFilletCorner = function(args)
 {
-    //args = JSON.parse(args);
-    var radius = FormIt.PluginUtils.currentUnits(args.radius);
+    // assume that the radius HTML input is formatted as a dimension string
+    var radius = Number(FormIt.StringConversion.StringToLinearValue(args.radius).second);
     var cleanup = args.cleanup;
 
     console.clear();
@@ -246,21 +246,4 @@ function blendVertex(nHistoryID, nVertexID, radius, cleanup)
         {
             console.log("Error: too few or too many edges attached at this vertex (vertexID: " + nVertexID + ").");
         }
-}
-
-// Submit runs from the HTML page.  This script gets loaded up in both FormIt's
-// JS engine and also in the embedded web JS engine inside the panel.
-deanstein.Submit = function()
-{
-    var args = {
-    "radius": parseFloat(document.a.radius.value),
-    "cleanup": document.a.cleanup.checked
-    }
-
-    //console.log("deanstein.FilletCorner");
-    //console.log("args");
-    // NOTE: window.FormItInterface.CallMethod will call the function
-    // defined above with the given args.  This is needed to communicate
-    // between the web JS enging process and the FormIt process.
-    window.FormItInterface.CallMethod("deanstein.FilletCorner", args);
 }
