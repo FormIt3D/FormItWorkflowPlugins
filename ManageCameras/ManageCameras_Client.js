@@ -6,7 +6,7 @@ if (typeof ManageCameras == 'undefined')
 // the container Group for cameras will be created in the Main History (0)
 var cameraContainerGroupHistoryID = 0;
 
-// define the name of the Group that will contain all cameras
+// the name of the container Group that will contain all cameras
 var cameraContainerGroupAndLayerName = "Cameras";
 
 // the string attribute key used for all Manage Cameras objects
