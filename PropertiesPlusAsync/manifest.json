@@ -1,6 +1,6 @@
 {
-    "PluginName": "Properties Plus",
-    "PluginDescription": "Displays additional properties of the current selection set that are not available in the built-in Properties panel, like object counts, identical Group Instance counts, and provides batch Group renaming abilities.",
+    "PluginName": "Selection Count Async",
+    "PluginDescription": "Example using async APIs to show the current selection of various types of objects",
     "PluginType": "Panel",
     "Panel": "PLUGINLOCATION/index.html",
     "PanelIcon": "PLUGINLOCATION/img/properties_plus@2x.png"

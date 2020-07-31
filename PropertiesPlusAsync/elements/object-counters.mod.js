@@ -1,3 +1,6 @@
+// Displays how many items are selected of various types
+// Also adds the ability to rename instances
+
 import './object-count.mod.js';
 import '../../../FormItExamplePlugins/SharedPluginFiles/ui-elements/plugin-text-input.js';
 import { WSM } from '../../../FormItExamplePlugins/SharedPluginFiles/FormIt.mod.js';
@@ -20,26 +23,36 @@ class ObjectCounters extends HTMLElement {
         this.instanceNameInputs = new Map();
 
         const onCountChanged = () => {
+            // TODO this is getting called more than it should
             let totalCount = this.faces.count.length +
                              this.edges.count.length +
                              this.vertices.count.length +
                              this.instances.count.length;
+
+            // Display a horizontal line if there are "specific counts" to show
             if (totalCount > 0) {
                 this.hr.style.display = 'block';
             } else {
                 this.hr.style.display = 'none';
             }
 
+            // Remove existing instance name inputs
             for (const [key, val] of this.instanceNameInputs) {
                 this.shadow.removeChild(val);
             }
             let tmpInputs = new Map();
 
+            // Add a text input for each instance in the selection
             for (const inst of this.instances.count) {
                 const id = inst.history + '-' + inst.id;
+                if (tmpInputs.has(id)) {
+                    continue;
+                }
+
                 const input = document.createElement('plugin-input');
                 input.setAttribute('label', 'Group Name');
                 input.onInput = async () => {
+                    // Set the group name on user input
                     const props = await WSM.APIGetObjectPropertiesReadOnly(inst.history, inst.id);
                     WSM.APISetObjectProperties(inst.history, inst.id, input.value, props.bReportAreaByLevel);
                 };
@@ -50,6 +63,7 @@ class ObjectCounters extends HTMLElement {
             this.instanceNameInputs = tmpInputs; // Because GC...
         };
 
+        // Top level container for background styling
         const container = document.createElement('div');
         container.innerHTML = `<h3>Selection Count</h3>`;
 

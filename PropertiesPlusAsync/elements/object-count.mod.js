@@ -1,4 +1,8 @@
 // Displays how many of a particular type of object is selected
+// Usage: <object-count type="edge|face|object|vertex|instance" hide="true|false"></object-count>
+//
+// Change events: on-count-changed or onCountChangedHandler (class property).
+// Triggered when the there is in object selection
 
 import {FormItInterface} from '../../../FormItExamplePlugins/SharedPluginFiles/FormItInterface.mod.js';
 import {FormIt, WSM} from '../../../FormItExamplePlugins/SharedPluginFiles/FormIt.mod.js';
