@@ -3,10 +3,14 @@ if (typeof ManageCameras == 'undefined')
     ManageCameras = {};
 }
 
+// the container Group for cameras will be created in the Main History (0)
+var cameraContainerGroupHistoryID = 0;
+
 // define the name of the Group that will contain all cameras
 var cameraContainerGroupAndLayerName = "Cameras";
-// put the Group of cameras in the Main History (0)
-var cameraContainerGroupHistoryID = 0;
+
+// the string attribute key used for all Manage Cameras objects
+var manageCamerasStringAttributeKey = "FormIt::Plugins::ManageCameras";
 
 // updates variables about the camera
 ManageCameras.getCurrentCameraData = function()
@@ -208,6 +212,24 @@ ManageCameras.deleteObjectByName = function(nHistoryID, objectsArray, keyName)
     }
 }
 
+// look for an object in this history with a particular string attribute key, and delete it
+ManageCameras.deleteObjectsWithStringAttributeKey = function(nHistoryID, objectsArray, stringAttributeKey)
+{
+    for (var i = 0; i < objectsArray.length; i++)
+    {
+        var objectID = objectsArray[i];
+        //console.log("Object ID: " + objectID);
+
+        var objectHasStringAttributeResult = WSM.Utils.GetStringAttributeForObject(nHistoryID, objectID, stringAttributeKey);
+        // if this object has a string attribute matching the given key, delete it
+        if (objectHasStringAttributeResult.success == true)
+        {
+            console.log("Deleting existing camera: " + JSON.parse(objectHasStringAttributeResult.value).SceneData.name);
+            WSM.APIDeleteObject(nHistoryID, objectID);
+        }
+    }
+}
+
 // create a Group by name, if it doesn't exist already, and return its ID
 ManageCameras.getOrCreateGroupOnLayerByName = function(nHistoryID, groupName, layer)
 {
@@ -280,30 +302,28 @@ ManageCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRat
 
     // TODO: add an option to delete all cameras not tracked by a Scene
 
-    // for each scene, get the camera data and set the current camera to match, then generate the camera geometry
+    // look for any existing Camera objects in this history and delete them
+    var existingCameraObjects = WSM.APIGetAllObjectsByTypeReadOnly(cameraContainerGroupRefHistoryID, WSM.nInstanceType);
+    ManageCameras.deleteObjectsWithStringAttributeKey(cameraContainerGroupRefHistoryID, existingCameraObjects, manageCamerasStringAttributeKey);
+
+    // for each scene, get the camera data and recreate the camera geometry from the data
     for (var i = 0; i < scenes.length; i++)
     {
-        var sceneCameraData = scenes[i].camera;
+        var sceneData = scenes[i];
         //console.log("Camera: " + sceneCamera);
 
         var sceneName = scenes[i].name;
         //console.log("Scene name: " + sceneName);
 
-        // get all the camera objects in the container
-        var cameraObjects = WSM.APIGetAllObjectsByTypeReadOnly(cameraContainerGroupRefHistoryID, WSM.nInstanceType);
-        
-        // look for any Camera Groups matching this name, and delete it
-        ManageCameras.deleteObjectByName(cameraContainerGroupRefHistoryID, cameraObjects, sceneName);
-
         // create the geometry for this camera
-        ManageCameras.createCameraGeometryFromData(sceneCameraData, cameraContainerGroupRefHistoryID, sceneName, aspectRatio);
+        ManageCameras.createCameraGeometryFromData(sceneData, cameraContainerGroupRefHistoryID, sceneName, aspectRatio);
 
         console.log("Built new camera: " + sceneName);
     }
 }
 
 // creates camera geometry from camera data
-ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, cameraInstanceName, aspectRatio)
+ManageCameras.createCameraGeometryFromData = function(sceneData, nHistoryID, sceneName, aspectRatio)
 {
     // distance from the point to the camera plane
     var cameraDepth = 5;
@@ -312,7 +332,7 @@ ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, ca
     var origin = WSM.Geom.Point3d(0, 0, 0);
 
     // get the FOV from the camera data
-    var FOV = cameraData.FOV;
+    var FOV = sceneData.camera.FOV;
 
     // determine the normalized view width and height
     if (aspectRatio <= 1.0) {
@@ -328,28 +348,28 @@ ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, ca
     width *= cameraDepth;
 
     // construct the camera forward vector
-    var cameraForwardVector = multiplyVectorByQuaternion(0, 0, -1, cameraData.rotX, cameraData.rotY, cameraData.rotZ, cameraData.rotW);
+    var cameraForwardVector = multiplyVectorByQuaternion(0, 0, -1, sceneData.camera.rotX, sceneData.camera.rotY, sceneData.camera.rotZ, sceneData.camera.rotW);
     // scale the vector by the distance
     cameraForwardVector = scaleVector(cameraForwardVector, cameraDepth);
     var cameraForwardVector3d = WSM.Geom.Vector3d(cameraForwardVector[0], cameraForwardVector[1], cameraForwardVector[2]);
     //console.log(JSON.stringify(cameraForwardVector3d));
 
     // construct the camera up vector
-    var cameraUpVector = multiplyVectorByQuaternion(0, 1, 0, cameraData.rotX, cameraData.rotY, cameraData.rotZ, cameraData.rotW);   
+    var cameraUpVector = multiplyVectorByQuaternion(0, 1, 0, sceneData.camera.rotX, sceneData.camera.rotY, sceneData.camera.rotZ, sceneData.camera.rotW);   
     // scale the vector by the  height
     cameraUpVector = scaleVector(cameraUpVector, height);
     var cameraUpVector3d = WSM.Geom.Vector3d(cameraUpVector[0], cameraUpVector[1], cameraUpVector[2]);
     //console.log(JSON.stringify(cameraUpVector3d));
 
     // construct the camera right vector
-    var cameraRightVector = multiplyVectorByQuaternion(-1, 0, 0, cameraData.rotX, cameraData.rotY, cameraData.rotZ, cameraData.rotW);
+    var cameraRightVector = multiplyVectorByQuaternion(-1, 0, 0, sceneData.camera.rotX, sceneData.camera.rotY, sceneData.camera.rotZ, sceneData.camera.rotW);
     // scale the vector by the  width
     cameraRightVector = scaleVector(cameraRightVector, width);
     var cameraRightVector3d = WSM.Geom.Vector3d(cameraRightVector[0], cameraRightVector[1], cameraRightVector[2]);
     //console.log(JSON.stringify(cameraRightVector3d));
 
 	// get the current camera's position
-    var cameraPosition = WSM.Geom.Point3d(cameraData.posX, cameraData.posY, cameraData.posZ);
+    var cameraPosition = WSM.Geom.Point3d(sceneData.camera.posX, sceneData.camera.posY, sceneData.camera.posZ);
     //console.log(JSON.stringify(cameraPosition));
 
     // construct the 4 corners of the camera
@@ -468,9 +488,14 @@ ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, ca
     //console.log(cameraViewPlaneCentroidPoint3d);
 
     // set the name of the camera group
-    WSM.APISetRevitFamilyInformation(cameraGroupHistoryID, false, false, "", "Camera", "", "");
+    WSM.APISetRevitFamilyInformation(cameraGroupHistoryID, false, false, "", "Camera-" + sceneName, "", "");
     // set the name of the camera group instance
-    WSM.APISetObjectProperties(nHistoryID, cameraGroupInstanceID, cameraInstanceName, false);
+    WSM.APISetObjectProperties(cameraGroupHistoryID, cameraGroupInstanceID, sceneName, false);
+
+    // add an attribute to the camera with the current camera data
+    var value = { SceneData: sceneData };
+    WSM.Utils.SetOrCreateStringAttributeForObject(nHistoryID,
+        cameraGroupInstanceID, manageCamerasStringAttributeKey, JSON.stringify(value));
 
     var cameraViewPlaneMoveToOriginVector = getVectorBetweenTwoPoints(cameraViewPlaneCentroidPoint3d.x, cameraViewPlaneCentroidPoint3d.y, cameraViewPlaneCentroidPoint3d.z, 0, 0, 0);
     var translatedCameraPlanePositionPoint3d = WSM.Geom.Point3d(cameraViewPlaneMoveToOriginVector[0], cameraViewPlaneMoveToOriginVector[1], cameraViewPlaneMoveToOriginVector[2]);
@@ -551,7 +576,7 @@ ManageCameras.executeGenerateCameraGeometry = function()
 
     // get all the scenes
     var allScenes = FormIt.Scenes.GetScenes();
-    //console.log(JSON.stringify(allScenes));
+    //console.log(JSON.stringify("Scenes: " + JSON.stringify(allScenes)));
 
     // get the current camera aspect ratio to use for geometry
     // the distance supplied here is arbitrary
