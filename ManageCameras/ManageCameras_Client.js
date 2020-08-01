@@ -3,10 +3,14 @@ if (typeof ManageCameras == 'undefined')
     ManageCameras = {};
 }
 
-// define the name of the Group that will contain all cameras
-var cameraContainerGroupAndLayerName = "Cameras";
-// put the Group of cameras in the Main History (0)
+// the container Group for cameras will be created in the Main History (0)
 var cameraContainerGroupHistoryID = 0;
+
+// the name of the container Group that will contain all cameras
+var cameraContainerGroupAndLayerName = "Cameras";
+
+// the string attribute key used for all Manage Cameras objects
+var manageCamerasStringAttributeKey = "FormIt::Plugins::ManageCameras";
 
 // updates variables about the camera
 ManageCameras.getCurrentCameraData = function()
@@ -150,78 +154,57 @@ ManageCameras.getViewportAspectRatioByPickray = function(distance)
     return aspectRatio;
 }
 
-// gets an object in this history by name, optionally searching a smaller array of objects
-ManageCameras.getObjectOnLayerByName = function(nHistoryID, keyName, layerID)
-{    
-    // get all the objects on the provided Layer
-    var layerObjects = FormIt.Layers.GetAllObjectsOnLayers(layerID);
+// get Group instances in this history with a particular string attribute key
+ManageCameras.getGroupInstanceByStringAttributeKey = function(nHistoryID, stringAttributeKey)
+{
+    // get all the instances in this history
+    var potentialCameraContainerObjectsArray = WSM.APIGetAllObjectsByTypeReadOnly(nHistoryID, WSM.nInstanceType);
 
-    // TODO: find out why this API ^^^ returns something different when editing a Group, vs. Main Sketch
-
-    for (var i = 0; i < layerObjects.length; i++)
+    // for each of the objects in this history, look for ones with a particular string attribute key
+    for (var i = 0; i < potentialCameraContainerObjectsArray.length; i++)
     {
-        var objectID = layerObjects[i]["ids"][0]["Object"];
+        var objectID = potentialCameraContainerObjectsArray[i];
         //console.log("Object ID: " + objectID);
 
-        // get this object's properties
-        var objectProperties = WSM.APIGetObjectPropertiesReadOnly(nHistoryID, objectID);
-        //console.log(JSON.stringify(objectProperties));
-
-        var objectName = objectProperties.sObjectName;
-        //console.log("Camera layer object name: " + objectName);
-
-        // if we found the object, return its ID; otherwise, return false
-        if (objectName == keyName)
+        var objectHasStringAttributeResult = WSM.Utils.GetStringAttributeForObject(nHistoryID, objectID, stringAttributeKey);
+        // if this object has a string attribute matching the given key, delete it
+        if (objectHasStringAttributeResult.success == true)
         {
-            console.log("Found existing object " + "'" + objectName + "'" + " with ID " + objectID);
             return objectID;
         }
-        else
-        {
-            return null;
-        }
     }
 }
 
-// look for a Group with this name, in this history and if found, delete it
-ManageCameras.deleteObjectByName = function(nHistoryID, objectsArray, keyName)
+// delete Group instances in this history with this string attribute key
+ManageCameras.createOrReplaceGroupInstanceByStringAttributeKey = function(nHistoryID, stringAttributeKey, newValue)
 {
-    for (var i = 0; i < objectsArray.length; i++)
+    // get all the objects in the designated Camera container Group history
+    var potentialCameraContainerObjectsArray = WSM.APIGetAllObjectsByTypeReadOnly(nHistoryID, WSM.nInstanceType);
+
+    // for each of the objects in this history, look for ones with a particular string attribute key
+    for (var i = 0; i < potentialCameraContainerObjectsArray.length; i++)
     {
-        //currentSelection[j]["ids"][historyDepth]["Object"]
-        var objectID = objectsArray[i];
+        var objectID = potentialCameraContainerObjectsArray[i];
         //console.log("Object ID: " + objectID);
 
-        // get this object's properties
-        var objectProperties = WSM.APIGetObjectPropertiesReadOnly(nHistoryID, objectID);
-        //console.log(JSON.stringify(objectProperties));
-
-        var objectName = objectProperties.sObjectName;
-        //console.log("Camera layer object name: " + objectName);
-
-        if (objectName == keyName)
+        var objectHasStringAttributeResult = WSM.Utils.GetStringAttributeForObject(nHistoryID, objectID, stringAttributeKey);
+        // if this object has a string attribute matching the given key, delete it
+        if (objectHasStringAttributeResult.success == true)
         {
-            //console.log("Object to delete: " + objectID);
             WSM.APIDeleteObject(nHistoryID, objectID);
-            console.log("Deleted camera: " + objectName);
         }
     }
-}
 
-// create a Group by name, if it doesn't exist already, and return its ID
-ManageCameras.getOrCreateGroupOnLayerByName = function(nHistoryID, groupName, layer)
-{
-    // first, check if this Group exists
-    var groupID = ManageCameras.getObjectOnLayerByName(nHistoryID, groupName, layer);
+    // now that any existing Camera container Groups have been deleted, make a new one
+    var newGroupID = WSM.APICreateGroup(nHistoryID, [])
+    // get the instance ID of the Group
+    var newGroupInstanceID = JSON.parse(WSM.APIGetObjectsByTypeReadOnly(nHistoryID, newGroupID, WSM.nInstanceType));
 
-    // if this Group doesn't exist, create it
-    if (!groupID)
-    {
-        groupID = WSM.APICreateGroup(nHistoryID, []);
-        //console.log("Group ID: " + groupID);
-    }
-    
-    return groupID;
+    // add an attribute to the camera container
+    WSM.Utils.SetOrCreateStringAttributeForObject(nHistoryID,
+        newGroupInstanceID, manageCamerasStringAttributeKey, newValue);
+
+    return newGroupID;
 }
 
 // create a layer by name, if it doesn't exist already, and return its ID
@@ -256,18 +239,18 @@ ManageCameras.getOrCreateLayerByName = function(nHistoryID, layerName)
     return layerID;
 }
 
-ManageCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRatio)
+ManageCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRatio, args)
 {
     console.log("Building scene camera geometry...");
 
     // create or find the Cameras layer, and get its ID
     var camerasLayerID = ManageCameras.getOrCreateLayerByName(cameraContainerGroupHistoryID, cameraContainerGroupAndLayerName);
 
-    // find or create the Cameras container Group on the Cameras Layer, and get its ID
-    var cameraContainerGroupID = ManageCameras.getOrCreateGroupOnLayerByName(nHistoryID, cameraContainerGroupAndLayerName, camerasLayerID);
+    // create a camera container Group
+    var cameraContainerGroupID = ManageCameras.createOrReplaceGroupInstanceByStringAttributeKey(nHistoryID, manageCamerasStringAttributeKey, "CameraContainer");
     // get the instance ID of the Group
     var cameraContainerGroupInstanceID = JSON.parse(WSM.APIGetObjectsByTypeReadOnly(nHistoryID, cameraContainerGroupID, WSM.nInstanceType));
-    // create a new history for the cameras
+    // get the history for the camera container Group
     var cameraContainerGroupRefHistoryID =  WSM.APIGetGroupReferencedHistoryReadOnly(nHistoryID, cameraContainerGroupID);
 
     // put the camera container group on the cameras layer
@@ -278,32 +261,58 @@ ManageCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRat
     // set the name of the camera container group instance
     WSM.APISetRevitFamilyInformation(cameraContainerGroupRefHistoryID, false, false, "", cameraContainerGroupAndLayerName, "", "");
 
-    // TODO: add an option to delete all cameras not tracked by a Scene
+    // keep track of how many cameras were created
+    var camerasCreatedCount = 0;
 
-    // for each scene, get the camera data and set the current camera to match, then generate the camera geometry
+    // for each scene, get the camera data and recreate the camera geometry from the data
     for (var i = 0; i < scenes.length; i++)
     {
-        var sceneCameraData = scenes[i].camera;
+        var sceneData = scenes[i];
         //console.log("Camera: " + sceneCamera);
 
         var sceneName = scenes[i].name;
         //console.log("Scene name: " + sceneName);
 
-        // get all the camera objects in the container
-        var cameraObjects = WSM.APIGetAllObjectsByTypeReadOnly(cameraContainerGroupRefHistoryID, WSM.nInstanceType);
-        
-        // look for any Camera Groups matching this name, and delete it
-        ManageCameras.deleteObjectByName(cameraContainerGroupRefHistoryID, cameraObjects, sceneName);
-
         // create the geometry for this camera
-        ManageCameras.createCameraGeometryFromData(sceneCameraData, cameraContainerGroupRefHistoryID, sceneName, aspectRatio);
+        ManageCameras.createCameraGeometryFromData(sceneData, cameraContainerGroupRefHistoryID, sceneName, aspectRatio);
+
+        camerasCreatedCount++;
 
         console.log("Built new camera: " + sceneName);
+    }
+
+    // finished creating cameras, so let the user know what was changed
+    var camerasWord;
+    if (camerasCreatedCount === 0 || camerasCreatedCount > 1)
+    {
+        camerasWord = "Cameras";
+    }
+    else
+    {
+        camerasWord = "Camera";
+    }
+
+    var finishCreateCamerasMessage = "Created " + camerasCreatedCount + " new " + camerasWord + " from Scenes.";
+    FormIt.UI.ShowNotification(finishCreateCamerasMessage, FormIt.NotificationType.Information, 0);
+    console.log(finishCreateCamerasMessage);
+
+    // if specified, copy the new cameras to the clipboard
+    var copyToClipboard = args.copyToClipboard;
+
+    if (copyToClipboard)
+    {
+        // copy the new Camera container Group to the clipboard
+        FormIt.Selection.ClearSelections();
+        FormIt.Selection.AddSelections(cameraContainerGroupID);
+        
+        // ctrl + C
+        FormIt.Events.KeyDown(67, 2, "\u0003");
+        FormIt.Selection.ClearSelections();
     }
 }
 
 // creates camera geometry from camera data
-ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, cameraInstanceName, aspectRatio)
+ManageCameras.createCameraGeometryFromData = function(sceneData, nHistoryID, sceneName, aspectRatio)
 {
     // distance from the point to the camera plane
     var cameraDepth = 5;
@@ -312,7 +321,7 @@ ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, ca
     var origin = WSM.Geom.Point3d(0, 0, 0);
 
     // get the FOV from the camera data
-    var FOV = cameraData.FOV;
+    var FOV = sceneData.camera.FOV;
 
     // determine the normalized view width and height
     if (aspectRatio <= 1.0) {
@@ -328,28 +337,28 @@ ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, ca
     width *= cameraDepth;
 
     // construct the camera forward vector
-    var cameraForwardVector = multiplyVectorByQuaternion(0, 0, -1, cameraData.rotX, cameraData.rotY, cameraData.rotZ, cameraData.rotW);
+    var cameraForwardVector = multiplyVectorByQuaternion(0, 0, -1, sceneData.camera.rotX, sceneData.camera.rotY, sceneData.camera.rotZ, sceneData.camera.rotW);
     // scale the vector by the distance
     cameraForwardVector = scaleVector(cameraForwardVector, cameraDepth);
     var cameraForwardVector3d = WSM.Geom.Vector3d(cameraForwardVector[0], cameraForwardVector[1], cameraForwardVector[2]);
     //console.log(JSON.stringify(cameraForwardVector3d));
 
     // construct the camera up vector
-    var cameraUpVector = multiplyVectorByQuaternion(0, 1, 0, cameraData.rotX, cameraData.rotY, cameraData.rotZ, cameraData.rotW);   
+    var cameraUpVector = multiplyVectorByQuaternion(0, 1, 0, sceneData.camera.rotX, sceneData.camera.rotY, sceneData.camera.rotZ, sceneData.camera.rotW);   
     // scale the vector by the  height
     cameraUpVector = scaleVector(cameraUpVector, height);
     var cameraUpVector3d = WSM.Geom.Vector3d(cameraUpVector[0], cameraUpVector[1], cameraUpVector[2]);
     //console.log(JSON.stringify(cameraUpVector3d));
 
     // construct the camera right vector
-    var cameraRightVector = multiplyVectorByQuaternion(-1, 0, 0, cameraData.rotX, cameraData.rotY, cameraData.rotZ, cameraData.rotW);
+    var cameraRightVector = multiplyVectorByQuaternion(-1, 0, 0, sceneData.camera.rotX, sceneData.camera.rotY, sceneData.camera.rotZ, sceneData.camera.rotW);
     // scale the vector by the  width
     cameraRightVector = scaleVector(cameraRightVector, width);
     var cameraRightVector3d = WSM.Geom.Vector3d(cameraRightVector[0], cameraRightVector[1], cameraRightVector[2]);
     //console.log(JSON.stringify(cameraRightVector3d));
 
 	// get the current camera's position
-    var cameraPosition = WSM.Geom.Point3d(cameraData.posX, cameraData.posY, cameraData.posZ);
+    var cameraPosition = WSM.Geom.Point3d(sceneData.camera.posX, sceneData.camera.posY, sceneData.camera.posZ);
     //console.log(JSON.stringify(cameraPosition));
 
     // construct the 4 corners of the camera
@@ -468,9 +477,14 @@ ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, ca
     //console.log(cameraViewPlaneCentroidPoint3d);
 
     // set the name of the camera group
-    WSM.APISetRevitFamilyInformation(cameraGroupHistoryID, false, false, "", "Camera", "", "");
+    WSM.APISetRevitFamilyInformation(cameraGroupHistoryID, false, false, "", "Camera-" + sceneName, "", "");
     // set the name of the camera group instance
-    WSM.APISetObjectProperties(nHistoryID, cameraGroupInstanceID, cameraInstanceName, false);
+    WSM.APISetObjectProperties(cameraGroupHistoryID, cameraGroupInstanceID, sceneName, false);
+
+    // add an attribute to the camera with the current camera data
+    var value = { SceneData: sceneData };
+    WSM.Utils.SetOrCreateStringAttributeForObject(nHistoryID,
+        cameraGroupInstanceID, manageCamerasStringAttributeKey, JSON.stringify(value));
 
     var cameraViewPlaneMoveToOriginVector = getVectorBetweenTwoPoints(cameraViewPlaneCentroidPoint3d.x, cameraViewPlaneCentroidPoint3d.y, cameraViewPlaneCentroidPoint3d.z, 0, 0, 0);
     var translatedCameraPlanePositionPoint3d = WSM.Geom.Point3d(cameraViewPlaneMoveToOriginVector[0], cameraViewPlaneMoveToOriginVector[1], cameraViewPlaneMoveToOriginVector[2]);
@@ -540,18 +554,189 @@ ManageCameras.createCameraGeometryFromData = function(cameraData, nHistoryID, ca
 
     WSM.APICopyOrSketchAndTransformObjects(nHistoryID, cameraGroupHistoryID, cameraPosVertexObjectID, cameraMoveToOriginTransform, 1);
     WSM.APIDeleteObject(nHistoryID, cameraPosVertexObjectID);
+}
 
+ManageCameras.updateScenesFromCameras = function(args)
+{
+    // first, check if the Cameras Group exists
+    var cameraContainerGroupID = ManageCameras.getGroupInstanceByStringAttributeKey(cameraContainerGroupHistoryID, manageCamerasStringAttributeKey);
+
+    // if specified, use the clipboard data to find the new cameras
+    if (args.useClipboard)
+        {
+
+        // first, ensure the user is in the Main History, with nothing selected
+        FormIt.GroupEdit.EndEditInContext();
+        FormIt.Selection.ClearSelections();
+
+        // paste in place
+        // ctrl + shift + v
+        FormIt.Events.KeyDown(86, 3, "\u0016");
+
+        // the new geometry should be selected, so get some info about the newly-pasted geometry
+        var pastedClipboardData = FormIt.Clipboard.GetJSONStringForClipboard();
+        
+        var pastedGeometryIDs = FormIt.Selection.GetSelections();
+
+        // determine if the pasted geometry has the ManageCameras attribute
+        var isPastedGeometryFromManageCameras;
+        if (pastedGeometryIDs.length > 0)
+        {
+            var stringAttributeResult = WSM.Utils.GetStringAttributeForObject(cameraContainerGroupHistoryID, pastedGeometryIDs[0]["ids"][0]["Object"], manageCamerasStringAttributeKey);
+            if (pastedGeometryIDs.length === 1 && stringAttributeResult.success)
+            {
+                isPastedGeometryFromManageCameras = true;
+            }
+            else
+            {
+                isPastedGeometryFromManageCameras = false;
+            }
+        }
+
+        // check if the clipboard data is valid
+        var validPaste = FormIt.Clipboard.SetJSONStringFromClipboard(pastedClipboardData);
+
+        // if the result was a valid paste and was generated from ManageCameras
+        if (validPaste && isPastedGeometryFromManageCameras)
+        {
+            // delete the existing cameras Group if it exists - it'll be replaced by the clipboard contents
+            if (!isNaN(cameraContainerGroupID))
+            {
+                WSM.APIDeleteObject(cameraContainerGroupHistoryID, cameraContainerGroupID);
+            }
+
+            // redefine the camera contianer group as what was just pasted
+            var cameraContainerGroupID = ManageCameras.getGroupInstanceByStringAttributeKey(cameraContainerGroupHistoryID, manageCamerasStringAttributeKey);
+
+            FormIt.Selection.ClearSelections();
+        }
+        // otherwise, the paste either wasn't valid or wasn't from ManageCameras, so delete it
+        // assumes the pasted geometry is still selected
+        else
+        {
+            // delete key
+            FormIt.Events.KeyDown(46, 0, "");
+        }
+    }
+
+    // get the history for the cameras
+    var cameraContainerGroupRefHistoryID =  WSM.APIGetGroupReferencedHistoryReadOnly(cameraContainerGroupHistoryID, cameraContainerGroupID);
+    // get a list of instances inside the camera container
+    var cameraObjectIDs = WSM.APIGetAllObjectsByTypeReadOnly(cameraContainerGroupRefHistoryID, WSM.nInstanceType);
+
+    // only proceed if the Cameras Group exists, and it contains camera objects
+    if (!isNaN(cameraContainerGroupID) && cameraObjectIDs)
+    {
+        // get the existing scenes
+        var existingScenes = FormIt.Scenes.GetScenes();
+
+        // keep track of how many existing Scenes were updated, and how many new Scenes were added
+        var updatedSceneCount = 0;
+        var addedSceneCount = 0;
+
+        // for each existing Scene, check if a Camera has the same name and update it
+        for (var i = 0; i < existingScenes.length; i++)
+        {
+            for (var j = 0; j < cameraObjectIDs.length; j++)
+            {
+                // check if this camera object has a string attribute
+                var stringAttributeResult = WSM.Utils.GetStringAttributeForObject(cameraContainerGroupRefHistoryID, cameraObjectIDs[j], manageCamerasStringAttributeKey);
+                if (stringAttributeResult.success)
+                {
+                    // check if this camera object's Scene Data name matches the scene name
+                    if (JSON.parse(stringAttributeResult.value).SceneData.name == existingScenes[i].name)
+                    {
+                        var existingSceneData = JSON.parse(stringAttributeResult.value).SceneData;
+                        existingSceneData.camera = JSON.parse(stringAttributeResult.value).SceneData.camera;
+                        // replace this scene's data with the camera data
+                        existingScenes[i] = existingSceneData;
+                        FormIt.Scenes.SetScenes(existingScenes);
+                        console.log("Updated existing Scene " + existingScenes[i].name + " from matching Camera name.");
+
+                        // remove this camera from the list, so the next step can add the remaining cameras
+                        cameraObjectIDs.splice(j, 1);
+
+                        // add this to the count of updated scenes
+                        updatedSceneCount++;
+                    }
+                }
+            }
+        }
+
+        // at this point, the cameraObjectIDs have had items removed for cameras already accounted for by an existing scene
+        // so for each remaining camera, create a new scene
+        for (var i = 0; i < cameraObjectIDs.length; i++)
+        {
+            var stringAttributeResult = WSM.Utils.GetStringAttributeForObject(cameraContainerGroupRefHistoryID, cameraObjectIDs[i], manageCamerasStringAttributeKey);
+            FormIt.Scenes.AddScene(JSON.parse(stringAttributeResult.value).SceneData);
+            console.log("Added a new Scene from a Camera: " + JSON.parse(stringAttributeResult.value).SceneData.name);
+
+            // add this to the count of added scenes
+            addedSceneCount++;
+        }
+
+        // if there were cameras not accounted for by existing scenes,
+        // regenereate cameras from the newly-added Scenes to keep cameras and scenes in sync
+        if (cameraObjectIDs.length > 0)
+        {
+
+            ManageCameras.executeGenerateCameraGeometry(args);
+        }
+
+        // finished updating scenes, so let the user know what was changed
+        var addedSceneWord;
+        var updatedSceneWord;
+        if (addedSceneCount === 0 || addedSceneCount > 1)
+        {
+            addedSceneWord = "Scenes";
+        }
+        else
+        {
+            addedSceneWord = "Scene";
+        }
+
+        if (updatedSceneCount === 0 || updatedSceneCount > 1)
+        {
+            updatedSceneWord = "Scenes";
+        }
+        else
+        {
+            updatedSceneWord = "Scene";
+        }
+
+        var finishUpdateScenesMessage = "Added " + addedSceneCount + " new " + addedSceneWord + " and updated " + updatedSceneCount + " existing " + updatedSceneWord + " from Cameras.";
+        FormIt.UI.ShowNotification(finishUpdateScenesMessage, FormIt.NotificationType.Information, 0);
+        console.log(finishUpdateScenesMessage);
+        return;
+    }
+    else
+    {
+        // no Cameras were found
+        var noCamerasMessage = "No Cameras found in this project, or on the Clipboard.\nRun 'Export Scenes to Cameras' first, then try again.";
+        FormIt.UI.ShowNotification(noCamerasMessage, FormIt.NotificationType.Error, 0);
+        console.log(noCamerasMessage);
+        return;
+    }
 }
 
 // this is called by the submit function from the panel - all steps to execute the generation of camera geometry
-ManageCameras.executeGenerateCameraGeometry = function()
+ManageCameras.executeGenerateCameraGeometry = function(args)
 {
     console.clear();
     console.log("Manage Scene Cameras plugin\n");
 
     // get all the scenes
     var allScenes = FormIt.Scenes.GetScenes();
-    //console.log(JSON.stringify(allScenes));
+    //console.log(JSON.stringify("Scenes: " + JSON.stringify(allScenes)));
+
+    if (allScenes.length === 0)
+    {
+        // no Scenes found
+        var noScenesMessage = "No Scenes found in this project.\nCreate one or more Scenes, then try again.";
+        FormIt.UI.ShowNotification(noScenesMessage, FormIt.NotificationType.Error, 0);
+        console.log(noScenesMessage);
+        return;
+    }
 
     // get the current camera aspect ratio to use for geometry
     // the distance supplied here is arbitrary
@@ -561,8 +746,18 @@ ManageCameras.executeGenerateCameraGeometry = function()
     FormIt.UndoManagement.BeginState();
 
     // create the camera geometry for all scenes
-    ManageCameras.createSceneCameraGeometry(cameraContainerGroupHistoryID, allScenes, currentAspectRatio);
+    ManageCameras.createSceneCameraGeometry(cameraContainerGroupHistoryID, allScenes, currentAspectRatio, args);
 
     // end the undo manager state
     FormIt.UndoManagement.EndState("Create camera geometry");
+}
+
+// this is called by the submit function from the panel - all steps to execute the update of FormIt scenes to match Camera geometry
+ManageCameras.executeUpdateScenesFromCameras = function(args)
+{
+    console.clear();
+    console.log("Manage Scene Cameras plugin\n");
+
+    // create the camera geometry for all scenes
+    ManageCameras.updateScenesFromCameras(args);
 }
