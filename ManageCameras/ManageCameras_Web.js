@@ -8,6 +8,10 @@ var cameraHeightFromLevelInputID = 'cameraHeightFromNearestLevel';
 var cameraHeightFromGroundInputID = 'cameraHeightFromGround';
 var cameraHeightFromLeveLabelOriginalContents = '';
 
+// checkbox input IDs
+var copyCamerasToClipboardCheckboxID = 'copyCamerasToClipboardCheckbox';
+var useClipboardCamerasCheckboxID = 'useClipboardCamerasCheckbox';
+
 // update the FormIt camera height from the "above level" input
 ManageCameras.setCameraHeightAboveLevelFromInput = function()
 {
@@ -139,15 +143,22 @@ ManageCameras.initializeUI = function()
     var detailsLI2 = detailsUL.appendChild(document.createElement('li'));
     detailsLI2.innerHTML = 'Camera geometry can be used to transfer camera data between FormIt projects, or other apps.';
 
+    // copy cameras to clipboard checkbox
+    var copyCamerasToClipboardCheckboxModule = new FormIt.PluginUI.CheckboxModule('Copy Cameras to Clipboard', 'copyCamerasCheckboxModule', 'multiModuleContainer', copyCamerasToClipboardCheckboxID);
+    contentContainer.appendChild(copyCamerasToClipboardCheckboxModule.element);
+    document.getElementById(copyCamerasToClipboardCheckboxID).checked = true;
+
     // the generate button
-    var generateSceneCamerasButton = new FormIt.PluginUI.Button('Export Scenes to Cameras', function()
+    var exportScenesToCamerasButton = new FormIt.PluginUI.Button('Export Scenes to Cameras', function()
     {
         var args = {
+            "copyToClipboard" : document.getElementById(copyCamerasToClipboardCheckboxID).checked,
+            "useClipboard" : document.getElementById(useClipboardCamerasCheckboxID).checked
         }
     
         window.FormItInterface.CallMethod("ManageCameras.executeGenerateCameraGeometry", args);
     });
-    contentContainer.appendChild(generateSceneCamerasButton.element);
+    contentContainer.appendChild(exportScenesToCamerasButton.element);
 
     //
     // create the update scene cameras from geometry section
@@ -160,15 +171,22 @@ ManageCameras.initializeUI = function()
     var detailsLI1 = detailsUL.appendChild(document.createElement('li'));
     detailsLI1.innerHTML = 'Existing Scenes with the same name will overwritten, and new Scenes will be created as required.', 'headerContainer';
 
+    // use cameras on clipboard checkbox
+    var useCamerasOnClipboardCheckboxModule = new FormIt.PluginUI.CheckboxModule('Look for Cameras on Clipboard', 'copyCamerasCheckboxModule', 'multiModuleContainer', useClipboardCamerasCheckboxID);
+    contentContainer.appendChild(useCamerasOnClipboardCheckboxModule.element);
+    document.getElementById(useClipboardCamerasCheckboxID).checked = true;
+
     // the update button
-    var generateSceneCamerasButton = new FormIt.PluginUI.Button('Import Scenes from Cameras', function()
+    var importScenesFromCamerasButton = new FormIt.PluginUI.Button('Import Scenes from Cameras', function()
     {
         var args = {
+            "copyToClipboard" : document.getElementById(copyCamerasToClipboardCheckboxID).checked,
+            "useClipboard" : document.getElementById(useClipboardCamerasCheckboxID).checked
         }
     
         window.FormItInterface.CallMethod("ManageCameras.executeUpdateScenesFromCameras", args);
     });
-    contentContainer.appendChild(generateSceneCamerasButton.element);
+    contentContainer.appendChild(importScenesFromCamerasButton.element);
 
     //
     // create the footer

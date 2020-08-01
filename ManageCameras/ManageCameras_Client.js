@@ -239,7 +239,7 @@ ManageCameras.getOrCreateLayerByName = function(nHistoryID, layerName)
     return layerID;
 }
 
-ManageCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRatio)
+ManageCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRatio, args)
 {
     console.log("Building scene camera geometry...");
 
@@ -263,8 +263,6 @@ ManageCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRat
 
     // keep track of how many cameras were created
     var camerasCreatedCount = 0;
-
-    // TODO: add an option to delete all cameras not tracked by a Scene
 
     // for each scene, get the camera data and recreate the camera geometry from the data
     for (var i = 0; i < scenes.length; i++)
@@ -294,10 +292,23 @@ ManageCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRat
         camerasWord = "Camera";
     }
 
-    var finishCreateCamerasMessage = "Created " + camerasCreatedCount + " new " + camerasWord + " from Scenes.\n Use the 'Cameras' Layer to control Camera visibility.";
+    var finishCreateCamerasMessage = "Created " + camerasCreatedCount + " new " + camerasWord + " from Scenes.";
     FormIt.UI.ShowNotification(finishCreateCamerasMessage, FormIt.NotificationType.Information, 0);
     console.log(finishCreateCamerasMessage);
-    return;
+
+    // if specified, copy the new cameras to the clipboard
+    var copyToClipboard = args.copyToClipboard;
+
+    if (copyToClipboard)
+    {
+        // copy the new Camera container Group to the clipboard
+        FormIt.Selection.ClearSelections();
+        FormIt.Selection.AddSelections(cameraContainerGroupID);
+        
+        // ctrl + C
+        FormIt.Events.KeyDown(67, 2, "\u0003");
+        FormIt.Selection.ClearSelections();
+    }
 }
 
 // creates camera geometry from camera data
@@ -545,10 +556,67 @@ ManageCameras.createCameraGeometryFromData = function(sceneData, nHistoryID, sce
     WSM.APIDeleteObject(nHistoryID, cameraPosVertexObjectID);
 }
 
-ManageCameras.updateScenesFromCameras = function()
+ManageCameras.updateScenesFromCameras = function(args)
 {
     // first, check if the Cameras Group exists
     var cameraContainerGroupID = ManageCameras.getGroupInstanceByStringAttributeKey(cameraContainerGroupHistoryID, manageCamerasStringAttributeKey);
+
+    // if specified, use the clipboard data to find the new cameras
+    if (args.useClipboard)
+        {
+
+        // first, ensure the user is in the Main History
+        FormIt.GroupEdit.EndEditInContext();
+
+        // paste in place
+        // ctrl + shift + v
+        FormIt.Events.KeyDown(86, 3, "\u0016");
+
+        // the new geometry should be selected, so get some info about the newly-pasted geometry
+        var pastedClipboardData = FormIt.Clipboard.GetJSONStringForClipboard();
+        
+        var pastedGeometryIDs = FormIt.Selection.GetSelections();
+
+        // determine if the pasted geometry has the ManageCameras attribute
+        var isPastedGeometryFromManageCameras;
+        if (pastedGeometryIDs.length > 0)
+        {
+            var stringAttributeResult = WSM.Utils.GetStringAttributeForObject(cameraContainerGroupHistoryID, pastedGeometryIDs[0]["ids"][0]["Object"], manageCamerasStringAttributeKey);
+            if (pastedGeometryIDs.length === 1 && stringAttributeResult.success)
+            {
+                isPastedGeometryFromManageCameras = true;
+            }
+            else
+            {
+                isPastedGeometryFromManageCameras = false;
+            }
+        }
+
+        // check if the clipboard data is valid
+        var validPaste = FormIt.Clipboard.SetJSONStringFromClipboard(pastedClipboardData);
+
+        // if the result was a valid paste and was generated from ManageCameras
+        if (validPaste && isPastedGeometryFromManageCameras)
+        {
+            // delete the existing cameras Group if it exists - it'll be replaced by the clipboard contents
+            if (!isNaN(cameraContainerGroupID))
+            {
+                WSM.APIDeleteObject(cameraContainerGroupHistoryID, cameraContainerGroupID);
+            }
+
+            // redefine the camera contianer group as what was just pasted
+            var cameraContainerGroupID = ManageCameras.getGroupInstanceByStringAttributeKey(cameraContainerGroupHistoryID, manageCamerasStringAttributeKey);
+
+            FormIt.Selection.ClearSelections();
+        }
+        // otherwise, the paste either wasn't valid or wasn't from ManageCameras, so delete it
+        // assumes the pasted geometry is still selected
+        else
+        {
+            // delete key
+            FormIt.Events.KeyDown(46, 0, "");
+        }
+    }
 
     // get the history for the cameras
     var cameraContainerGroupRefHistoryID =  WSM.APIGetGroupReferencedHistoryReadOnly(cameraContainerGroupHistoryID, cameraContainerGroupID);
@@ -611,7 +679,7 @@ ManageCameras.updateScenesFromCameras = function()
         if (cameraObjectIDs.length > 0)
         {
 
-            ManageCameras.executeGenerateCameraGeometry();
+            ManageCameras.executeGenerateCameraGeometry(args);
         }
 
         // finished updating scenes, so let the user know what was changed
@@ -643,7 +711,7 @@ ManageCameras.updateScenesFromCameras = function()
     else
     {
         // no Cameras were found
-        var noCamerasMessage = "No Cameras found in this project.\nRun 'Export Scenes to Cameras' first, then try again.";
+        var noCamerasMessage = "No Cameras found in this project, or on the Clipboard.\nRun 'Export Scenes to Cameras' first, then try again.";
         FormIt.UI.ShowNotification(noCamerasMessage, FormIt.NotificationType.Error, 0);
         console.log(noCamerasMessage);
         return;
@@ -651,7 +719,7 @@ ManageCameras.updateScenesFromCameras = function()
 }
 
 // this is called by the submit function from the panel - all steps to execute the generation of camera geometry
-ManageCameras.executeGenerateCameraGeometry = function()
+ManageCameras.executeGenerateCameraGeometry = function(args)
 {
     console.clear();
     console.log("Manage Scene Cameras plugin\n");
@@ -677,25 +745,18 @@ ManageCameras.executeGenerateCameraGeometry = function()
     FormIt.UndoManagement.BeginState();
 
     // create the camera geometry for all scenes
-    ManageCameras.createSceneCameraGeometry(cameraContainerGroupHistoryID, allScenes, currentAspectRatio);
+    ManageCameras.createSceneCameraGeometry(cameraContainerGroupHistoryID, allScenes, currentAspectRatio, args);
 
     // end the undo manager state
     FormIt.UndoManagement.EndState("Create camera geometry");
 }
 
 // this is called by the submit function from the panel - all steps to execute the update of FormIt scenes to match Camera geometry
-ManageCameras.executeUpdateScenesFromCameras = function()
+ManageCameras.executeUpdateScenesFromCameras = function(args)
 {
     console.clear();
     console.log("Manage Scene Cameras plugin\n");
 
-    // start an undo manager state - this should suspend WSM and other updates to make this faster
-    //FormIt.UndoManagement.BeginState();
-
     // create the camera geometry for all scenes
-    ManageCameras.updateScenesFromCameras();
-    //ManageCameras.createSceneCameraGeometry(cameraContainerGroupHistoryID, allScenes, currentAspectRatio);
-
-    // end the undo manager state
-    //FormIt.UndoManagement.EndState("Create camera geometry");
+    ManageCameras.updateScenesFromCameras(args);
 }
