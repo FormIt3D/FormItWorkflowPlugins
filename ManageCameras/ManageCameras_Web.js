@@ -163,13 +163,10 @@ ManageCameras.initializeUI = function()
     //
     // create the update scene cameras from geometry section
     //
-    var updateScenesFromCamerasSubheader = new FormIt.PluginUI.HeaderModule('Import Scenes from Cameras', 'For each Camera in this project, update or create the corresponding Scene.');
+    var updateScenesFromCamerasSubheader = new FormIt.PluginUI.HeaderModule('Import Scenes from Cameras', 'For each available Camera, update or create the associated Scene in this project.');
     contentContainer.appendChild(updateScenesFromCamerasSubheader.element);
 
     var detailsUL = contentContainer.appendChild(document.createElement('ul'));
-
-    var detailsLI1 = detailsUL.appendChild(document.createElement('li'));
-    detailsLI1.innerHTML = 'Existing Scenes with the same name will overwritten, and new Scenes will be created as required.', 'headerContainer';
 
     // use cameras on clipboard checkbox
     var useCamerasOnClipboardCheckboxModule = new FormIt.PluginUI.CheckboxModule('Look for Cameras on Clipboard', 'copyCamerasCheckboxModule', 'multiModuleContainer', useClipboardCamerasCheckboxID);
