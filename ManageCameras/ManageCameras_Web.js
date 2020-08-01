@@ -129,7 +129,7 @@ ManageCameras.initializeUI = function()
     // 
     // create the generate cameras from scenes section
     //
-    var generateSceneCamerasSubheader = new FormIt.PluginUI.HeaderModule('Export Scenes to Cameras', "For each Scene in this project, create a Camera object that stores the Scene's camera and metadata", 'headerContainer');
+    var generateSceneCamerasSubheader = new FormIt.PluginUI.HeaderModule('Export Scenes to Cameras', "For each Scene in this project, create a Camera object that stores the Scene's camera and metadata.", 'headerContainer');
     contentContainer.appendChild(generateSceneCamerasSubheader.element);
 
     var detailsUL = contentContainer.appendChild(document.createElement('ul'));

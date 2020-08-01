@@ -261,6 +261,9 @@ ManageCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRat
     // set the name of the camera container group instance
     WSM.APISetRevitFamilyInformation(cameraContainerGroupRefHistoryID, false, false, "", cameraContainerGroupAndLayerName, "", "");
 
+    // keep track of how many cameras were created
+    var camerasCreatedCount = 0;
+
     // TODO: add an option to delete all cameras not tracked by a Scene
 
     // for each scene, get the camera data and recreate the camera geometry from the data
@@ -275,8 +278,26 @@ ManageCameras.createSceneCameraGeometry = function(nHistoryID, scenes, aspectRat
         // create the geometry for this camera
         ManageCameras.createCameraGeometryFromData(sceneData, cameraContainerGroupRefHistoryID, sceneName, aspectRatio);
 
+        camerasCreatedCount++;
+
         console.log("Built new camera: " + sceneName);
     }
+
+    // finished creating cameras, so let the user know what was changed
+    var camerasWord;
+    if (camerasCreatedCount === 0 || camerasCreatedCount > 1)
+    {
+        camerasWord = "Cameras";
+    }
+    else
+    {
+        camerasWord = "Camera";
+    }
+
+    var finishCreateCamerasMessage = "Created " + camerasCreatedCount + " new " + camerasWord + " from Scenes.\n Use the 'Cameras' Layer to control Camera visibility.";
+    FormIt.UI.ShowNotification(finishCreateCamerasMessage, FormIt.NotificationType.Information, 0);
+    console.log(finishCreateCamerasMessage);
+    return;
 }
 
 // creates camera geometry from camera data
@@ -540,6 +561,10 @@ ManageCameras.updateScenesFromCameras = function()
         // get the existing scenes
         var existingScenes = FormIt.Scenes.GetScenes();
 
+        // keep track of how many existing Scenes were updated, and how many new Scenes were added
+        var updatedSceneCount = 0;
+        var addedSceneCount = 0;
+
         // for each existing Scene, check if a Camera has the same name and update it
         for (var i = 0; i < existingScenes.length; i++)
         {
@@ -561,6 +586,9 @@ ManageCameras.updateScenesFromCameras = function()
 
                         // remove this camera from the list, so the next step can add the remaining cameras
                         cameraObjectIDs.splice(j, 1);
+
+                        // add this to the count of updated scenes
+                        updatedSceneCount++;
                     }
                 }
             }
@@ -573,6 +601,9 @@ ManageCameras.updateScenesFromCameras = function()
             var stringAttributeResult = WSM.Utils.GetStringAttributeForObject(cameraContainerGroupRefHistoryID, cameraObjectIDs[i], manageCamerasStringAttributeKey);
             FormIt.Scenes.AddScene(JSON.parse(stringAttributeResult.value).SceneData);
             console.log("Added a new Scene from a Camera: " + JSON.parse(stringAttributeResult.value).SceneData.name);
+
+            // add this to the count of added scenes
+            addedSceneCount++;
         }
 
         // if there were cameras not accounted for by existing scenes,
@@ -582,11 +613,40 @@ ManageCameras.updateScenesFromCameras = function()
 
             ManageCameras.executeGenerateCameraGeometry();
         }
+
+        // finished updating scenes, so let the user know what was changed
+        var addedSceneWord;
+        var updatedSceneWord;
+        if (addedSceneCount === 0 || addedSceneCount > 1)
+        {
+            addedSceneWord = "Scenes";
+        }
+        else
+        {
+            addedSceneWord = "Scene";
+        }
+
+        if (updatedSceneCount === 0 || updatedSceneCount > 1)
+        {
+            updatedSceneWord = "Scenes";
+        }
+        else
+        {
+            updatedSceneWord = "Scene";
+        }
+
+        var finishUpdateScenesMessage = "Added " + addedSceneCount + " new " + addedSceneWord + " and updated " + updatedSceneCount + " existing " + updatedSceneWord + " from Cameras.";
+        FormIt.UI.ShowNotification(finishUpdateScenesMessage, FormIt.NotificationType.Information, 0);
+        console.log(finishUpdateScenesMessage);
+        return;
     }
     else
     {
         // no Cameras were found
-        console.log("No Cameras are present.");
+        var noCamerasMessage = "No Cameras found in this project.\nRun 'Export Scenes to Cameras' first, then try again.";
+        FormIt.UI.ShowNotification(noCamerasMessage, FormIt.NotificationType.Error, 0);
+        console.log(noCamerasMessage);
+        return;
     }
 }
 
@@ -599,6 +659,15 @@ ManageCameras.executeGenerateCameraGeometry = function()
     // get all the scenes
     var allScenes = FormIt.Scenes.GetScenes();
     //console.log(JSON.stringify("Scenes: " + JSON.stringify(allScenes)));
+
+    if (allScenes.length === 0)
+    {
+        // no Scenes found
+        var noScenesMessage = "No Scenes found in this project.\nCreate one or more Scenes, then try again.";
+        FormIt.UI.ShowNotification(noScenesMessage, FormIt.NotificationType.Error, 0);
+        console.log(noScenesMessage);
+        return;
+    }
 
     // get the current camera aspect ratio to use for geometry
     // the distance supplied here is arbitrary
