@@ -129,18 +129,18 @@ ManageCameras.initializeUI = function()
     // 
     // create the generate cameras from scenes section
     //
-    var generateSceneCamerasSubheader = new FormIt.PluginUI.HeaderModule('Create Cameras from Scenes', 'Generate camera geometry for every Scene in the project.', 'headerContainer');
+    var generateSceneCamerasSubheader = new FormIt.PluginUI.HeaderModule('Export Scenes to Cameras', "For each Scene in this project, create a Camera object that stores the Scene's camera and metadata", 'headerContainer');
     contentContainer.appendChild(generateSceneCamerasSubheader.element);
 
     var detailsUL = contentContainer.appendChild(document.createElement('ul'));
 
     var detailsLI1 = detailsUL.appendChild(document.createElement('li'));
-    detailsLI1.innerHTML = 'Cameras will be generated in a Group and Layer called "Cameras"';
+    detailsLI1.innerHTML = 'Use the "Cameras" Layer to control the visibility of these new Camera objects.';
     var detailsLI2 = detailsUL.appendChild(document.createElement('li'));
     detailsLI2.innerHTML = 'Camera geometry can be used to transfer camera data between FormIt projects, or other apps.';
 
     // the generate button
-    var generateSceneCamerasButton = new FormIt.PluginUI.Button('Create Scene Cameras', function()
+    var generateSceneCamerasButton = new FormIt.PluginUI.Button('Export Scenes to Cameras', function()
     {
         var args = {
         }
@@ -149,16 +149,26 @@ ManageCameras.initializeUI = function()
     });
     contentContainer.appendChild(generateSceneCamerasButton.element);
 
-    // separator and space
-    contentContainer.appendChild(document.createElement('p'));
-    contentContainer.appendChild(document.createElement('hr'));
-    contentContainer.appendChild(document.createElement('p'));
-
     //
     // create the update scene cameras from geometry section
     //
-    var updateScenesFromCamerasSubheader = new FormIt.PluginUI.HeaderModule('Update Scenes from Cameras', 'Coming soon!', 'headerContainer');
+    var updateScenesFromCamerasSubheader = new FormIt.PluginUI.HeaderModule('Import Scenes from Cameras', 'For each Camera in this project, update or create the corresponding Scene.');
     contentContainer.appendChild(updateScenesFromCamerasSubheader.element);
+
+    var detailsUL = contentContainer.appendChild(document.createElement('ul'));
+
+    var detailsLI1 = detailsUL.appendChild(document.createElement('li'));
+    detailsLI1.innerHTML = 'Existing Scenes with the same name will overwritten, and new Scenes will be created as required.', 'headerContainer';
+
+    // the update button
+    var generateSceneCamerasButton = new FormIt.PluginUI.Button('Import Scenes from Cameras', function()
+    {
+        var args = {
+        }
+    
+        window.FormItInterface.CallMethod("ManageCameras.executeUpdateScenesFromCameras", args);
+    });
+    contentContainer.appendChild(generateSceneCamerasButton.element);
 
     //
     // create the footer
