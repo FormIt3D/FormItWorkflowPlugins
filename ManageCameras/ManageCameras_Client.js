@@ -565,8 +565,9 @@ ManageCameras.updateScenesFromCameras = function(args)
     if (args.useClipboard)
         {
 
-        // first, ensure the user is in the Main History
+        // first, ensure the user is in the Main History, with nothing selected
         FormIt.GroupEdit.EndEditInContext();
+        FormIt.Selection.ClearSelections();
 
         // paste in place
         // ctrl + shift + v
