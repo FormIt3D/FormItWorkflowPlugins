@@ -1,12 +1,10 @@
 import {FormIt, WSM} from '../../../FormItExamplePlugins/SharedPluginFiles/FormIt.mod.js';
 
+// Exposing for use in index.html
 window.FormItWorkflowPlugins = window.FormItWorkflowPlugins || {};
 
 window.FormItWorkflowPlugins.MeshAll = async function()
 {
-    console.clear();
-    console.log("Mesh All Plugin\n");
-
     // get selection info
     const selectionInfo = await getSelectionInfo();
     const currentSelection = selectionInfo.currentSelection;
@@ -89,9 +87,6 @@ window.FormItWorkflowPlugins.MeshAll = async function()
 
 window.FormItWorkflowPlugins.UnmeshAll = async function()
 {
-    console.clear();
-    console.log("Unmesh All Plugin\n");
-
     // get selection info
     const selectionInfo = await getSelectionInfo();
     const currentSelection = selectionInfo.currentSelection;
@@ -178,9 +173,9 @@ window.FormItWorkflowPlugins.UnmeshAll = async function()
     }
 }
 
-// creates global variables and arrays for determining the items in the selection set
+// Returns variables and arrays for determining the items in the selection set
 async function getSelectionInfo()
-{    
+{
     const selectedObjectsIDArray = [];
     const selectedObjectsTypeArray = [];
     let numberOfGroupsInSelection = 0;
