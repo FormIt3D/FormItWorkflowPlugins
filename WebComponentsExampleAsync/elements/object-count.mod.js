@@ -7,6 +7,7 @@
 import {FormItInterface} from '../../../FormItExamplePlugins/SharedPluginFiles/FormItInterface.mod.js';
 import {FormIt, WSM} from '../../../FormItExamplePlugins/SharedPluginFiles/FormIt.mod.js';
 
+// Supported selection types
 const TYPE_STRING_MAP = {
     all: null,
     edge: {
