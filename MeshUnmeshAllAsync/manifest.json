@@ -1,0 +1,7 @@
+{
+    "PluginName": "Mesh + Unmesh All",
+    "PluginDescription": "Mesh and Unmesh all nested geometry inside selected Groups (using async APIs).",
+    "PluginType": "Panel",
+    "Panel": "PLUGINLOCATION/index.html",
+    "PanelIcon": "PLUGINLOCATION/img/mesh_unmesh_all@2x.png"
+}

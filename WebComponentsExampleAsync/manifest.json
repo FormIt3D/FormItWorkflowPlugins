@@ -1,0 +1,7 @@
+{
+    "PluginName": "Selection Count Async",
+    "PluginDescription": "Example using async APIs to show current selection information inside web components",
+    "PluginType": "Panel",
+    "Panel": "PLUGINLOCATION/index.html",
+    "PanelIcon": "PLUGINLOCATION/img/properties_plus@2x.png"
+}
