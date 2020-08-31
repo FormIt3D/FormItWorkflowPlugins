@@ -18,15 +18,19 @@
                 // This callback will be invoked whenever the signal is emitted on the C++/QML side.
                 //FormItInterface.ConsoleLog("(Web Side) Message: " + JSON.stringify(jsonMessage));
 
-                // when the FormIt selection changes, automatically update the plugin UI
-                PropertiesPlus.updateUI();
+                // only perform the calculations and update the UI if the user has checked the box
+                if (PropertiesPlus.doRecomputeOnSelection())
+                {
+                    // when the FormIt selection changes, automatically update the plugin UI
+                    PropertiesPlus.updateUI();
+                }
             });
 
             // initialize the UI
             // this must be called from here, to ensure the HTML page is loaded
             // before scripts try to access the window document
             PropertiesPlus.initializeUI();
-            PropertiesPlus.updateUI();          
+            PropertiesPlus.updateUI();
 
         }); // DOMContentLoaded
     </script>

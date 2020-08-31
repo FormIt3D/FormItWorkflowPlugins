@@ -217,7 +217,7 @@ PropertiesPlus.GetSelectionInfo = function()
         "isConsistentGroupFamilyHistoryIDs" : isConsistentGroupFamilyHistoryIDs,
         "isConsistentGroupFamilyNames" : isConsistentGroupFamilyNames,
         "isConsistentGroupInstanceNames" : isConsistentGroupInstanceNames,
-        "identicalGroupInstanceCount" : identicalGroupInstanceCount,
+        "identicalGroupInstanceCount" : identicalGroupInstanceCount
     };
 }
 

@@ -84,6 +84,14 @@ var singleGroupFamilyDetailsContainerDiv;
 var singleGroupInstanceDetailsContainerDiv;
 var multiGroupInstanceDetailsContainerDiv;
 
+// ID for the top-level checkbox that controls whether Properties Plus recomputes on selection
+var recomputeOnSelectionInputID = 'recomputeOnSelectionInput';
+
+// IDs for containers which may be toggled in certain cases
+var disabledStateContainerID = 'disabledStateContainer';
+var selectionInfoContainerID = 'selectionInfoContainer';
+var infoCardsContainerID = 'infoCardsContainer';
+
 // IDs for inputs whose value will be updated when selection changes
 var singleGroupFamilyNameInputID = 'singleGroupFamilyNameInput';
 var singleGroupInstanceNameInputID = 'singleGroupInstanceNameInput';
@@ -93,7 +101,7 @@ var singleGroupInstancePosZInputID = 'singleGroupInstancePosZInput';
 var multiGroupFamilyNameInputID = 'multiGroupFamilyNameInput';
 var multiGroupInstanceNameInputID = 'multiGroupInstanceNameInput';
 
-// a flag to display work-in-progress features
+// flag to display work-in-progress features
 var displayWIP = false;
 
 // rename a Group family
@@ -134,10 +142,55 @@ PropertiesPlus.initializeUI = function()
     contentContainer.appendChild(headerContainer.element);
 
     //
-    // create the selection count container - this is always visible
+    // create the on/off checkbox to disable calculations (in case of large selections)
+    // 
+    var computeOnSelectionCheckboxModule = new FormIt.PluginUI.CheckboxModule('Update on Selection Change', 'computOnSelectionCheckboxModule', 'multiModuleContainer', recomputeOnSelectionInputID);
+    contentContainer.appendChild(computeOnSelectionCheckboxModule.element);
+    
+    var computeOnSelectionCheckboxInput = document.getElementById(recomputeOnSelectionInputID);
+    computeOnSelectionCheckboxInput.checked = true;
+    // when the user checks or unchecks, update the UI as required
+    computeOnSelectionCheckboxInput.onclick = function()
+    {
+        if (this.checked)
+        {
+            PropertiesPlus.setUIStateToEnabled();
+        }
+        else
+        {
+            PropertiesPlus.setUIStateToDisabled();
+        }
+    }
+
+    //
+    // create the "disabled state" container, which tells the user to check the box to re-enable updates
+    //
+    var disabledStateContainerDiv = document.createElement('div');
+    disabledStateContainerDiv.id = disabledStateContainerID;
+    disabledStateContainerDiv.className = 'hide';
+
+    var disabledStateMessageDiv = document.createElement('div');
+    disabledStateMessageDiv.className = 'infoList';
+    disabledStateMessageDiv.innerHTML = "Check the box to see updates.";
+    disabledStateContainerDiv.appendChild(disabledStateMessageDiv);
+
+    contentContainer.appendChild(disabledStateContainerDiv);
+
+    // 
+    // create the info cards container
+    // stores all info cards in one place for easier toggling
+    // 
+    var infoCardsContainer = document.createElement('div');
+    infoCardsContainer.id = 'infoCardsContainer';
+    infoCardsContainer.className = 'show';
+
+    contentContainer.appendChild(infoCardsContainer);
+
+    //
+    // create the selection count container
     //
     var selectionInfoContainerDiv = document.createElement('div');
-    selectionInfoContainerDiv.id = 'selectionInfoContainer';
+    selectionInfoContainerDiv.id = selectionInfoContainerID;
     selectionInfoContainerDiv.className = 'infoContainer';
 
     var selectionInfoHeaderDiv = document.createElement('div');
@@ -153,7 +206,7 @@ PropertiesPlus.initializeUI = function()
     objectCountHorizontalRule = document.createElement('hr'); // horizontal line
     objectCountHorizontalRule.className = 'hide';
 
-    contentContainer.appendChild(selectionInfoContainerDiv);
+    infoCardsContainer.appendChild(selectionInfoContainerDiv);
     selectionInfoContainerDiv.appendChild(selectionInfoHeaderDiv);
     selectionInfoContainerDiv.appendChild(objectCountDiv);
     
@@ -202,7 +255,7 @@ PropertiesPlus.initializeUI = function()
     singleGroupFamilyDetailsHeaderDiv.className = 'infoHeader';
     singleGroupFamilyDetailsHeaderDiv.innerHTML = 'Group Family';
 
-    contentContainer.appendChild(singleGroupFamilyDetailsContainerDiv);
+    infoCardsContainer.appendChild(singleGroupFamilyDetailsContainerDiv);
     singleGroupFamilyDetailsContainerDiv.appendChild(singleGroupFamilyDetailsHeaderDiv);
 
     // rename module
@@ -221,7 +274,7 @@ PropertiesPlus.initializeUI = function()
     multiGroupFamilyDetailsHeaderDiv.className = 'infoHeader';
     multiGroupFamilyDetailsHeaderDiv.innerHTML = 'Multiple Group Families';
 
-    contentContainer.appendChild(multiGroupFamilyDetailsContainerDiv);
+    infoCardsContainer.appendChild(multiGroupFamilyDetailsContainerDiv);
     multiGroupFamilyDetailsContainerDiv.appendChild(multiGroupFamilyDetailsHeaderDiv);
 
     // rename module
@@ -240,7 +293,7 @@ PropertiesPlus.initializeUI = function()
     singleGroupInstanceDetailsHeaderDiv.className = 'infoHeader';
     singleGroupInstanceDetailsHeaderDiv.innerHTML = 'Group Instance';
 
-    contentContainer.appendChild(singleGroupInstanceDetailsContainerDiv);
+    infoCardsContainer.appendChild(singleGroupInstanceDetailsContainerDiv);
     singleGroupInstanceDetailsContainerDiv.appendChild(singleGroupInstanceDetailsHeaderDiv);
 
     // rename module
@@ -279,7 +332,7 @@ PropertiesPlus.initializeUI = function()
     multiGroupInstanceDetailsHeaderDiv.className = 'infoHeader';
     multiGroupInstanceDetailsHeaderDiv.innerHTML = 'Multiple Group Instances';
 
-    contentContainer.appendChild(multiGroupInstanceDetailsContainerDiv);
+    infoCardsContainer.appendChild(multiGroupInstanceDetailsContainerDiv);
     multiGroupInstanceDetailsContainerDiv.appendChild(multiGroupInstanceDetailsHeaderDiv);
 
     // rename module
@@ -636,6 +689,19 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
     }
 }
 
+// determine if the user has chosen to update the UI on selection
+PropertiesPlus.doRecomputeOnSelection = function()
+{
+    if (document.getElementById(recomputeOnSelectionInputID).checked)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 // UpdateUI runs from the HTML page.  This script gets loaded up in both FormIt's
 // JS engine and also in the embedded web JS engine inside the panel.
 PropertiesPlus.updateUI = function()
@@ -647,11 +713,44 @@ PropertiesPlus.updateUI = function()
     //console.log("PropertiesPlus.UpdateUI");
     //console.log("args");
     // NOTE: window.FormItInterface.CallMethod will call the function
-    // defined above with the given args.  This is needed to communicate
-    // between the web JS enging process and the FormIt process.
+    // defined above with the given args. This is needed to communicate
+    // between the web JS engine process and the FormIt process.
     FormItInterface.CallMethod("PropertiesPlus.GetSelectionInfo", args, function(result)
     {
         //FormItInterface.ConsoleLog("Result " + result);
         PropertiesPlus.updateQuantification(result);
     });
+}
+
+PropertiesPlus.setUIStateToEnabled = function()
+{
+    // show the selection info container
+    var selectionInfoContainer = document.getElementById(selectionInfoContainerID);
+    selectionInfoContainer.className = 'infoContainer';
+
+    // show the info cards container
+    var infoCardsContainer = document.getElementById(infoCardsContainerID);
+    infoCardsContainer.className = 'show';
+
+    // hide the disabled state container
+    var disabledStateContainer = document.getElementById(disabledStateContainerID);
+    disabledStateContainer.className = 'hide';
+
+    PropertiesPlus.updateUI();
+}
+
+// update the UI to a dsiabled state, when the user has disabled updates
+PropertiesPlus.setUIStateToDisabled = function()
+{
+    // hide the selection info container
+    var selectionInfoContainer = document.getElementById(selectionInfoContainerID);
+    selectionInfoContainer.className = 'hide';
+
+    // hide the info cards container
+    var infoCardsContainer = document.getElementById(infoCardsContainerID);
+    infoCardsContainer.className = 'hide';
+
+    // show the dsiabled state container
+    var disabledStateContainer = document.getElementById(disabledStateContainerID);
+    disabledStateContainer.className = 'infoContainer';
 }
