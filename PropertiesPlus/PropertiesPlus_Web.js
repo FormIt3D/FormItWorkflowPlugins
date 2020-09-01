@@ -692,14 +692,7 @@ PropertiesPlus.updateQuantification = function(currentSelectionInfo)
 // determine if the user has chosen to update the UI on selection
 PropertiesPlus.doRecomputeOnSelection = function()
 {
-    if (document.getElementById(recomputeOnSelectionInputID).checked)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return document.getElementById(recomputeOnSelectionInputID).checked;
 }
 
 // UpdateUI runs from the HTML page.  This script gets loaded up in both FormIt's
